@@ -5,6 +5,7 @@ import MainLayout from "../../components/MainLayout";
 import API from "../../api";
 import { useNavigation } from "@react-navigation/native";
 import useNavigationHelper from "../../navigation/Navigationhelper";
+import { s, vs, ms, rf } from "../../utils/responsive";
 
 export default function PublicTeamScreen() {
   const teamId = route.params?.teamId;
@@ -85,21 +86,21 @@ const nav = useNavigationHelper();
 }
 
 const styles = StyleSheet.create({
-  cover: { height: 160, width: "100%" },
-  header: { flexDirection: "row", alignItems: "center", padding: 16, paddingTop: 8 },
-  logoWrapper: { width: 84, height: 84, borderRadius: 48, overflow: "hidden", backgroundColor: "#fff", elevation: 4 },
+  cover: { height: vs(160), width: "100%" },
+  header: { flexDirection: "row", alignItems: "center", padding: s(16), paddingTop: vs(8) },
+  logoWrapper: { width: s(84), height: s(84), borderRadius: ms(48), overflow: "hidden", backgroundColor: "#fff", elevation: 4 },
   logo: { width: "100%", height: "100%" },
   logoPlaceholder: { backgroundColor: "#1D4ED8", alignItems: "center", justifyContent: "center" },
 
-  teamName: { fontSize: 20, fontWeight: "700" },
-  location: { color: "#475569", marginTop: 4 },
-  founded: { color: "#475569", marginTop: 2 },
+  teamName: { fontSize: ms(20), fontWeight: "700" },
+  location: { color: "#475569", marginTop: vs(4) },
+  founded: { color: "#475569", marginTop: vs(2) },
 
-  card: { backgroundColor: "#fff", margin: 16, padding: 16, borderRadius: 12, elevation: 2 },
-  cardTitle: { fontSize: 18, fontWeight: "700", marginBottom: 12 },
+  card: { backgroundColor: "#fff", margin: s(16), padding: s(16), borderRadius: ms(12), elevation: 2 },
+  cardTitle: { fontSize: ms(18), fontWeight: "700", marginBottom: vs(12) },
 
-  playerRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8 },
-  playerImg: { width: 48, height: 48, borderRadius: 24 },
-  playerName: { fontSize: 16, fontWeight: "700" },
-  playerPos: { color: "#475569", marginTop: 4 },
+  playerRow: { flexDirection: "row", alignItems: "center", paddingVertical: vs(8) },
+  playerImg: { width: s(48), height: s(48), borderRadius: s(24) },
+  playerName: { fontSize: rf(16), fontWeight: "700" },
+  playerPos: { color: "#475569", marginTop: vs(4) },
 });

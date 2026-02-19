@@ -12,6 +12,7 @@ import {
 import API from '../api/api';
 import {launchImageLibrary} from 'react-native-image-picker';
 import useNavigationHelper from '../navigation/Navigationhelper';
+import {s, vs, ms, rf} from '../utils/responsive';
 
 export default function PlayerProfileEdit() {
   const [player, setPlayer] = useState(null);
@@ -310,28 +311,150 @@ function ChoiceGroup({label, options, value, onChange}) {
 }
 
 /* STYLES */
+// const styles = StyleSheet.create({
+//   container: {
+//     padding: 20,
+//     backgroundColor: '#F1F5F9',
+//   },
+
+//   title: {
+//     fontSize: 24,
+//     fontWeight: '700',
+//     textAlign: 'center',
+//     marginBottom: 20,
+//     color: '#0F172A',
+//   },
+
+//   /* IMAGE */
+//   imageContainer: {
+//     height: 130,
+//     width: 130,
+//     borderRadius: 70,
+//     backgroundColor: '#E2E8F0',
+//     alignSelf: 'center',
+//     marginBottom: 22,
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     overflow: 'hidden',
+//     elevation: 4,
+//   },
+//   image: {
+//     height: '100%',
+//     width: '100%',
+//   },
+//   imagePlaceholder: {
+//     color: '#64748B',
+//     fontSize: 14,
+//   },
+
+//   /* CARD */
+//   card: {
+//     backgroundColor: '#fff',
+//     padding: 18,
+//     borderRadius: 14,
+//     elevation: 2,
+//     marginBottom: 20,
+//   },
+//   cardTitle: {
+//     fontSize: 18,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//     marginBottom: 16,
+//   },
+
+//   /* INPUTS */
+//   inputLabel: {
+//     color: '#475569',
+//     fontSize: 14,
+//     marginBottom: 6,
+//   },
+//   input: {
+//     backgroundColor: '#fff',
+//     borderRadius: 10,
+//     padding: 12,
+//     borderWidth: 1,
+//     borderColor: '#CBD5E1',
+//     fontSize: 16,
+//     color: '#0F172A',
+//   },
+
+//   /* SAVE BUTTON */
+//   saveButton: {
+//     backgroundColor: '#1D4ED8',
+//     padding: 15,
+//     borderRadius: 12,
+//   },
+//   saveText: {
+//     textAlign: 'center',
+//     color: '#fff',
+//     fontSize: 17,
+//     fontWeight: '700',
+//   },
+//   imageOverlay: {
+//     position: 'absolute',
+//     bottom: 8,
+//     right: 8,
+//     backgroundColor: 'rgba(0,0,0,0.6)',
+//     paddingHorizontal: 10,
+//     paddingVertical: 4,
+//     borderRadius: 10,
+//   },
+//   imageOverlayText: {
+//     color: '#fff',
+//     fontSize: 15,
+//     fontWeight: '700',
+//   },
+
+//   choiceRow: {
+//     flexDirection: 'row',
+//     flexWrap: 'wrap',
+//     gap: 10,
+//   },
+//   choice: {
+//     paddingVertical: 10,
+//     paddingHorizontal: 16,
+//     borderRadius: 20,
+//     borderWidth: 1,
+//     borderColor: '#CBD5E1',
+//   },
+//   choiceActive: {
+//     backgroundColor: '#1D4ED8',
+//     borderColor: '#1D4ED8',
+//   },
+//   choiceText: {
+//     fontWeight: '700',
+//     color: '#334155',
+//   },
+//   sectionTitle: {
+//     fontWeight: '800',
+//     marginBottom: 10,
+//     marginTop: 12,
+//     color: '#0F172A',
+//   },
+// });
+
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: s(20),
     backgroundColor: '#F1F5F9',
   },
 
   title: {
-    fontSize: 24,
+    fontSize: ms(24),
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: vs(20),
     color: '#0F172A',
   },
 
   /* IMAGE */
   imageContainer: {
-    height: 130,
-    width: 130,
-    borderRadius: 70,
+    height: s(130),
+    width: s(130),
+    borderRadius: s(70),
     backgroundColor: '#E2E8F0',
     alignSelf: 'center',
-    marginBottom: 22,
+    marginBottom: vs(22),
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -343,76 +466,77 @@ const styles = StyleSheet.create({
   },
   imagePlaceholder: {
     color: '#64748B',
-    fontSize: 14,
+    fontSize: rf(14),
   },
 
   /* CARD */
   card: {
     backgroundColor: '#fff',
-    padding: 18,
-    borderRadius: 14,
+    padding: s(18),
+    borderRadius: ms(14),
     elevation: 2,
-    marginBottom: 20,
+    marginBottom: vs(20),
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: rf(18),
     fontWeight: '700',
     color: '#0F172A',
-    marginBottom: 16,
+    marginBottom: vs(16),
   },
 
   /* INPUTS */
   inputLabel: {
     color: '#475569',
-    fontSize: 14,
-    marginBottom: 6,
+    fontSize: rf(14),
+    marginBottom: vs(6),
   },
   input: {
     backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 12,
+    borderRadius: ms(10),
+    padding: s(12),
     borderWidth: 1,
     borderColor: '#CBD5E1',
-    fontSize: 16,
+    fontSize: rf(16),
     color: '#0F172A',
   },
 
   /* SAVE BUTTON */
   saveButton: {
     backgroundColor: '#1D4ED8',
-    padding: 15,
-    borderRadius: 12,
+    padding: s(15),
+    borderRadius: ms(12),
   },
   saveText: {
     textAlign: 'center',
     color: '#fff',
-    fontSize: 17,
+    fontSize: rf(17),
     fontWeight: '700',
   },
+
   imageOverlay: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    bottom: vs(8),
+    right: s(8),
     backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: ms(10),
   },
   imageOverlayText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: rf(15),
     fontWeight: '700',
   },
 
   choiceRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: s(10),
   },
   choice: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingVertical: vs(10),
+    paddingHorizontal: s(16),
+    borderRadius: ms(20),
     borderWidth: 1,
     borderColor: '#CBD5E1',
   },
@@ -423,11 +547,13 @@ const styles = StyleSheet.create({
   choiceText: {
     fontWeight: '700',
     color: '#334155',
+    fontSize: rf(14),
   },
   sectionTitle: {
     fontWeight: '800',
-    marginBottom: 10,
-    marginTop: 12,
+    marginBottom: vs(10),
+    marginTop: vs(12),
     color: '#0F172A',
+    fontSize: rf(15),
   },
 });

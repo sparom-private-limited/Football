@@ -15,6 +15,7 @@ import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import useNavigationHelper from '../../navigation/Navigationhelper';
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 export default function TeamProfileScreen() {
   const [team, setTeam] = useState(null);
@@ -208,33 +209,33 @@ const styles = StyleSheet.create({
 
   center: {flex: 1, justifyContent: 'center', alignItems: 'center'},
 
-  emptyContainer: {padding: 40, alignItems: 'center'},
-  emptyTitle: {fontSize: 24, fontWeight: '700', color: '#0F172A'},
+  emptyContainer: {padding: s(40), alignItems: 'center'},
+  emptyTitle: {fontSize: ms(24), fontWeight: '700', color: '#0F172A'},
   emptySubtitle: {
     textAlign: 'center',
     color: '#475569',
-    marginTop: 8,
-    marginBottom: 24,
+    marginTop: vs(8),
+    marginBottom: vs(24),
   },
   primaryBtn: {
     backgroundColor: '#1D4ED8',
-    paddingVertical: 14,
-    paddingHorizontal: 22,
-    borderRadius: 12,
+    paddingVertical: vs(14),
+    paddingHorizontal: s(22),
+    borderRadius: ms(12),
   },
   primaryBtnText: {color: '#fff', fontWeight: '700'},
 
-  coverWrapper: {position: 'relative', height: 180, marginBottom: 50},
+  coverWrapper: {position: 'relative', height: vs(180), marginBottom: vs(50)},
   coverImage: {width: '100%', height: '100%'},
   coverPlaceholder: {backgroundColor: '#E2E8F0'},
 
   logoWrapper: {
     position: 'absolute',
-    bottom: -40,
-    left: 20,
-    width: 100,
-    height: 100,
-    borderRadius: 60,
+    bottom: vs(-40),
+    left: s(20),
+    width: s(100),
+    height: s(100),
+    borderRadius: ms(60),
     overflow: 'hidden',
     elevation: 6,
     backgroundColor: '#fff',
@@ -248,110 +249,109 @@ const styles = StyleSheet.create({
 
   editBtn: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    top: vs(12),
+    right: s(12),
     backgroundColor: '#1D4ED8',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
+    paddingHorizontal: s(12),
+    paddingVertical: vs(6),
+    borderRadius: ms(10),
   },
   editText: {color: '#fff', fontWeight: '700'},
 
-  teamInfo: {paddingHorizontal: 20, paddingTop: 12},
-  teamName: {fontSize: 26, fontWeight: '700', color: '#0F172A'},
-  location: {color: '#475569', marginTop: 6},
-  founded: {color: '#475569', marginTop: 2},
-  desc: {color: '#334155', marginTop: 10, lineHeight: 20},
+  teamInfo: {paddingHorizontal: s(20), paddingTop: vs(12)},
+  teamName: {fontSize: ms(26), fontWeight: '700', color: '#0F172A'},
+  location: {color: '#475569', marginTop: vs(6)},
+  founded: {color: '#475569', marginTop: vs(2)},
+  desc: {color: '#334155', marginTop: vs(10), lineHeight: vs(20)},
 
   card: {
     backgroundColor: '#fff',
-    margin: 16,
-    padding: 16,
-    borderRadius: 14,
+    margin: s(16),
+    padding: s(16),
+    borderRadius: ms(14),
     elevation: 2,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: ms(18),
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: vs(12),
     color: '#0F172A',
   },
 
   playerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: vs(10),
     borderBottomWidth: 0.5,
     borderColor: '#E6EEF8',
   },
-  playerImg: {width: 48, height: 48, borderRadius: 28},
-  playerName: {fontSize: 16, fontWeight: '600', color: '#0F172A'},
-  playerPos: {color: '#475569', marginTop: 2},
+  playerImg: {width: s(48), height: s(48), borderRadius: ms(28)},
+  playerName: {fontSize: rf(16), fontWeight: '600', color: '#0F172A'},
+  playerPos: {color: '#475569', marginTop: vs(2)},
 
   removeBtn: {
     marginLeft: 'auto',
     backgroundColor: '#DC2626',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: s(10),
+    paddingVertical: vs(6),
+    borderRadius: ms(8),
   },
   removeText: {color: '#fff', fontWeight: '700'},
 
   fab: {
     position: 'absolute',
-    right: 20,
-    bottom: 28,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    right: s(20),
+    bottom: vs(28),
+    width: s(56),
+    height: s(56),
+    borderRadius: s(28),
     backgroundColor: '#1D4ED8',
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,
   },
-  fabText: {color: '#fff', fontSize: 28, marginTop: -2},
+  fabText: {color: '#fff', fontSize: ms(28), marginTop: vs(-2)},
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: vs(12),
   },
 
   addBtn: {
     backgroundColor: '#1D4ED8',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: s(12),
+    paddingVertical: vs(6),
+    borderRadius: ms(8),
   },
 
   addBtnText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: rf(13),
   },
   previewOverlay: {
-  flex: 1,
-  backgroundColor: 'rgba(0,0,0,0.95)',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
-previewImage: {
-  width: '100%',
-  height: '80%',
-},
+  previewImage: {
+    width: '100%',
+    height: '80%',
+  },
 
-previewClose: {
-  position: 'absolute',
-  top: 40,
-  right: 20,
-  zIndex: 10,
-},
+  previewClose: {
+    position: 'absolute',
+    top: vs(40),
+    right: s(20),
+    zIndex: 10,
+  },
 
-previewCloseText: {
-  color: '#fff',
-  fontSize: 26,
-  fontWeight: '700',
-},
-
+  previewCloseText: {
+    color: '#fff',
+    fontSize: ms(26),
+    fontWeight: '700',
+  },
 });

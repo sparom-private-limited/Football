@@ -14,6 +14,7 @@ import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import {useAuth} from '../../context/AuthContext';
 import useNavigationHelper from '../../navigation/Navigationhelper';
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 export default function TournamentDetailScreen() {
   const {params} = useRoute();
@@ -502,6 +503,276 @@ function ActionBtn({label, onPress, warning, loading}) {
   );
 }
 
+// const styles = StyleSheet.create({
+//   center: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+
+//   container: {
+//     paddingBottom: 40,
+//   },
+
+//   heroCard: {
+//     marginHorizontal: 20,
+//     marginTop: 16,
+//     marginBottom: 24,
+//     padding: 20,
+//     borderRadius: 24,
+//     backgroundColor: '#EEF2FF',
+//   },
+
+//   heroTopRow: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//   },
+
+//   heroTitle: {
+//     fontSize: 24,
+//     fontWeight: '800',
+//     color: '#111827',
+//     flex: 1,
+//   },
+
+//   heroMeta: {
+//     marginTop: 10,
+//     fontSize: 14,
+//     color: '#6B7280',
+//   },
+
+//   heroInfoRow: {
+//     flexDirection: 'row',
+//     marginTop: 20,
+//     gap: 12,
+//   },
+
+//   heroInfoBox: {
+//     flex: 1,
+//     backgroundColor: '#FFFFFF',
+//     padding: 14,
+//     borderRadius: 14,
+//   },
+
+//   heroLabel: {
+//     fontSize: 12,
+//     color: '#6B7280',
+//   },
+
+//   heroValue: {
+//     fontSize: 14,
+//     fontWeight: '700',
+//     color: '#111827',
+//     marginTop: 4,
+//   },
+
+//   title: {
+//     fontSize: 22,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   card: {
+//     backgroundColor: '#FFFFFF',
+//     marginHorizontal: 20,
+//     marginBottom: 20,
+//     padding: 20,
+//     borderRadius: 20,
+//     shadowColor: '#000',
+//     shadowOpacity: 0.06,
+//     shadowRadius: 12,
+//     elevation: 3,
+//   },
+//   cardHeader: {
+//     marginBottom: 16,
+//   },
+
+//   cardTitle: {
+//     fontSize: 18,
+//     fontWeight: '800',
+//     color: '#111827',
+//   },
+
+//   sectionTitle: {
+//     fontSize: 16,
+//     fontWeight: '600',
+//     marginBottom: 12,
+//     color: '#1E293B',
+//   },
+
+//   row: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     marginBottom: 10,
+//   },
+
+//   label: {
+//     color: '#64748B',
+//     fontSize: 14,
+//   },
+
+//   value: {
+//     fontSize: 14,
+//     fontWeight: '500',
+//     color: '#0F172A',
+//   },
+
+//   emptyText: {
+//     color: '#94A3B8',
+//     fontSize: 14,
+//   },
+
+//   reasonText: {
+//     color: '#F97316',
+//     fontSize: 14,
+//     marginTop: 8,
+//     fontWeight: '600',
+//   },
+
+//  teamItem: {
+//   flexDirection: 'row',
+//   alignItems: 'center',
+//   paddingVertical: 12,
+//   borderBottomWidth: 1,
+//   borderBottomColor: '#F1F5F9',
+// },
+
+// teamLogo: {
+//   width: 44,
+//   height: 44,
+//   borderRadius: 22,
+//   marginRight: 14,
+// },
+
+// teamLogoFallback: {
+//   width: 44,
+//   height: 44,
+//   borderRadius: 22,
+//   backgroundColor: '#E5E7EB',
+//   alignItems: 'center',
+//   justifyContent: 'center',
+//   marginRight: 14,
+// },
+
+// teamLogoText: {
+//   fontSize: 18,
+//   fontWeight: '800',
+//   color: '#111827',
+// },
+
+// teamNameModern: {
+//   fontSize: 16,
+//   fontWeight: '700',
+//   color: '#111827',
+// },
+
+//   badge: {
+//     paddingHorizontal: 10,
+//     paddingVertical: 4,
+//     borderRadius: 999,
+//     backgroundColor: '#F8FAFC',
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//   },
+
+//   badgeText: {
+//     fontSize: 12,
+//     fontWeight: '600',
+//     textTransform: 'capitalize',
+//   },
+
+//   btn: {
+//     backgroundColor: '#2563EB',
+//     paddingVertical: 16,
+//     borderRadius: 18,
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     marginTop: 12,
+//   },
+
+//   btnText: {
+//     color: '#FFFFFF',
+//     fontSize: 16,
+//     fontWeight: '600',
+//   },
+
+//   winnerCard: {
+//     backgroundColor: '#FEF9C3',
+//     borderWidth: 2,
+//     borderColor: '#FACC15',
+//   },
+
+//   winnerTitle: {
+//     fontSize: 18,
+//     fontWeight: '800',
+//     color: '#854D0E',
+//     textAlign: 'center',
+//     marginBottom: 8,
+//   },
+
+//   winnerTeam: {
+//     fontSize: 24,
+//     fontWeight: '900',
+//     color: '#0F172A',
+//     textAlign: 'center',
+//     marginBottom: 8,
+//   },
+
+//   completedDate: {
+//     fontSize: 14,
+//     color: '#64748B',
+//     textAlign: 'center',
+//     fontStyle: 'italic',
+//   },
+//   bigStat: {
+//     fontSize: 22,
+//     fontWeight: '800',
+//     color: '#111827',
+//   },
+
+//   subStat: {
+//     fontSize: 14,
+//     color: '#6B7280',
+//     marginTop: 4,
+//   },
+
+//   progressBarBg: {
+//     height: 6,
+//     backgroundColor: '#E5E7EB',
+//     borderRadius: 4,
+//     marginTop: 14,
+//   },
+
+//   progressBarFill: {
+//     height: 6,
+//     backgroundColor: '#2563EB',
+//     borderRadius: 4,
+//   },
+//   infoRow: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     marginBottom: 18,
+//   },
+
+//   infoItem: {
+//     flex: 1,
+//   },
+
+//   infoLabel: {
+//     fontSize: 13,
+//     color: '#6B7280',
+//     marginBottom: 4,
+//   },
+
+//   infoValue: {
+//     fontSize: 18,
+//     fontWeight: '800',
+//     color: '#111827',
+//   },
+// });
+
+
 const styles = StyleSheet.create({
   center: {
     flex: 1,
@@ -510,15 +781,15 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    paddingBottom: 40,
+    paddingBottom: vs(40),
   },
 
   heroCard: {
-    marginHorizontal: 20,
-    marginTop: 16,
-    marginBottom: 24,
-    padding: 20,
-    borderRadius: 24,
+    marginHorizontal: s(20),
+    marginTop: vs(16),
+    marginBottom: vs(24),
+    padding: s(20),
+    borderRadius: ms(24),
     backgroundColor: '#EEF2FF',
   },
 
@@ -529,170 +800,171 @@ const styles = StyleSheet.create({
   },
 
   heroTitle: {
-    fontSize: 24,
+    fontSize: ms(24),
     fontWeight: '800',
     color: '#111827',
     flex: 1,
   },
 
   heroMeta: {
-    marginTop: 10,
-    fontSize: 14,
+    marginTop: vs(10),
+    fontSize: rf(14),
     color: '#6B7280',
   },
 
   heroInfoRow: {
     flexDirection: 'row',
-    marginTop: 20,
-    gap: 12,
+    marginTop: vs(20),
+    gap: s(12),
   },
 
   heroInfoBox: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    padding: 14,
-    borderRadius: 14,
+    padding: s(14),
+    borderRadius: ms(14),
   },
 
   heroLabel: {
-    fontSize: 12,
+    fontSize: rf(12),
     color: '#6B7280',
   },
 
   heroValue: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#111827',
-    marginTop: 4,
+    marginTop: vs(4),
   },
 
   title: {
-    fontSize: 22,
+    fontSize: ms(22),
     fontWeight: '700',
     color: '#0F172A',
   },
 
   card: {
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 20,
-    borderRadius: 20,
+    marginHorizontal: s(20),
+    marginBottom: vs(20),
+    padding: s(20),
+    borderRadius: ms(20),
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 3,
   },
+
   cardHeader: {
-    marginBottom: 16,
+    marginBottom: vs(16),
   },
 
   cardTitle: {
-    fontSize: 18,
+    fontSize: rf(18),
     fontWeight: '800',
     color: '#111827',
   },
 
   sectionTitle: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: vs(12),
     color: '#1E293B',
   },
 
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: vs(10),
   },
 
   label: {
     color: '#64748B',
-    fontSize: 14,
+    fontSize: rf(14),
   },
 
   value: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '500',
     color: '#0F172A',
   },
 
   emptyText: {
     color: '#94A3B8',
-    fontSize: 14,
+    fontSize: rf(14),
   },
 
   reasonText: {
     color: '#F97316',
-    fontSize: 14,
-    marginTop: 8,
+    fontSize: rf(14),
+    marginTop: vs(8),
     fontWeight: '600',
   },
 
- teamItem: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingVertical: 12,
-  borderBottomWidth: 1,
-  borderBottomColor: '#F1F5F9',
-},
+  teamItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: vs(12),
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
 
-teamLogo: {
-  width: 44,
-  height: 44,
-  borderRadius: 22,
-  marginRight: 14,
-},
+  teamLogo: {
+    width: s(44),
+    height: s(44),
+    borderRadius: s(22),
+    marginRight: s(14),
+  },
 
-teamLogoFallback: {
-  width: 44,
-  height: 44,
-  borderRadius: 22,
-  backgroundColor: '#E5E7EB',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginRight: 14,
-},
+  teamLogoFallback: {
+    width: s(44),
+    height: s(44),
+    borderRadius: s(22),
+    backgroundColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: s(14),
+  },
 
-teamLogoText: {
-  fontSize: 18,
-  fontWeight: '800',
-  color: '#111827',
-},
+  teamLogoText: {
+    fontSize: ms(18),
+    fontWeight: '800',
+    color: '#111827',
+  },
 
-teamNameModern: {
-  fontSize: 16,
-  fontWeight: '700',
-  color: '#111827',
-},
+  teamNameModern: {
+    fontSize: rf(16),
+    fontWeight: '700',
+    color: '#111827',
+  },
 
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: ms(999),
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
 
   badgeText: {
-    fontSize: 12,
+    fontSize: rf(12),
     fontWeight: '600',
     textTransform: 'capitalize',
   },
 
   btn: {
     backgroundColor: '#2563EB',
-    paddingVertical: 16,
-    borderRadius: 18,
+    paddingVertical: vs(16),
+    borderRadius: ms(18),
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 12,
+    marginTop: vs(12),
   },
 
   btnText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '600',
   },
 
@@ -703,55 +975,57 @@ teamNameModern: {
   },
 
   winnerTitle: {
-    fontSize: 18,
+    fontSize: rf(18),
     fontWeight: '800',
     color: '#854D0E',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: vs(8),
   },
 
   winnerTeam: {
-    fontSize: 24,
+    fontSize: ms(24),
     fontWeight: '900',
     color: '#0F172A',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: vs(8),
   },
 
   completedDate: {
-    fontSize: 14,
+    fontSize: rf(14),
     color: '#64748B',
     textAlign: 'center',
     fontStyle: 'italic',
   },
+
   bigStat: {
-    fontSize: 22,
+    fontSize: ms(22),
     fontWeight: '800',
     color: '#111827',
   },
 
   subStat: {
-    fontSize: 14,
+    fontSize: rf(14),
     color: '#6B7280',
-    marginTop: 4,
+    marginTop: vs(4),
   },
 
   progressBarBg: {
-    height: 6,
+    height: vs(6),
     backgroundColor: '#E5E7EB',
-    borderRadius: 4,
-    marginTop: 14,
+    borderRadius: ms(4),
+    marginTop: vs(14),
   },
 
   progressBarFill: {
-    height: 6,
+    height: vs(6),
     backgroundColor: '#2563EB',
-    borderRadius: 4,
+    borderRadius: ms(4),
   },
+
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 18,
+    marginBottom: vs(18),
   },
 
   infoItem: {
@@ -759,13 +1033,13 @@ teamNameModern: {
   },
 
   infoLabel: {
-    fontSize: 13,
+    fontSize: rf(13),
     color: '#6B7280',
-    marginBottom: 4,
+    marginBottom: vs(4),
   },
 
   infoValue: {
-    fontSize: 18,
+    fontSize: rf(18),
     fontWeight: '800',
     color: '#111827',
   },

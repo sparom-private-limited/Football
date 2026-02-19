@@ -605,7 +605,7 @@ import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import AppRefreshView from '../../components/AppRefreshView';
 import useNavigationHelper from '../../navigation/Navigationhelper';
-import { moderateScale, scale, verticalScale,normalizeFont } from '../../utils/responsive';
+import { s, vs, ms, rf, wp } from '../../utils/responsive'; // ✅ ADD THIS IMPORT
 
 export default function TeamHome() {
   const nav = useNavigationHelper();
@@ -913,7 +913,7 @@ function TeamMini({ team }) {
   if (!team) return null;
   
   return (
-    <View style={{ alignItems: 'center', width: 80 }}>
+    <View style={{ alignItems: 'center', width: s(80) }}>
       {team.teamLogoUrl ? (
         <Image source={{ uri: team.teamLogoUrl }} style={styles.miniLogo} />
       ) : (
@@ -933,77 +933,77 @@ function TeamMini({ team }) {
 const styles = StyleSheet.create({
   /* ===== LAYOUT ===== */
   container: {
-    padding: 5,
+    padding: s(5),                          // ✅ s()
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  
+
   /* ===== EMPTY STATE ===== */
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: s(32),                         // ✅ s()
   },
   emptyIcon: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: s(100),                          // ✅ s()
+    height: s(100),                         // ✅ s()
+    borderRadius: s(50),                    // ✅ s()
     backgroundColor: '#EEF2FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: vs(24),                   // ✅ vs()
   },
   emptyIconText: {
-    fontSize: 48,
+    fontSize: ms(48),                       // ✅ ms()
   },
   emptyTitle: {
-    fontSize: 24,
+    fontSize: ms(24),                       // ✅ ms()
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 12,
+    marginBottom: vs(12),                   // ✅ vs()
     textAlign: 'center',
   },
   emptySubtitle: {
-    fontSize: 16,
+    fontSize: rf(16),                       // ✅ rf()
     color: '#6B7280',
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 24,
+    marginBottom: vs(32),                   // ✅ vs()
+    lineHeight: vs(24),                     // ✅ vs()
   },
   primaryBtn: {
     backgroundColor: '#1D4ED8',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-    minWidth: 200,
+    paddingVertical: vs(16),                // ✅ vs()
+    paddingHorizontal: s(32),              // ✅ s()
+    borderRadius: ms(12),                   // ✅ ms()
+    minWidth: s(200),                       // ✅ s()
   },
   primaryBtnText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: rf(16),                       // ✅ rf()
     fontWeight: '600',
     textAlign: 'center',
   },
 
   sectionTitle: {
-    fontSize: 16,
+    fontSize: rf(16),                       // ✅ rf()
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: vs(8),                    // ✅ vs()
     color: '#0F172A',
   },
 
-  /* ===== HERO (COVER + LOGO) ===== */
+  /* ===== HERO ===== */
   heroWrapper: {
-    borderRadius: 20,
+    borderRadius: ms(20),                   // ✅ ms()
     overflow: 'hidden',
-    marginBottom: 20,
+    marginBottom: vs(20),                   // ✅ vs()
   },
   coverImage: {
     width: '100%',
-    height: 215,
+    height: vs(215),                        // ✅ vs()
   },
   coverOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -1011,66 +1011,67 @@ const styles = StyleSheet.create({
   },
   heroContent: {
     position: 'absolute',
-    bottom: 16,
-    left: 16,
-    right: 16,
+    bottom: vs(16),                         // ✅ vs()
+    left: s(16),                            // ✅ s()
+    right: s(16),                           // ✅ s()
     alignItems: 'center',
   },
   heroLogoWrapper: {
     backgroundColor: 'black',
-    padding: 4,
-    borderRadius: 48,
-    marginBottom: 8,
+    padding: s(4),                          // ✅ s()
+    borderRadius: ms(48),                   // ✅ ms()
+    marginBottom: vs(8),                    // ✅ vs()
   },
   heroLogo: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: s(72),                           // ✅ s()
+    height: s(72),                          // ✅ s()
+    borderRadius: s(36),                    // ✅ s()
   },
   heroLogoFallback: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: s(72),                           // ✅ s()
+    height: s(72),                          // ✅ s()
+    borderRadius: s(36),                    // ✅ s()
     backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroLogoText: {
-    fontSize: 28,
+    fontSize: ms(28),                       // ✅ ms()
     fontWeight: '900',
     color: '#1D4ED8',
   },
   heroTeamName: {
-    fontSize: 20,
+    fontSize: ms(20),                       // ✅ ms()
     fontWeight: '800',
     color: '#FFFFFF',
     textAlign: 'center',
   },
   heroSub: {
-    marginTop: 2,
-    fontSize: 13,
+    marginTop: vs(2),                       // ✅ vs()
+    fontSize: rf(13),                       // ✅ rf()
     fontWeight: '600',
     color: '#E5E7EB',
   },
   outlineBtn: {
-    marginTop: 14,
+    marginTop: vs(14),                      // ✅ vs()
     borderWidth: 1,
     borderColor: '#FFFFFF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 12,
+    paddingVertical: vs(10),                // ✅ vs()
+    paddingHorizontal: s(20),              // ✅ s()
+    borderRadius: ms(12),                   // ✅ ms()
   },
   outlineBtnText: {
     color: '#FFFFFF',
     fontWeight: '700',
+    fontSize: rf(14),                       // ✅ rf()
   },
 
   /* ===== LIVE MATCH ===== */
   liveCard: {
     backgroundColor: '#ECFEFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: ms(18),                   // ✅ ms()
+    padding: s(16),                         // ✅ s()
+    marginBottom: vs(16),                   // ✅ vs()
   },
   liveTop: {
     flexDirection: 'row',
@@ -1080,39 +1081,41 @@ const styles = StyleSheet.create({
   livePulse: {
     color: '#DC2626',
     fontWeight: '900',
+    fontSize: rf(13),                       // ✅ rf()
   },
   liveTeams: {
-    fontSize: 16,
+    fontSize: rf(16),                       // ✅ rf()
     fontWeight: '700',
-    marginTop: 8,
+    marginTop: vs(8),                       // ✅ vs()
     color: '#0F172A',
   },
   liveScore: {
-    fontSize: 24,
+    fontSize: ms(24),                       // ✅ ms()
     fontWeight: '900',
-    marginTop: 4,
+    marginTop: vs(4),                       // ✅ vs()
     color: '#0F172A',
   },
   liveCta: {
     color: '#0284C7',
     fontWeight: '700',
+    fontSize: rf(13),                       // ✅ rf()
   },
 
   /* ===== LAST MATCH ===== */
   lastMatchCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: ms(18),                   // ✅ ms()
+    padding: s(16),                         // ✅ s()
+    marginBottom: vs(16),                   // ✅ vs()
   },
   matchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginVertical: 10,
+    marginVertical: vs(10),                 // ✅ vs()
   },
   matchScore: {
-    fontSize: 22,
+    fontSize: ms(22),                       // ✅ ms()
     fontWeight: '900',
     color: '#0F172A',
   },
@@ -1120,23 +1123,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#64748B',
     fontWeight: '600',
+    fontSize: rf(13),                       // ✅ rf()
   },
   miniLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: s(40),                           // ✅ s()
+    height: s(40),                          // ✅ s()
+    borderRadius: s(20),                    // ✅ s()
   },
   miniLogoFallback: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: s(40),                           // ✅ s()
+    height: s(40),                          // ✅ s()
+    borderRadius: s(20),                    // ✅ s()
     backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
   miniName: {
-    marginTop: 4,
-    fontSize: 11,
+    marginTop: vs(4),                       // ✅ vs()
+    fontSize: rf(11),                       // ✅ rf()
     fontWeight: '700',
     textAlign: 'center',
     color: '#0F172A',
@@ -1145,74 +1149,74 @@ const styles = StyleSheet.create({
   /* ===== TOURNAMENTS ===== */
   sectionCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: ms(18),                   // ✅ ms()
+    padding: s(16),                         // ✅ s()
+    marginBottom: vs(16),                   // ✅ vs()
   },
   tournamentCard: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
+    borderRadius: ms(14),                   // ✅ ms()
+    padding: s(14),                         // ✅ s()
+    marginBottom: vs(10),                   // ✅ vs()
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: rf(16),                       // ✅ rf()
     fontWeight: '600',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: vs(4),                    // ✅ vs()
   },
   metaText: {
-    fontSize: 12,
+    fontSize: rf(12),                       // ✅ rf()
     color: '#6B7280',
   },
 
   /* ===== QUICK ACTIONS ===== */
   actionsCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: ms(18),                   // ✅ ms()
+    padding: s(16),                         // ✅ s()
+    marginBottom: vs(16),                   // ✅ vs()
   },
   actionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: s(12),                             // ✅ s()
   },
   actionTilePrimary: {
     width: '48%',
     backgroundColor: '#1D4ED8',
-    borderRadius: 16,
-    paddingVertical: 18,
+    borderRadius: ms(16),                   // ✅ ms()
+    paddingVertical: vs(18),                // ✅ vs()
     alignItems: 'center',
   },
   actionTileTertiary: {
     width: '48%',
     backgroundColor: '#d8741dff',
-    borderRadius: 16,
-    paddingVertical: 18,
+    borderRadius: ms(16),                   // ✅ ms()
+    paddingVertical: vs(18),                // ✅ vs()
     alignItems: 'center',
   },
   actionTileSecondary: {
     width: '48%',
     backgroundColor: '#F1F5F9',
-    borderRadius: 16,
-    paddingVertical: 18,
+    borderRadius: ms(16),                   // ✅ ms()
+    paddingVertical: vs(18),                // ✅ vs()
     alignItems: 'center',
   },
   actionIcon: {
-    fontSize: 26,
-    marginBottom: 6,
+    fontSize: ms(26),                       // ✅ ms()
+    marginBottom: vs(6),                    // ✅ vs()
     color: '#FFFFFF',
   },
   actionText: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: rf(14),                       // ✅ rf()
   },
   actionTextDark: {
     color: '#0F172A',
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: rf(14),                       // ✅ rf()
   },
 });

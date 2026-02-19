@@ -176,6 +176,7 @@ import API from "../../api/api";
 import { launchImageLibrary } from "react-native-image-picker";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import useNavigationHelper from "../../navigation/Navigationhelper";
+import { s, vs, ms, rf } from "../../utils/responsive";
 
 export default function EditTeamScreen() {
   const [team, setTeam] = useState(null);
@@ -428,7 +429,7 @@ function Input({ label, value, onChange, ...props }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: s(16),
   },
   center: {
     flex: 1,
@@ -436,31 +437,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: 24,
+    fontSize: ms(24),
     fontWeight: "700",
-    marginBottom: 16,
+    marginBottom: vs(16),
   },
   coverBox: {
-    height: 160,
+    height: vs(160),
     backgroundColor: "#f3f4f6",
-    borderRadius: 8,
-    marginBottom: 16,
+    borderRadius: ms(8),
+    marginBottom: vs(16),
     justifyContent: "center",
     alignItems: "center",
   },
   coverImg: {
     width: "100%",
     height: "100%",
-    borderRadius: 8,
+    borderRadius: ms(8),
   },
   logoBox: {
-    width: 100,
-    height: 100,
+    width: s(100),
+    height: s(100),
     backgroundColor: "#e5e7eb",
-    borderRadius: 50,
+    borderRadius: s(50),
     alignSelf: "center",
-    marginTop: -50,
-    marginBottom: 16,
+    marginTop: vs(-50),
+    marginBottom: vs(16),
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 3,
@@ -469,37 +470,37 @@ const styles = StyleSheet.create({
   logoImg: {
     width: "100%",
     height: "100%",
-    borderRadius: 50,
+    borderRadius: s(50),
   },
   placeholder: {
     color: "#6b7280",
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: vs(16),
   },
   label: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: "600",
-    marginBottom: 6,
+    marginBottom: vs(6),
     color: "#374151",
   },
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
+    borderRadius: ms(8),
+    padding: s(12),
+    fontSize: rf(16),
   },
   primaryBtn: {
     backgroundColor: "#1D4ED8",
-    padding: 16,
-    borderRadius: 8,
+    padding: s(16),
+    borderRadius: ms(8),
     alignItems: "center",
-    marginTop: 8,
+    marginTop: vs(8),
   },
   primaryBtnText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: "600",
   },
 });

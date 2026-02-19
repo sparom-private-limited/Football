@@ -200,7 +200,7 @@ export default function TeamLineupScreen() {
   const startingXI = Object.values(lineup).filter(Boolean);
 
   return (
-    <MainLayout>
+    <MainLayout title="Team Lineup">
       <ScrollView>
         {/* HEADER */}
         <View style={styles.header}>

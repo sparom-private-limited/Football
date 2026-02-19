@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { s, vs, ms, rf } from "../../utils/responsive";
 
 export default function PlayerListRow({ player, onPress, rightIcon }) {
   return (
@@ -51,38 +52,38 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    marginTop: 12,
-    paddingVertical: 14,
-    borderRadius: 20,
+    marginHorizontal: s(16),
+    marginTop: vs(12),
+    paddingVertical: vs(14),
+    borderRadius: ms(20),
     elevation: 2,
   },
 
   right: {
-    width: 44,
+    width: s(44),
     alignItems: "center",
     justifyContent: "center",
   },
 
- left: {
-  width: 44,
-  alignItems: "center",
-},
+  left: {
+    width: s(44),
+    alignItems: "center",
+  },
 
-jerseyBadge: {
-  minWidth: 28,
-  height: 28,
-  borderRadius: 14,
-  backgroundColor: "#F1F5F9", // light gray badge
-  alignItems: "center",
-  justifyContent: "center",
-},
+  jerseyBadge: {
+    minWidth: s(28),
+    height: s(28),
+    borderRadius: s(14),
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-jerseyText: {
-  fontSize: 14,
-  fontWeight: "800",
-  color: "#0F172A", // dark text (VISIBLE)
-},
+  jerseyText: {
+    fontSize: rf(14),
+    fontWeight: "800",
+    color: "#0F172A",
+  },
 
   center: {
     flex: 1,
@@ -91,14 +92,14 @@ jerseyText: {
   },
 
   avatarWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: s(42),
+    height: s(42),
+    borderRadius: s(21),
     backgroundColor: "#1E293B",
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-    marginRight: 12,
+    marginRight: s(12),
   },
 
   avatar: {
@@ -108,7 +109,7 @@ jerseyText: {
 
   initial: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: "700",
   },
 
@@ -117,14 +118,14 @@ jerseyText: {
   },
 
   name: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: "700",
     color: "#0F172A",
   },
 
   position: {
-    marginTop: 2,
-    fontSize: 13,
+    marginTop: vs(2),
+    fontSize: rf(13),
     color: "#9CA3AF",
   },
 });

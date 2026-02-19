@@ -11,6 +11,7 @@ import {
 import API from '../api/api';
 import {useNavigation, useIsFocused} from '@react-navigation/native';
 import useNavigationHelper from '../navigation/Navigationhelper';
+import {s, vs, ms, rf} from '../utils/responsive';
 
 export default function PlayerProfileView() {
   const nav = useNavigationHelper();
@@ -174,9 +175,144 @@ function Card({title, children}) {
   );
 }
 
+// const styles = StyleSheet.create({
+//   container: {
+//     padding: 20,
+//     backgroundColor: '#F1F5F9',
+//   },
+
+//   /* EMPTY STATE */
+//   center: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+//   info: {
+//     fontSize: 16,
+//     marginBottom: 12,
+//   },
+//   createBtn: {
+//     backgroundColor: '#2563EB',
+//     padding: 12,
+//     borderRadius: 12,
+//   },
+//   createBtnText: {
+//     color: '#fff',
+//     fontWeight: '700',
+//   },
+
+//   /* HEADER CARD */
+//   headerCard: {
+//     alignItems: 'center',
+//     marginBottom: 20,
+//   },
+//   image: {
+//     height: 120,
+//     width: 120,
+//     borderRadius: 60,
+//     backgroundColor: '#CBD5E1',
+//     marginBottom: 12,
+//     elevation: 6,
+//   },
+//   name: {
+//     fontSize: 24,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   positionTag: {
+//     marginTop: 6,
+//     paddingHorizontal: 14,
+//     paddingVertical: 6,
+//     borderRadius: 20,
+//     backgroundColor: '#1D4ED8',
+//   },
+//   positionText: {
+//     color: '#fff',
+//     fontWeight: '600',
+//   },
+
+//   freeAgent: {
+//     marginTop: 6,
+//     color: '#475569',
+//     fontSize: 14,
+//   },
+
+//   /* EDIT BUTTON FLOATING */
+//   editBtn: {
+//     position: 'absolute',
+//     top: 20,
+//     right: 20,
+//     backgroundColor: '#1D4ED8',
+//     paddingHorizontal: 16,
+//     paddingVertical: 8,
+//     borderRadius: 20,
+//     zIndex: 10,
+//   },
+//   editBtnText: {
+//     color: '#fff',
+//     fontWeight: '700',
+//   },
+
+//   /* CARD */
+//   card: {
+//     backgroundColor: '#fff',
+//     borderRadius: 14,
+//     padding: 16,
+//     marginBottom: 16,
+//     elevation: 2,
+//   },
+//   cardTitle: {
+//     fontSize: 16,
+//     color: '#0F172A',
+//     fontWeight: '700',
+//     marginBottom: 12,
+//   },
+
+//   /* ROW */
+//   row: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     paddingVertical: 10,
+//   },
+//   rowLabel: {
+//     color: '#475569',
+//     fontSize: 15,
+//   },
+//   rowValue: {
+//     fontSize: 15,
+//     fontWeight: '700',
+//     color: '#1E293B',
+//   },
+//   previewOverlay: {
+//     flex: 1,
+//     backgroundColor: 'rgba(0,0,0,0.95)',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+//   previewImage: {
+//     width: '100%',
+//     height: '80%',
+//   },
+
+//   previewClose: {
+//     position: 'absolute',
+//     top: 40,
+//     right: 20,
+//     zIndex: 10,
+//   },
+
+//   previewCloseText: {
+//     color: '#fff',
+//     fontSize: 26,
+//     fontWeight: '700',
+//   },
+// });
+
+
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: s(20),
     backgroundColor: '#F1F5F9',
   },
 
@@ -187,102 +323,106 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   info: {
-    fontSize: 16,
-    marginBottom: 12,
+    fontSize: rf(16),
+    marginBottom: vs(12),
   },
   createBtn: {
     backgroundColor: '#2563EB',
-    padding: 12,
-    borderRadius: 12,
+    padding: s(12),
+    borderRadius: ms(12),
   },
   createBtnText: {
     color: '#fff',
     fontWeight: '700',
+    fontSize: rf(14),
   },
 
   /* HEADER CARD */
   headerCard: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: vs(20),
   },
   image: {
-    height: 120,
-    width: 120,
-    borderRadius: 60,
+    height: s(120),
+    width: s(120),
+    borderRadius: s(60),
     backgroundColor: '#CBD5E1',
-    marginBottom: 12,
+    marginBottom: vs(12),
     elevation: 6,
   },
   name: {
-    fontSize: 24,
+    fontSize: ms(24),
     fontWeight: '700',
     color: '#0F172A',
   },
 
   positionTag: {
-    marginTop: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
+    marginTop: vs(6),
+    paddingHorizontal: s(14),
+    paddingVertical: vs(6),
+    borderRadius: ms(20),
     backgroundColor: '#1D4ED8',
   },
   positionText: {
     color: '#fff',
     fontWeight: '600',
+    fontSize: rf(13),
   },
 
   freeAgent: {
-    marginTop: 6,
+    marginTop: vs(6),
     color: '#475569',
-    fontSize: 14,
+    fontSize: rf(14),
   },
 
   /* EDIT BUTTON FLOATING */
   editBtn: {
     position: 'absolute',
-    top: 20,
-    right: 20,
+    top: vs(20),
+    right: s(20),
     backgroundColor: '#1D4ED8',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: s(16),
+    paddingVertical: vs(8),
+    borderRadius: ms(20),
     zIndex: 10,
   },
   editBtnText: {
     color: '#fff',
     fontWeight: '700',
+    fontSize: rf(14),
   },
 
   /* CARD */
   card: {
     backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: ms(14),
+    padding: s(16),
+    marginBottom: vs(16),
     elevation: 2,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: rf(16),
     color: '#0F172A',
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: vs(12),
   },
 
   /* ROW */
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: vs(10),
   },
   rowLabel: {
     color: '#475569',
-    fontSize: 15,
+    fontSize: rf(15),
   },
   rowValue: {
-    fontSize: 15,
+    fontSize: rf(15),
     fontWeight: '700',
     color: '#1E293B',
   },
+
   previewOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.95)',
@@ -293,17 +433,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '80%',
   },
-
   previewClose: {
     position: 'absolute',
-    top: 40,
-    right: 20,
+    top: vs(40),
+    right: s(20),
     zIndex: 10,
   },
-
   previewCloseText: {
     color: '#fff',
-    fontSize: 26,
+    fontSize: ms(26),
     fontWeight: '700',
   },
 });

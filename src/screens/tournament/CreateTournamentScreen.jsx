@@ -13,6 +13,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import API from "../../api/api";
 import MainLayout from "../../components/MainLayout";
+import {s, vs, ms, rf} from "../../utils/responsive";
 
 export default function CreateTournamentScreen({ nav }) {
   const [form, setForm] = useState({
@@ -297,56 +298,159 @@ const DateBtn = ({ value, onPress }) => (
 
 /* ---------------- STYLES ---------------- */
 
+// const styles = StyleSheet.create({
+//   container: { paddingBottom: 40 },
+
+//   card: {
+//     backgroundColor: "#FFFFFF",
+//     marginHorizontal: 16,
+//     marginTop: 16,
+//     padding: 16,
+//     borderRadius: 14,
+//     elevation: 2,
+//   },
+
+//   sectionTitle: {
+//     fontSize: 15,
+//     fontWeight: "600",
+//     marginBottom: 12,
+//     color: "#1E293B",
+//   },
+
+//   label: {
+//     fontSize: 13,
+//     fontWeight: "500",
+//     color: "#475569",
+//     marginBottom: 6,
+//   },
+
+//   input: {
+//     backgroundColor: "#F8FAFC",
+//     padding: 14,
+//     borderRadius: 10,
+//     borderWidth: 1,
+//     borderColor: "#E2E8F0",
+//     marginBottom: 14,
+//     fontSize: 14,
+//   },
+
+//   textArea: {
+//     height: 100,
+//     textAlignVertical: "top",
+//   },
+
+//   row: {
+//     flexDirection: "row",
+//     gap: 10,
+//   },
+
+//   formatBtn: {
+//     flex: 1,
+//     paddingVertical: 12,
+//     borderRadius: 10,
+//     borderWidth: 1,
+//     borderColor: "#CBD5E1",
+//     alignItems: "center",
+//   },
+
+//   formatBtnActive: {
+//     backgroundColor: "#2563EB",
+//     borderColor: "#2563EB",
+//   },
+
+//   formatText: {
+//     fontWeight: "600",
+//     color: "#334155",
+//   },
+
+//   formatTextActive: {
+//     color: "#FFFFFF",
+//   },
+
+//  dateBtn: {
+//   backgroundColor: "#F8FAFC",
+//   borderWidth: 1,
+//   borderColor: "#CBD5E1",
+//   padding: 14,
+//   borderRadius: 12,
+//   marginBottom: 14,
+//   justifyContent: "center",
+// },
+
+
+// dateText: {
+//   color: "#0F172A",
+//   fontSize: 14,
+// },
+
+
+//   btn: {
+//     backgroundColor: "#2563EB",
+//     marginHorizontal: 16,
+//     marginTop: 24,
+//     paddingVertical: 16,
+//     borderRadius: 14,
+//   },
+
+//   btnText: {
+//     color: "#FFFFFF",
+//     fontWeight: "700",
+//     textAlign: "center",
+//     fontSize: 16,
+//   },
+// });
+
+
 const styles = StyleSheet.create({
-  container: { paddingBottom: 40 },
+  container: { paddingBottom: vs(40) },
 
   card: {
     backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 14,
+    marginHorizontal: s(16),
+    marginTop: vs(16),
+    padding: s(16),
+    borderRadius: ms(14),
     elevation: 2,
   },
 
   sectionTitle: {
-    fontSize: 15,
+    fontSize: rf(15),
     fontWeight: "600",
-    marginBottom: 12,
+    marginBottom: vs(12),
     color: "#1E293B",
   },
 
   label: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: "500",
     color: "#475569",
-    marginBottom: 6,
+    marginBottom: vs(6),
   },
 
   input: {
     backgroundColor: "#F8FAFC",
-    padding: 14,
-    borderRadius: 10,
+    padding: s(14),
+    borderRadius: ms(10),
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    marginBottom: 14,
-    fontSize: 14,
+    marginBottom: vs(14),
+    fontSize: rf(14),
   },
 
   textArea: {
-    height: 100,
+    height: vs(100),
     textAlignVertical: "top",
   },
 
   row: {
     flexDirection: "row",
-    gap: 10,
+    gap: s(10),
   },
 
   formatBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: vs(12),
+    borderRadius: ms(10),
     borderWidth: 1,
     borderColor: "#CBD5E1",
     alignItems: "center",
@@ -360,41 +464,40 @@ const styles = StyleSheet.create({
   formatText: {
     fontWeight: "600",
     color: "#334155",
+    fontSize: rf(14),
   },
 
   formatTextActive: {
     color: "#FFFFFF",
   },
 
- dateBtn: {
-  backgroundColor: "#F8FAFC",
-  borderWidth: 1,
-  borderColor: "#CBD5E1",
-  padding: 14,
-  borderRadius: 12,
-  marginBottom: 14,
-  justifyContent: "center",
-},
+  dateBtn: {
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    padding: s(14),
+    borderRadius: ms(12),
+    marginBottom: vs(14),
+    justifyContent: "center",
+  },
 
-
-dateText: {
-  color: "#0F172A",
-  fontSize: 14,
-},
-
+  dateText: {
+    color: "#0F172A",
+    fontSize: rf(14),
+  },
 
   btn: {
     backgroundColor: "#2563EB",
-    marginHorizontal: 16,
-    marginTop: 24,
-    paddingVertical: 16,
-    borderRadius: 14,
+    marginHorizontal: s(16),
+    marginTop: vs(24),
+    paddingVertical: vs(16),
+    borderRadius: ms(14),
   },
 
   btnText: {
     color: "#FFFFFF",
     fontWeight: "700",
     textAlign: "center",
-    fontSize: 16,
+    fontSize: rf(16),
   },
 });

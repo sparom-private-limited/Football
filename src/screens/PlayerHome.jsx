@@ -11,6 +11,7 @@ import {
 import API from '../api/api';
 import MainLayout from '../components/MainLayout';
 import useNavigationHelper from '../navigation/Navigationhelper';
+import {s, vs, ms, rf} from '../utils/responsive';
 
 export default function PlayerHome() {
   const nav = useNavigationHelper();
@@ -161,9 +162,177 @@ function StatBox({label, value}) {
 
 /* ---------- Styles ---------- */
 
+// const styles = StyleSheet.create({
+//   container: {
+//     padding: 16,
+//     backgroundColor: '#F8FAFC',
+//   },
+
+//   center: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+
+//   profileCard: {
+//     backgroundColor: '#2665ec',
+//     padding: 18,
+//     borderRadius: 16,
+//     marginBottom: 20,
+//   },
+
+//   playerName: {
+//     fontSize: 22,
+//     fontWeight: '800',
+//     color: '#FFFFFF',
+//   },
+
+//   playerMeta: {
+//     marginTop: 6,
+//     color: '#DBEAFE',
+//     fontWeight: '600',
+//   },
+
+//   statusBadge: {
+//     alignSelf: 'flex-start',
+//     marginTop: 10,
+//     paddingHorizontal: 10,
+//     paddingVertical: 4,
+//     borderRadius: 20,
+//   },
+
+//   statusText: {
+//     color: '#fff',
+//     fontSize: 11,
+//     fontWeight: '700',
+//   },
+
+//   warningCard: {
+//     backgroundColor: '#FFF7ED',
+//     padding: 16,
+//     borderRadius: 14,
+//     marginBottom: 22,
+//   },
+
+//   warningTitle: {
+//     fontWeight: '700',
+//     color: '#9A3412',
+//     fontSize: 16,
+//   },
+
+//   warningText: {
+//     marginTop: 6,
+//     color: '#9A3412',
+//     fontSize: 14,
+//   },
+
+//   primaryBtn: {
+//     marginTop: 12,
+//     backgroundColor: '#2563EB',
+//     paddingVertical: 12,
+//     borderRadius: 10,
+//   },
+
+//   primaryBtnText: {
+//     color: '#fff',
+//     textAlign: 'center',
+//     fontWeight: '700',
+//   },
+
+//   sectionTitle: {
+//     fontSize: 16,
+//     fontWeight: '800',
+//     marginBottom: 12,
+//     color: '#0F172A',
+//   },
+
+//   actionsRow: {
+//     flexDirection: 'row',
+//     flexWrap: 'wrap',
+//     gap: 12,
+//     marginBottom: 24,
+//   },
+
+//   actionCard: {
+//     width: '48%',
+//     backgroundColor: '#fff',
+//     paddingVertical: 18,
+//     borderRadius: 14,
+//     alignItems: 'center',
+//     elevation: 2,
+//   },
+
+//   actionText: {
+//     fontWeight: '700',
+//     color: '#1E293B',
+//   },
+
+//   statsRow: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     marginBottom: 30,
+//   },
+
+//   statBox: {
+//     width: '30%',
+//     backgroundColor: '#fff',
+//     padding: 16,
+//     borderRadius: 14,
+//     alignItems: 'center',
+//     elevation: 2,
+//   },
+
+//   statValue: {
+//     fontSize: 20,
+//     fontWeight: '800',
+//     color: '#2563EB',
+//   },
+
+//   statLabel: {
+//     marginTop: 4,
+//     color: '#64748B',
+//     fontWeight: '600',
+//   },
+//   profileRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     gap: 14,
+//   },
+
+//   avatarWrapper: {
+//     width: 80,
+//     height: 80,
+//     borderRadius: 32,
+//     backgroundColor: '#DBEAFE',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     overflow: 'hidden',
+//   },
+
+//   avatar: {
+//     width: '100%',
+//     height: '100%',
+//   },
+
+//   avatarFallback: {
+//     width: '100%',
+//     height: '100%',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     backgroundColor: '#1D4ED8',
+//   },
+
+//   avatarText: {
+//     color: '#FFFFFF',
+//     fontSize: 26,
+//     fontWeight: '800',
+//   },
+// });
+
+
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: s(16),
     backgroundColor: '#F8FAFC',
   },
 
@@ -175,88 +344,90 @@ const styles = StyleSheet.create({
 
   profileCard: {
     backgroundColor: '#2665ec',
-    padding: 18,
-    borderRadius: 16,
-    marginBottom: 20,
+    padding: s(18),
+    borderRadius: ms(16),
+    marginBottom: vs(20),
   },
 
   playerName: {
-    fontSize: 22,
+    fontSize: ms(22),
     fontWeight: '800',
     color: '#FFFFFF',
   },
 
   playerMeta: {
-    marginTop: 6,
+    marginTop: vs(6),
     color: '#DBEAFE',
     fontWeight: '600',
+    fontSize: rf(14),
   },
 
   statusBadge: {
     alignSelf: 'flex-start',
-    marginTop: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
+    marginTop: vs(10),
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: ms(20),
   },
 
   statusText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: rf(11),
     fontWeight: '700',
   },
 
   warningCard: {
     backgroundColor: '#FFF7ED',
-    padding: 16,
-    borderRadius: 14,
-    marginBottom: 22,
+    padding: s(16),
+    borderRadius: ms(14),
+    marginBottom: vs(22),
   },
 
   warningTitle: {
     fontWeight: '700',
     color: '#9A3412',
-    fontSize: 16,
+    fontSize: rf(16),
   },
 
   warningText: {
-    marginTop: 6,
+    marginTop: vs(6),
     color: '#9A3412',
-    fontSize: 14,
+    fontSize: rf(14),
   },
 
   primaryBtn: {
-    marginTop: 12,
+    marginTop: vs(12),
     backgroundColor: '#2563EB',
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: vs(12),
+    borderRadius: ms(10),
   },
 
   primaryBtnText: {
     color: '#fff',
     textAlign: 'center',
     fontWeight: '700',
+    fontSize: rf(14),
   },
 
   sectionTitle: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '800',
-    marginBottom: 12,
+    marginBottom: vs(12),
     color: '#0F172A',
   },
 
   actionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 24,
+    gap: s(12),
+    marginBottom: vs(24),
   },
 
   actionCard: {
     width: '48%',
     backgroundColor: '#fff',
-    paddingVertical: 18,
-    borderRadius: 14,
+    paddingVertical: vs(18),
+    borderRadius: ms(14),
     alignItems: 'center',
     elevation: 2,
   },
@@ -264,44 +435,47 @@ const styles = StyleSheet.create({
   actionText: {
     fontWeight: '700',
     color: '#1E293B',
+    fontSize: rf(14),
   },
 
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 30,
+    marginBottom: vs(30),
   },
 
   statBox: {
     width: '30%',
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 14,
+    padding: s(16),
+    borderRadius: ms(14),
     alignItems: 'center',
     elevation: 2,
   },
 
   statValue: {
-    fontSize: 20,
+    fontSize: ms(20),
     fontWeight: '800',
     color: '#2563EB',
   },
 
   statLabel: {
-    marginTop: 4,
+    marginTop: vs(4),
     color: '#64748B',
     fontWeight: '600',
+    fontSize: rf(12),
   },
+
   profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: s(14),
   },
 
   avatarWrapper: {
-    width: 80,
-    height: 80,
-    borderRadius: 32,
+    width: s(80),
+    height: s(80),
+    borderRadius: ms(32),
     backgroundColor: '#DBEAFE',
     alignItems: 'center',
     justifyContent: 'center',
@@ -323,7 +497,7 @@ const styles = StyleSheet.create({
 
   avatarText: {
     color: '#FFFFFF',
-    fontSize: 26,
+    fontSize: ms(26),
     fontWeight: '800',
   },
 });

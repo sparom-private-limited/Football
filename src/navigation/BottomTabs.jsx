@@ -168,6 +168,8 @@ import TournamentNavigator from './TournamentNavigator';
 import ProfileNavigator from './ProfileNavigator';
 import OrganiserDashboardScreen from '../screens/organiser/OrganiserDashboardScreen';
 
+import {s, vs, ms, rf} from '../utils/responsive';
+
 const Tab = createBottomTabNavigator();
 
 /* ===== ROLES ===== */
@@ -300,9 +302,9 @@ export default function BottomTabs() {
 /* ===== STYLES ===== */
 const styles = StyleSheet.create({
   tabBar: {
-    height: 70,
-    paddingBottom: 8,
-    paddingTop: 6,
+    height: vs(70),
+    paddingBottom: vs(8),
+    paddingTop: vs(6),
     backgroundColor: '#FFFFFF',
     borderTopWidth: 0,
     elevation: 12,
@@ -314,9 +316,9 @@ const styles = StyleSheet.create({
   tabItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 18,
+    paddingHorizontal: s(14),
+    paddingVertical: vs(8),
+    borderRadius: ms(18),
   },
 
   tabItemActive: {
@@ -324,8 +326,8 @@ const styles = StyleSheet.create({
   },
 
   activeLabel: {
-    marginLeft: 6,
-    fontSize: 12,
+    marginLeft: s(6),
+    fontSize: rf(12),
     fontWeight: '700',
     color: '#2563EB',
   },

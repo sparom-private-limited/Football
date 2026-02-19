@@ -1,6 +1,11 @@
 import React from "react";
-import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Image, Dimensions } from "react-native";
 import { FORMATIONS } from "./FormationMap";
+import LinearGradient from "react-native-linear-gradient";
+import { s, vs, ms, rf } from "../../utils/responsive";
+
+const { width } = Dimensions.get("window");
+const PITCH_HEIGHT = width * 1.25; // responsive
 
 export default function Pitch({
   formation,
@@ -12,7 +17,12 @@ export default function Pitch({
 
   return (
     <View style={styles.pitchWrapper}>
-      <View style={styles.pitch}>
+     <LinearGradient
+        colors={["#1F7A3A", "#166534"]}
+        style={styles.pitch}
+      >
+
+         <View style={styles.grassOverlay} />
 
         {/* Mid line */}
         <View style={styles.midLine} />
@@ -56,24 +66,33 @@ export default function Pitch({
             </TouchableOpacity>
           );
         })}
-      </View>
+      </LinearGradient>
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
   pitchWrapper: {
     alignItems: "center",
-    marginVertical: 16,
+    marginVertical: vs(16),
   },
 
   pitch: {
-    height: 430,
+    height: PITCH_HEIGHT,
     width: "92%",
-    borderRadius: 26,
-    backgroundColor: "#166534",
+    borderRadius: ms(28),
     overflow: "hidden",
-    elevation: 6,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 12,
+  },
+
+  grassOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255,255,255,0.03)",
   },
 
   /* FIELD MARKINGS */
@@ -83,68 +102,73 @@ const styles = StyleSheet.create({
     top: "50%",
     left: 0,
     right: 0,
-    height: 1,
-    backgroundColor: "rgba(255,255,255,0.5)",
+    height: vs(2),
+    backgroundColor: "rgba(255,255,255,0.4)",
   },
 
   centerCircle: {
     position: "absolute",
     top: "50%",
     left: "50%",
-    width: 90,
-    height: 90,
-    marginLeft: -45,
-    marginTop: -45,
-    borderRadius: 45,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.5)",
+    width: s(110),
+    height: s(110),
+    marginLeft: s(-55),
+    marginTop: s(-55),
+    borderRadius: s(55),
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.4)",
   },
 
   topBox: {
     position: "absolute",
-    top: -10,
+    top: 0,
     left: "25%",
     width: "50%",
-    height: 70,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.5)",
+    height: vs(90),
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.4)",
   },
 
   bottomBox: {
     position: "absolute",
-    bottom: -10,
+    bottom: 0,
     left: "25%",
     width: "50%",
-    height: 70,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.5)",
+    height: vs(90),
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.4)",
   },
 
   /* PLAYER SLOT */
 
   slot: {
     position: "absolute",
-    width: 64,
-    height: 64,
-    marginLeft: -32,
-    marginTop: -32,
-    borderRadius: 32,
-    borderWidth: 1,
-    backgroundColor: "rgba(15,23,42,0.25)",
+    width: s(68),
+    height: s(68),
+    marginLeft: s(-34),
+    marginTop: s(-34),
+    borderRadius: s(34),
+    borderWidth: 2,
+    backgroundColor: "rgba(15,23,42,0.3)",
     justifyContent: "center",
     alignItems: "center",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
   },
 
   avatar: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: s(60),
+    height: s(60),
+    borderRadius: s(30),
   },
 
   emptyDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "rgba(255,255,255,0.6)",
+    width: s(12),
+    height: s(12),
+    borderRadius: s(6),
+    backgroundColor: "rgba(255,255,255,0.7)",
   },
 });

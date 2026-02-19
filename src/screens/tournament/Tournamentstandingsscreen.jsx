@@ -12,6 +12,7 @@ import {
 import { useRoute } from "@react-navigation/native";
 import API from "../../api/api";
 import MainLayout from "../../components/MainLayout";
+import {s, vs, ms, rf} from "../../utils/responsive";
 
 export default function TournamentStandingsScreen() {
   const route = useRoute();
@@ -177,6 +178,201 @@ function StandingRow({ position, entry, isChampion }) {
 
 // ================= STYLES =================
 
+// const styles = StyleSheet.create({
+//   center: {
+//     flex: 1,
+//     justifyContent: "center",
+//     alignItems: "center",
+//   },
+
+//   header: {
+//     padding: 20,
+//     backgroundColor: "#2563EB",
+//     borderBottomLeftRadius: 24,
+//     borderBottomRightRadius: 24,
+//     marginBottom: 16,
+//   },
+
+//   title: {
+//     fontSize: 24,
+//     fontWeight: "800",
+//     color: "#FFFFFF",
+//     marginBottom: 4,
+//   },
+
+//   subtitle: {
+//     fontSize: 14,
+//     color: "#DBEAFE",
+//     fontWeight: "600",
+//   },
+
+//   tableHeader: {
+//     flexDirection: "row",
+//     paddingHorizontal: 16,
+//     paddingVertical: 10,
+//     backgroundColor: "#F1F5F9",
+//     borderBottomWidth: 2,
+//     borderBottomColor: "#CBD5E1",
+//   },
+
+//   headerCell: {
+//     fontSize: 11,
+//     fontWeight: "800",
+//     color: "#475569",
+//     textTransform: "uppercase",
+//   },
+
+//   posCell: {
+//     width: 40,
+//   },
+
+//   teamCell: {
+//     flex: 1,
+//   },
+
+//   statCell: {
+//     width: 32,
+//     textAlign: "center",
+//   },
+
+//   ptsCell: {
+//     width: 40,
+//     textAlign: "center",
+//   },
+
+//   standingRow: {
+//     flexDirection: "row",
+//     alignItems: "center",
+//     paddingHorizontal: 16,
+//     paddingVertical: 12,
+//     backgroundColor: "#FFFFFF",
+//     borderBottomWidth: 1,
+//     borderBottomColor: "#F1F5F9",
+//   },
+
+//   championRow: {
+//     backgroundColor: "#FEF3C7",
+//     borderLeftWidth: 4,
+//     borderLeftColor: "#F59E0B",
+//   },
+
+//   topThree: {
+//     borderLeftWidth: 4,
+//     borderLeftColor: "#93C5FD",
+//   },
+
+//   posWrapper: {
+//     width: 40,
+//     flexDirection: "row",
+//     alignItems: "center",
+//   },
+
+//   posText: {
+//     fontSize: 16,
+//     fontWeight: "800",
+//     color: "#0F172A",
+//   },
+
+//   championText: {
+//     color: "#F59E0B",
+//   },
+
+//   trophy: {
+//     fontSize: 14,
+//     marginLeft: 4,
+//   },
+
+//   teamInfo: {
+//     flex: 1,
+//     flexDirection: "row",
+//     alignItems: "center",
+//     gap: 10,
+//   },
+
+//   teamLogo: {
+//     width: 32,
+//     height: 32,
+//     borderRadius: 16,
+//   },
+
+//   logoFallback: {
+//     width: 32,
+//     height: 32,
+//     borderRadius: 16,
+//     backgroundColor: "#E5E7EB",
+//     justifyContent: "center",
+//     alignItems: "center",
+//   },
+
+//   logoText: {
+//     fontSize: 14,
+//     fontWeight: "700",
+//     color: "#6B7280",
+//   },
+
+//   teamName: {
+//     fontSize: 14,
+//     fontWeight: "700",
+//     color: "#0F172A",
+//     flex: 1,
+//   },
+
+//   statText: {
+//     width: 32,
+//     fontSize: 13,
+//     fontWeight: "600",
+//     color: "#475569",
+//     textAlign: "center",
+//   },
+
+//   positiveGD: {
+//     color: "#16A34A",
+//   },
+
+//   negativeGD: {
+//     color: "#DC2626",
+//   },
+
+//   ptsText: {
+//     width: 40,
+//     fontSize: 15,
+//     fontWeight: "900",
+//     color: "#0F172A",
+//     textAlign: "center",
+//   },
+
+//   emptyText: {
+//     textAlign: "center",
+//     color: "#94A3B8",
+//     fontSize: 15,
+//     marginTop: 60,
+//     paddingHorizontal: 32,
+//     fontStyle: "italic",
+//   },
+
+//   legend: {
+//     backgroundColor: "#F8FAFC",
+//     margin: 16,
+//     padding: 16,
+//     borderRadius: 12,
+//     borderWidth: 1,
+//     borderColor: "#E5E7EB",
+//   },
+
+//   legendTitle: {
+//     fontSize: 13,
+//     fontWeight: "800",
+//     color: "#0F172A",
+//     marginBottom: 8,
+//   },
+
+//   legendItem: {
+//     fontSize: 12,
+//     color: "#64748B",
+//     marginBottom: 4,
+//   },
+
+
 const styles = StyleSheet.create({
   center: {
     flex: 1,
@@ -185,44 +381,44 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    padding: 20,
+    padding: s(20),
     backgroundColor: "#2563EB",
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    marginBottom: 16,
+    borderBottomLeftRadius: ms(24),
+    borderBottomRightRadius: ms(24),
+    marginBottom: vs(16),
   },
 
   title: {
-    fontSize: 24,
+    fontSize: ms(24),
     fontWeight: "800",
     color: "#FFFFFF",
-    marginBottom: 4,
+    marginBottom: vs(4),
   },
 
   subtitle: {
-    fontSize: 14,
+    fontSize: rf(14),
     color: "#DBEAFE",
     fontWeight: "600",
   },
 
   tableHeader: {
     flexDirection: "row",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: s(16),
+    paddingVertical: vs(10),
     backgroundColor: "#F1F5F9",
     borderBottomWidth: 2,
     borderBottomColor: "#CBD5E1",
   },
 
   headerCell: {
-    fontSize: 11,
+    fontSize: rf(11),
     fontWeight: "800",
     color: "#475569",
     textTransform: "uppercase",
   },
 
   posCell: {
-    width: 40,
+    width: s(40),
   },
 
   teamCell: {
@@ -230,20 +426,20 @@ const styles = StyleSheet.create({
   },
 
   statCell: {
-    width: 32,
+    width: s(32),
     textAlign: "center",
   },
 
   ptsCell: {
-    width: 40,
+    width: s(40),
     textAlign: "center",
   },
 
   standingRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: s(16),
+    paddingVertical: vs(12),
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
     borderBottomColor: "#F1F5F9",
@@ -261,13 +457,13 @@ const styles = StyleSheet.create({
   },
 
   posWrapper: {
-    width: 40,
+    width: s(40),
     flexDirection: "row",
     alignItems: "center",
   },
 
   posText: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: "800",
     color: "#0F172A",
   },
@@ -277,48 +473,48 @@ const styles = StyleSheet.create({
   },
 
   trophy: {
-    fontSize: 14,
-    marginLeft: 4,
+    fontSize: ms(14),
+    marginLeft: s(4),
   },
 
   teamInfo: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: s(10),
   },
 
   teamLogo: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: s(32),
+    height: s(32),
+    borderRadius: s(16),
   },
 
   logoFallback: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: s(32),
+    height: s(32),
+    borderRadius: s(16),
     backgroundColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center",
   },
 
   logoText: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: "700",
     color: "#6B7280",
   },
 
   teamName: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: "700",
     color: "#0F172A",
     flex: 1,
   },
 
   statText: {
-    width: 32,
-    fontSize: 13,
+    width: s(32),
+    fontSize: rf(13),
     fontWeight: "600",
     color: "#475569",
     textAlign: "center",
@@ -333,8 +529,8 @@ const styles = StyleSheet.create({
   },
 
   ptsText: {
-    width: 40,
-    fontSize: 15,
+    width: s(40),
+    fontSize: rf(15),
     fontWeight: "900",
     color: "#0F172A",
     textAlign: "center",
@@ -343,31 +539,31 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: "center",
     color: "#94A3B8",
-    fontSize: 15,
-    marginTop: 60,
-    paddingHorizontal: 32,
+    fontSize: rf(15),
+    marginTop: vs(60),
+    paddingHorizontal: s(32),
     fontStyle: "italic",
   },
 
   legend: {
     backgroundColor: "#F8FAFC",
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
+    margin: s(16),
+    padding: s(16),
+    borderRadius: ms(12),
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
 
   legendTitle: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: "800",
     color: "#0F172A",
-    marginBottom: 8,
+    marginBottom: vs(8),
   },
 
   legendItem: {
-    fontSize: 12,
+    fontSize: rf(12),
     color: "#64748B",
-    marginBottom: 4,
+    marginBottom: vs(4),
   },
 });

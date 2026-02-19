@@ -111,15 +111,13 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: vs(14),
     alignItems: 'center',
     justifyContent: 'center',
   },
-  activeTab: {
-    // Optional: add background if desired
-  },
+  activeTab: {},
   tabText: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#64748B',
   },
@@ -130,7 +128,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '50%',
-    height: 3,
+    height: vs(3),
     backgroundColor: '#2563EB',
   },
 });

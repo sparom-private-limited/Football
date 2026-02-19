@@ -12,6 +12,7 @@ import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import useNavigationHelper from '../../navigation/Navigationhelper';
 import AppRefreshView from '../../components/AppRefreshView';
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 export default function OrganiserDashboardScreen() {
   const nav = useNavigationHelper();
@@ -239,11 +240,190 @@ function formatDate(date) {
 
 /* ---------------- STYLES ---------------- */
 
+// const styles = StyleSheet.create({
+//   container: {
+//     paddingHorizontal: 10,
+//     paddingTop: 16,
+//     paddingBottom: 40,
+//     backgroundColor: '#F1F5F9',
+//   },
+
+//   center: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+
+//   /* ---------------- HERO ---------------- */
+
+//   heroHeader: {
+//     marginBottom: 28,
+//   },
+
+//   heroTitle: {
+//     fontSize: 26,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//     letterSpacing: -0.3,
+//   },
+
+//   heroSub: {
+//     marginTop: 6,
+//     fontSize: 14,
+//     color: '#64748B',
+//   },
+
+//   /* ---------------- PROFILE BANNER ---------------- */
+
+//   profileBanner: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 20,
+//     padding: 18,
+//     marginBottom: 26,
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//   },
+
+//   profileTitle: {
+//     fontSize: 15,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   profileText: {
+//     marginTop: 4,
+//     fontSize: 13,
+//     color: '#64748B',
+//   },
+
+//   /* ---------------- SECTION ---------------- */
+
+//   sectionHeader: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//     marginBottom: 18,
+//   },
+
+//   sectionTitle: {
+//     fontSize: 16,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   viewAll: {
+//     fontSize: 13,
+//     fontWeight: '600',
+//     color: '#2563EB',
+//   },
+
+//   /* ---------------- TOURNAMENT CARD ---------------- */
+
+//   tournamentCard: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 22,
+//     padding: 20,
+//     marginBottom: 18,
+
+//     shadowColor: '#0F172A',
+//     shadowOffset: {width: 0, height: 4},
+//     shadowOpacity: 0.04,
+//     shadowRadius: 12,
+//     elevation: 2,
+//   },
+
+//   cardHeader: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'flex-start',
+//     marginBottom: 14,
+//   },
+
+//   tournamentName: {
+//     fontSize: 17,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//     flex: 1,
+//     marginRight: 12,
+//   },
+
+//   metaRow: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     marginTop: 6,
+//   },
+
+//   metaText: {
+//     fontSize: 13,
+//     color: '#334155',
+//   },
+
+//   metaMuted: {
+//     fontSize: 13,
+//     color: '#64748B',
+//   },
+
+//   /* ---------------- STATUS BADGE ---------------- */
+
+//   badge: {
+//     paddingHorizontal: 12,
+//     paddingVertical: 6,
+//     borderRadius: 999,
+//   },
+
+//   badgeText: {
+//     fontSize: 11,
+//     fontWeight: '600',
+//     letterSpacing: 0.4,
+//   },
+
+//   /* ---------------- PRIMARY BUTTON ---------------- */
+
+//   primaryBtn: {
+//     backgroundColor: '#2563EB',
+//     paddingVertical: 12,
+//     borderRadius: 14,
+//     alignItems: 'center',
+//     marginTop: 12,
+//   },
+
+//   primaryBtnText: {
+//     color: '#FFFFFF',
+//     fontSize: 14,
+//     fontWeight: '600',
+//   },
+
+//   /* ---------------- EMPTY STATE ---------------- */
+
+//   emptyCard: {
+//     backgroundColor: '#FFFFFF',
+//     padding: 26,
+//     borderRadius: 22,
+//     alignItems: 'center',
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//   },
+
+//   emptyTitle: {
+//     fontSize: 16,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   emptyText: {
+//     fontSize: 13,
+//     color: '#64748B',
+//     marginTop: 6,
+//     textAlign: 'center',
+//   },
+// });
+
+
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 10,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: s(10),
+    paddingTop: vs(16),
+    paddingBottom: vs(40),
     backgroundColor: '#F1F5F9',
   },
 
@@ -256,19 +436,19 @@ const styles = StyleSheet.create({
   /* ---------------- HERO ---------------- */
 
   heroHeader: {
-    marginBottom: 28,
+    marginBottom: vs(28),
   },
 
   heroTitle: {
-    fontSize: 26,
+    fontSize: ms(26),
     fontWeight: '800',
     color: '#0F172A',
     letterSpacing: -0.3,
   },
 
   heroSub: {
-    marginTop: 6,
-    fontSize: 14,
+    marginTop: vs(6),
+    fontSize: rf(14),
     color: '#64748B',
   },
 
@@ -276,22 +456,22 @@ const styles = StyleSheet.create({
 
   profileBanner: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 26,
+    borderRadius: ms(20),
+    padding: s(18),
+    marginBottom: vs(26),
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
 
   profileTitle: {
-    fontSize: 15,
+    fontSize: rf(15),
     fontWeight: '700',
     color: '#0F172A',
   },
 
   profileText: {
-    marginTop: 4,
-    fontSize: 13,
+    marginTop: vs(4),
+    fontSize: rf(13),
     color: '#64748B',
   },
 
@@ -301,17 +481,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 18,
+    marginBottom: vs(18),
   },
 
   sectionTitle: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '700',
     color: '#0F172A',
   },
 
   viewAll: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '600',
     color: '#2563EB',
   },
@@ -320,10 +500,9 @@ const styles = StyleSheet.create({
 
   tournamentCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    padding: 20,
-    marginBottom: 18,
-
+    borderRadius: ms(22),
+    padding: s(20),
+    marginBottom: vs(18),
     shadowColor: '#0F172A',
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.04,
@@ -335,43 +514,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 14,
+    marginBottom: vs(14),
   },
 
   tournamentName: {
-    fontSize: 17,
+    fontSize: rf(17),
     fontWeight: '700',
     color: '#0F172A',
     flex: 1,
-    marginRight: 12,
+    marginRight: s(12),
   },
 
   metaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 6,
+    marginTop: vs(6),
   },
 
   metaText: {
-    fontSize: 13,
+    fontSize: rf(13),
     color: '#334155',
   },
 
   metaMuted: {
-    fontSize: 13,
+    fontSize: rf(13),
     color: '#64748B',
   },
 
   /* ---------------- STATUS BADGE ---------------- */
 
   badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
+    paddingHorizontal: s(12),
+    paddingVertical: vs(6),
+    borderRadius: ms(999),
   },
 
   badgeText: {
-    fontSize: 11,
+    fontSize: rf(11),
     fontWeight: '600',
     letterSpacing: 0.4,
   },
@@ -380,15 +559,15 @@ const styles = StyleSheet.create({
 
   primaryBtn: {
     backgroundColor: '#2563EB',
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingVertical: vs(12),
+    borderRadius: ms(14),
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: vs(12),
   },
 
   primaryBtnText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '600',
   },
 
@@ -396,23 +575,23 @@ const styles = StyleSheet.create({
 
   emptyCard: {
     backgroundColor: '#FFFFFF',
-    padding: 26,
-    borderRadius: 22,
+    padding: s(26),
+    borderRadius: ms(22),
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
 
   emptyTitle: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '700',
     color: '#0F172A',
   },
 
   emptyText: {
-    fontSize: 13,
+    fontSize: rf(13),
     color: '#64748B',
-    marginTop: 6,
+    marginTop: vs(6),
     textAlign: 'center',
   },
 });

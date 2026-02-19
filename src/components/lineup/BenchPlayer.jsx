@@ -1,5 +1,6 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet, Image, View } from "react-native";
+import { s, vs, ms, rf } from "../../utils/responsive";
 
 export default function BenchPlayer({ player, selected, onPress }) {
   return (
@@ -30,14 +31,14 @@ export default function BenchPlayer({ player, selected, onPress }) {
 
 const styles = StyleSheet.create({
   container: {
-    width: 78,
+    width: s(78),
     alignItems: "center",
-    marginRight: 14,
+    marginRight: s(14),
   },
   avatarWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: s(64),
+    height: s(64),
+    borderRadius: s(32),
     backgroundColor: "#1D4ED8",
     alignItems: "center",
     justifyContent: "center",
@@ -46,21 +47,20 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: "#FACC15",
   },
- avatar: {
-  width: 56,
-  height: 56,
-  borderRadius: 28,
-  marginBottom: 4,
-},
-
+  avatar: {
+    width: s(56),
+    height: s(56),
+    borderRadius: s(28),
+    marginBottom: vs(4),
+  },
   initial: {
     color: "#fff",
-    fontSize: 22,
+    fontSize: ms(22),
     fontWeight: "700",
   },
   name: {
-    marginTop: 6,
-    fontSize: 11,
+    marginTop: vs(6),
+    fontSize: rf(11),
     textAlign: "center",
     color: "#0F172A",
   },

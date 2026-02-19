@@ -11,6 +11,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import useNavigationHelper from '../../navigation/Navigationhelper';
+import { s, vs, ms, rf } from '../../utils/responsive';
 
 export default function TeamTournamentDetailScreen() {
   const route = useRoute();
@@ -140,55 +141,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   metaCard: {
-    padding: 16,
+    padding: s(16),
     borderBottomWidth: 1,
     borderColor: '#E5E7EB',
   },
   metaText: {
-  fontWeight: '600',
-  marginBottom: 8,
-  color: '#0F172A', // ✅ ADD
-},
+    fontWeight: '600',
+    marginBottom: vs(8),
+    color: '#0F172A',
+  },
   matchCard: {
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginVertical: 8,
-    padding: 16,
-    borderRadius: 12,
+    marginHorizontal: s(16),
+    marginVertical: vs(8),
+    padding: s(16),
+    borderRadius: ms(12),
     elevation: 2,
   },
   matchTitle: {
-  fontSize: 16,
-  fontWeight: '600',
-  color: '#0F172A', // ✅ ADD
-},
-  score: {
-  marginTop: 6,
-  fontSize: 16,
-  fontWeight: '700',
-  color: '#0F172A', // ✅ ADD
-},
-  lineupBtn: {
-    marginTop: 10,
+    fontSize: rf(16),
+    fontWeight: '600',
+    color: '#0F172A',
   },
- lineupText: {
-  color: '#2563EB',
-  fontWeight: '600',
-},
+  score: {
+    marginTop: vs(6),
+    fontSize: rf(16),
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  lineupBtn: {
+    marginTop: vs(10),
+  },
+  lineupText: {
+    color: '#2563EB',
+    fontWeight: '600',
+    fontSize: rf(14),
+  },
   primaryBtn: {
     backgroundColor: '#2563EB',
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: vs(10),
+    borderRadius: ms(8),
     alignItems: 'center',
   },
   primaryText: {
     color: '#fff',
     fontWeight: '600',
+    fontSize: rf(14),
   },
-  
-emptyText: {
-  textAlign: 'center',
-  marginTop: 40,
-  color: '#6B7280',
-},
+
+  emptyText: {
+    textAlign: 'center',
+    marginTop: vs(40),
+    color: '#6B7280',
+    fontSize: rf(14),
+  },
 });

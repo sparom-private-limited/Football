@@ -19,6 +19,7 @@ import useNavigationHelper from '../../navigation/Navigationhelper';
 import useMatchSocket from '../../hooks/useMatchSocket';
 import SocketManager from '../../services/SocketManager';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 export default function MatchConsoleScreen() {
   const [players, setPlayers] = useState([]);
@@ -1263,23 +1264,548 @@ function TabButton({label, active, onPress}) {
 
 // ================= STYLES =================
 
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: '#F8FAFC',
+//     paddingHorizontal: 16,
+//     paddingTop: 16,
+//   },
+
+//   header: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'space-between',
+//     marginBottom: 14,
+//   },
+
+//   title: {
+//     fontSize: 18,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+
+//   live: {
+//     backgroundColor: '#FEE2E2',
+//     color: '#DC2626',
+//     fontWeight: '700',
+//     paddingHorizontal: 10,
+//     paddingVertical: 4,
+//     borderRadius: 12,
+//     fontSize: 12,
+//   },
+
+//   scoreCard: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 18,
+//     paddingVertical: 20,
+//     paddingHorizontal: 16,
+//     alignItems: 'center',
+//     marginBottom: 20,
+//     shadowColor: '#000',
+//     shadowOffset: {width: 0, height: 2},
+//     shadowOpacity: 0.1,
+//     shadowRadius: 4,
+//     elevation: 3,
+//   },
+
+//   timer: {
+//     backgroundColor: '#DCFCE7',
+//     color: '#15803D',
+//     paddingHorizontal: 12,
+//     paddingVertical: 4,
+//     borderRadius: 20,
+//     fontWeight: '700',
+//     marginBottom: 12,
+//   },
+
+//   scoreRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'space-between',
+//     width: '100%',
+//     paddingHorizontal: 10,
+//   },
+
+//   team: {
+//     fontSize: 14,
+//     fontWeight: '700',
+//     color: '#334155',
+//     width: '30%',
+//     textAlign: 'center',
+//   },
+
+//   score: {
+//     fontSize: 30,
+//     fontWeight: '900',
+//     color: '#0F172A',
+//     width: '40%',
+//     textAlign: 'center',
+//   },
+
+//   section: {
+//     fontSize: 13,
+//     fontWeight: '700',
+//     color: '#64748B',
+//     marginBottom: 10,
+//     marginTop: 4,
+//   },
+
+//   timerControls: {
+//     flexDirection: 'row',
+//     justifyContent: 'center',
+//     gap: 12,
+//     marginBottom: 16,
+//   },
+
+//   pauseBtn: {
+//     backgroundColor: '#FACC15',
+//     paddingHorizontal: 20,
+//     paddingVertical: 8,
+//     borderRadius: 10,
+//   },
+
+//   pauseText: {
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+
+//   resetBtn: {
+//     backgroundColor: '#EF4444',
+//     paddingHorizontal: 20,
+//     paddingVertical: 8,
+//     borderRadius: 10,
+//   },
+
+//   resetText: {
+//     color: '#FFFFFF',
+//     fontWeight: '800',
+//   },
+
+//   primaryActions: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     marginBottom: 16,
+//   },
+
+//   primaryBtn: {
+//     flex: 1,
+//     marginHorizontal: 6,
+//     borderRadius: 18,
+//     paddingVertical: 14,
+//     alignItems: 'center',
+//   },
+
+//   primaryIcon: {
+//     fontSize: 22,
+//     marginBottom: 4,
+//   },
+
+//   primaryLabel: {
+//     fontSize: 13,
+//     fontWeight: '800',
+//     color: '#FFFFFF',
+//   },
+
+//   viewTabs: {
+//     flexDirection: 'row',
+//     backgroundColor: '#F1F5F9',
+//     borderRadius: 14,
+//     padding: 4,
+//     marginBottom: 16,
+//   },
+
+//   tabBtn: {
+//     flex: 1,
+//     paddingVertical: 10,
+//     borderRadius: 12,
+//     alignItems: 'center',
+//   },
+
+//   tabBtnActive: {
+//     backgroundColor: '#FFFFFF',
+//   },
+
+//   tabLabel: {
+//     fontSize: 13,
+//     fontWeight: '700',
+//     color: '#64748B',
+//   },
+
+//   tabLabelActive: {
+//     color: '#0F172A',
+//   },
+
+//   event: {
+//     flexDirection: 'row',
+//     alignItems: 'flex-start',
+//     borderRadius: 14,
+//     padding: 10,
+//     marginBottom: 8,
+//   },
+
+//   eventMinute: {
+//     width: 32,
+//     fontWeight: '800',
+//     color: '#64748B',
+//   },
+
+//   eventTitle: {
+//     fontSize: 14,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+
+//   eventPlayer: {
+//     fontSize: 13,
+//     fontWeight: '700',
+//     color: '#1D4ED8',
+//     marginTop: 2,
+//   },
+
+//   eventAssist: {
+//     fontSize: 12,
+//     color: '#64748B',
+//   },
+
+//   homeEvent: {
+//     borderLeftWidth: 4,
+//     borderLeftColor: '#22C55E',
+//     backgroundColor: '#F0FDF4',
+//   },
+
+//   awayEvent: {
+//     borderLeftWidth: 4,
+//     borderLeftColor: '#3B82F6',
+//     backgroundColor: '#EFF6FF',
+//   },
+
+//   latestEvent: {
+//     shadowColor: '#000',
+//     shadowOffset: {width: 0, height: 3},
+//     shadowOpacity: 0.18,
+//     shadowRadius: 8,
+//     elevation: 4,
+//   },
+
+//   endBtn: {
+//     backgroundColor: '#DC2626',
+//     paddingVertical: 12,
+//     borderRadius: 14,
+//     alignItems: 'center',
+//     marginTop: 12,
+//   },
+
+//   endText: {
+//     color: '#FFFFFF',
+//     fontWeight: '800',
+//     fontSize: 15,
+//   },
+
+//   modalOverlay: {
+//     flex: 1,
+//     backgroundColor: 'rgba(0,0,0,0.45)',
+//     justifyContent: 'flex-end',
+//   },
+
+//   modal: {
+//     backgroundColor: '#FFFFFF',
+//     borderTopLeftRadius: 20,
+//     borderTopRightRadius: 20,
+//     padding: 20,
+//     maxHeight: '80%',
+//   },
+
+//   modalTitle: {
+//     fontSize: 16,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//     marginBottom: 16,
+//     textAlign: 'center',
+//   },
+
+//   modalSection: {
+//     fontSize: 13,
+//     fontWeight: '700',
+//     color: '#334155',
+//     marginTop: 12,
+//     marginBottom: 6,
+//   },
+
+//   playerList: {
+//     maxHeight: 180,
+//     marginBottom: 10,
+//   },
+
+//   playerItem: {
+//     paddingVertical: 12,
+//     paddingHorizontal: 14,
+//     borderRadius: 12,
+//     backgroundColor: '#F8FAFC',
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//     marginBottom: 8,
+//   },
+
+//   selectedItem: {
+//     backgroundColor: '#DBEAFE',
+//     borderColor: '#2563EB',
+//   },
+
+//   playerText: {
+//     fontSize: 14,
+//     fontWeight: '600',
+//     color: '#0F172A',
+//   },
+
+//   modalActions: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//     marginTop: 12,
+//   },
+
+//   cancel: {
+//     textAlign: 'center',
+//     color: '#64748B',
+//     fontWeight: '600',
+//   },
+
+//   submitBtn: {
+//     backgroundColor: '#1D4ED8',
+//     paddingVertical: 12,
+//     paddingHorizontal: 24,
+//     borderRadius: 12,
+//   },
+
+//   submitText: {
+//     color: '#FFFFFF',
+//     fontSize: 14,
+//     fontWeight: '800',
+//   },
+
+//   cardTypeRow: {
+//     flexDirection: 'row',
+//     gap: 12,
+//     marginTop: 6,
+//   },
+
+//   cardChip: {
+//     flex: 1,
+//     paddingVertical: 14,
+//     borderRadius: 16,
+//     alignItems: 'center',
+//     backgroundColor: '#F1F5F9',
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//   },
+
+//   cardChipText: {
+//     fontSize: 14,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+
+//   yellowActive: {
+//     backgroundColor: '#FEF9C3',
+//     borderColor: '#FACC15',
+//   },
+
+//   redActive: {
+//     backgroundColor: '#FEE2E2',
+//     borderColor: '#EF4444',
+//   },
+
+//   statsCard: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 18,
+//     padding: 16,
+//     marginBottom: 20,
+//   },
+
+//   statsTitle: {
+//     fontSize: 15,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//     marginBottom: 12,
+//     textAlign: 'center',
+//   },
+
+//   statsHeader: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     marginBottom: 10,
+//   },
+
+//   statsHeaderTeam: {
+//     fontSize: 12,
+//     fontWeight: '700',
+//     color: '#64748B',
+//     width: '40%',
+//     textAlign: 'center',
+//   },
+
+//   statsRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     paddingVertical: 6,
+//     borderBottomWidth: 1,
+//     borderBottomColor: '#F1F5F9',
+//   },
+
+//   statsLabel: {
+//     width: '40%',
+//     fontSize: 13,
+//     fontWeight: '600',
+//     color: '#334155',
+//     textAlign: 'center',
+//   },
+
+//   statsValue: {
+//     width: '30%',
+//     fontSize: 14,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//     textAlign: 'center',
+//   },
+
+//   lineupModal: {
+//     backgroundColor: '#FFFFFF',
+//     borderTopLeftRadius: 24,
+//     borderTopRightRadius: 24,
+//     paddingHorizontal: 16,
+//     paddingTop: 12,
+//     paddingBottom: 20,
+//   },
+
+//   lineupHeader: {
+//     alignItems: 'center',
+//     marginBottom: 12,
+//   },
+
+//   lineupTitle: {
+//     fontSize: 16,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+
+//   lineupToggle: {
+//     flexDirection: 'row',
+//     backgroundColor: '#F1F5F9',
+//     borderRadius: 16,
+//     padding: 4,
+//     marginBottom: 14,
+//   },
+
+//   lineupTab: {
+//     flex: 1,
+//     paddingVertical: 8,
+//     borderRadius: 12,
+//     alignItems: 'center',
+//   },
+
+//   lineupTabActive: {
+//     backgroundColor: '#FFFFFF',
+//   },
+
+//   lineupTabText: {
+//     fontSize: 13,
+//     fontWeight: '700',
+//     color: '#64748B',
+//   },
+
+//   lineupTabTextActive: {
+//     color: '#0F172A',
+//   },
+
+//   pitchWrapper: {
+//     borderRadius: 18,
+//     overflow: 'hidden',
+//     backgroundColor: '#0F5132',
+//     marginBottom: 14,
+//     padding: 6,
+//   },
+
+//   benchTitle: {
+//     fontSize: 13,
+//     fontWeight: '800',
+//     color: '#64748B',
+//     marginBottom: 8,
+//     marginTop: 6,
+//   },
+
+//   benchItem: {
+//     backgroundColor: '#F8FAFC',
+//     borderRadius: 12,
+//     paddingVertical: 10,
+//     paddingHorizontal: 14,
+//     marginBottom: 8,
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//   },
+
+//   benchText: {
+//     fontSize: 14,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   closeBtn: {
+//     marginTop: 14,
+//     backgroundColor: '#F1F5F9',
+//     paddingVertical: 12,
+//     borderRadius: 14,
+//     alignItems: 'center',
+//   },
+
+//   closeText: {
+//     fontSize: 14,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+//   socketStatus: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     backgroundColor: '#FEE2E2',
+//     paddingVertical: 8,
+//     paddingHorizontal: 12,
+//     borderRadius: 8,
+//     marginBottom: 12,
+//     gap: 8,
+//   },
+
+//   socketStatusText: {
+//     fontSize: 12,
+//     fontWeight: '600',
+//     color: '#DC2626',
+//   },
+
+//   liveDot: {
+//     width: 8,
+//     height: 8,
+//     borderRadius: 4,
+//     backgroundColor: '#15803D',
+//   },
+// });
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: s(16),
+    paddingTop: vs(16),
   },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: vs(14),
   },
 
   title: {
-    fontSize: 18,
+    fontSize: rf(18),
     fontWeight: '800',
     color: '#0F172A',
   },
@@ -1288,19 +1814,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEE2E2',
     color: '#DC2626',
     fontWeight: '700',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    fontSize: 12,
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: ms(12),
+    fontSize: rf(12),
   },
 
   scoreCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    paddingVertical: 20,
-    paddingHorizontal: 16,
+    borderRadius: ms(18),
+    paddingVertical: vs(20),
+    paddingHorizontal: s(16),
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: vs(20),
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
@@ -1311,11 +1837,12 @@ const styles = StyleSheet.create({
   timer: {
     backgroundColor: '#DCFCE7',
     color: '#15803D',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
+    paddingHorizontal: s(12),
+    paddingVertical: vs(4),
+    borderRadius: ms(20),
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: vs(12),
+    fontSize: rf(13),
   },
 
   scoreRow: {
@@ -1323,11 +1850,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 10,
+    paddingHorizontal: s(10),
   },
 
   team: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#334155',
     width: '30%',
@@ -1335,7 +1862,7 @@ const styles = StyleSheet.create({
   },
 
   score: {
-    fontSize: 30,
+    fontSize: ms(30),
     fontWeight: '900',
     color: '#0F172A',
     width: '40%',
@@ -1343,65 +1870,67 @@ const styles = StyleSheet.create({
   },
 
   section: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '700',
     color: '#64748B',
-    marginBottom: 10,
-    marginTop: 4,
+    marginBottom: vs(10),
+    marginTop: vs(4),
   },
 
   timerControls: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
-    marginBottom: 16,
+    gap: s(12),
+    marginBottom: vs(16),
   },
 
   pauseBtn: {
     backgroundColor: '#FACC15',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingHorizontal: s(20),
+    paddingVertical: vs(8),
+    borderRadius: ms(10),
   },
 
   pauseText: {
     fontWeight: '800',
     color: '#0F172A',
+    fontSize: rf(14),
   },
 
   resetBtn: {
     backgroundColor: '#EF4444',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingHorizontal: s(20),
+    paddingVertical: vs(8),
+    borderRadius: ms(10),
   },
 
   resetText: {
     color: '#FFFFFF',
     fontWeight: '800',
+    fontSize: rf(14),
   },
 
   primaryActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: vs(16),
   },
 
   primaryBtn: {
     flex: 1,
-    marginHorizontal: 6,
-    borderRadius: 18,
-    paddingVertical: 14,
+    marginHorizontal: s(6),
+    borderRadius: ms(18),
+    paddingVertical: vs(14),
     alignItems: 'center',
   },
 
   primaryIcon: {
-    fontSize: 22,
-    marginBottom: 4,
+    fontSize: ms(22),
+    marginBottom: vs(4),
   },
 
   primaryLabel: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '800',
     color: '#FFFFFF',
   },
@@ -1409,15 +1938,15 @@ const styles = StyleSheet.create({
   viewTabs: {
     flexDirection: 'row',
     backgroundColor: '#F1F5F9',
-    borderRadius: 14,
-    padding: 4,
-    marginBottom: 16,
+    borderRadius: ms(14),
+    padding: s(4),
+    marginBottom: vs(16),
   },
 
   tabBtn: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingVertical: vs(10),
+    borderRadius: ms(12),
     alignItems: 'center',
   },
 
@@ -1426,7 +1955,7 @@ const styles = StyleSheet.create({
   },
 
   tabLabel: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '700',
     color: '#64748B',
   },
@@ -1438,32 +1967,33 @@ const styles = StyleSheet.create({
   event: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    borderRadius: 14,
-    padding: 10,
-    marginBottom: 8,
+    borderRadius: ms(14),
+    padding: s(10),
+    marginBottom: vs(8),
   },
 
   eventMinute: {
-    width: 32,
+    width: s(32),
     fontWeight: '800',
     color: '#64748B',
+    fontSize: rf(13),
   },
 
   eventTitle: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '800',
     color: '#0F172A',
   },
 
   eventPlayer: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '700',
     color: '#1D4ED8',
-    marginTop: 2,
+    marginTop: vs(2),
   },
 
   eventAssist: {
-    fontSize: 12,
+    fontSize: rf(12),
     color: '#64748B',
   },
 
@@ -1489,16 +2019,16 @@ const styles = StyleSheet.create({
 
   endBtn: {
     backgroundColor: '#DC2626',
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingVertical: vs(12),
+    borderRadius: ms(14),
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: vs(12),
   },
 
   endText: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 15,
+    fontSize: rf(15),
   },
 
   modalOverlay: {
@@ -1509,41 +2039,41 @@ const styles = StyleSheet.create({
 
   modal: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
+    borderTopLeftRadius: ms(20),
+    borderTopRightRadius: ms(20),
+    padding: s(20),
     maxHeight: '80%',
   },
 
   modalTitle: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '800',
     color: '#0F172A',
-    marginBottom: 16,
+    marginBottom: vs(16),
     textAlign: 'center',
   },
 
   modalSection: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '700',
     color: '#334155',
-    marginTop: 12,
-    marginBottom: 6,
+    marginTop: vs(12),
+    marginBottom: vs(6),
   },
 
   playerList: {
-    maxHeight: 180,
-    marginBottom: 10,
+    maxHeight: vs(180),
+    marginBottom: vs(10),
   },
 
   playerItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 12,
+    paddingVertical: vs(12),
+    paddingHorizontal: s(14),
+    borderRadius: ms(12),
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginBottom: 8,
+    marginBottom: vs(8),
   },
 
   selectedItem: {
@@ -1552,7 +2082,7 @@ const styles = StyleSheet.create({
   },
 
   playerText: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '600',
     color: '#0F172A',
   },
@@ -1561,38 +2091,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: vs(12),
   },
 
   cancel: {
     textAlign: 'center',
     color: '#64748B',
     fontWeight: '600',
+    fontSize: rf(14),
   },
 
   submitBtn: {
     backgroundColor: '#1D4ED8',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    paddingVertical: vs(12),
+    paddingHorizontal: s(24),
+    borderRadius: ms(12),
   },
 
   submitText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '800',
   },
 
   cardTypeRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 6,
+    gap: s(12),
+    marginTop: vs(6),
   },
 
   cardChip: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 16,
+    paddingVertical: vs(14),
+    borderRadius: ms(16),
     alignItems: 'center',
     backgroundColor: '#F1F5F9',
     borderWidth: 1,
@@ -1600,7 +2131,7 @@ const styles = StyleSheet.create({
   },
 
   cardChipText: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '800',
     color: '#0F172A',
   },
@@ -1617,27 +2148,27 @@ const styles = StyleSheet.create({
 
   statsCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 20,
+    borderRadius: ms(18),
+    padding: s(16),
+    marginBottom: vs(20),
   },
 
   statsTitle: {
-    fontSize: 15,
+    fontSize: rf(15),
     fontWeight: '800',
     color: '#0F172A',
-    marginBottom: 12,
+    marginBottom: vs(12),
     textAlign: 'center',
   },
 
   statsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: vs(10),
   },
 
   statsHeaderTeam: {
-    fontSize: 12,
+    fontSize: rf(12),
     fontWeight: '700',
     color: '#64748B',
     width: '40%',
@@ -1647,14 +2178,14 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
+    paddingVertical: vs(6),
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
   },
 
   statsLabel: {
     width: '40%',
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '600',
     color: '#334155',
     textAlign: 'center',
@@ -1662,7 +2193,7 @@ const styles = StyleSheet.create({
 
   statsValue: {
     width: '30%',
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '800',
     color: '#0F172A',
     textAlign: 'center',
@@ -1670,20 +2201,20 @@ const styles = StyleSheet.create({
 
   lineupModal: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 20,
+    borderTopLeftRadius: ms(24),
+    borderTopRightRadius: ms(24),
+    paddingHorizontal: s(16),
+    paddingTop: vs(12),
+    paddingBottom: vs(20),
   },
 
   lineupHeader: {
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: vs(12),
   },
 
   lineupTitle: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '800',
     color: '#0F172A',
   },
@@ -1691,15 +2222,15 @@ const styles = StyleSheet.create({
   lineupToggle: {
     flexDirection: 'row',
     backgroundColor: '#F1F5F9',
-    borderRadius: 16,
-    padding: 4,
-    marginBottom: 14,
+    borderRadius: ms(16),
+    padding: s(4),
+    marginBottom: vs(14),
   },
 
   lineupTab: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 12,
+    paddingVertical: vs(8),
+    borderRadius: ms(12),
     alignItems: 'center',
   },
 
@@ -1708,7 +2239,7 @@ const styles = StyleSheet.create({
   },
 
   lineupTabText: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '700',
     color: '#64748B',
   },
@@ -1718,72 +2249,73 @@ const styles = StyleSheet.create({
   },
 
   pitchWrapper: {
-    borderRadius: 18,
+    borderRadius: ms(18),
     overflow: 'hidden',
     backgroundColor: '#0F5132',
-    marginBottom: 14,
-    padding: 6,
+    marginBottom: vs(14),
+    padding: s(6),
   },
 
   benchTitle: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '800',
     color: '#64748B',
-    marginBottom: 8,
-    marginTop: 6,
+    marginBottom: vs(8),
+    marginTop: vs(6),
   },
 
   benchItem: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    marginBottom: 8,
+    borderRadius: ms(12),
+    paddingVertical: vs(10),
+    paddingHorizontal: s(14),
+    marginBottom: vs(8),
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
 
   benchText: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#0F172A',
   },
 
   closeBtn: {
-    marginTop: 14,
+    marginTop: vs(14),
     backgroundColor: '#F1F5F9',
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingVertical: vs(12),
+    borderRadius: ms(14),
     alignItems: 'center',
   },
 
   closeText: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '800',
     color: '#0F172A',
   },
+
   socketStatus: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FEE2E2',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-    gap: 8,
+    paddingVertical: vs(8),
+    paddingHorizontal: s(12),
+    borderRadius: ms(8),
+    marginBottom: vs(12),
+    gap: s(8),
   },
 
   socketStatusText: {
-    fontSize: 12,
+    fontSize: rf(12),
     fontWeight: '600',
     color: '#DC2626',
   },
 
   liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: s(8),
+    height: s(8),
+    borderRadius: s(4),
     backgroundColor: '#15803D',
   },
 });

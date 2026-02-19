@@ -15,6 +15,7 @@ import MainLayout from '../../components/MainLayout';
 import API from '../../api/api';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import useNavigationHelper from '../../navigation/Navigationhelper';
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 export default function AddPlayerScreen() {
   const [query, setQuery] = useState('');
@@ -126,47 +127,47 @@ export default function AddPlayerScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {padding: 20, backgroundColor: '#fff', flex: 1},
-  title: {fontSize: 22, fontWeight: '700', marginBottom: 12, color: '#0F172A'},
+  container: {padding: s(20), backgroundColor: '#fff', flex: 1},
+  title: {fontSize: ms(22), fontWeight: '700', marginBottom: vs(12), color: '#0F172A'},
 
   row: {flexDirection: 'row', alignItems: 'center'},
   searchInput: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 10,
+    paddingVertical: vs(12),
+    paddingHorizontal: s(14),
+    borderRadius: ms(10),
     borderWidth: 1,
     borderColor: '#CBD5E1',
-    color: '#0F172A', // 👈 text color (important)
-    fontSize: 15,
+    color: '#0F172A',
+    fontSize: rf(15),
   },
 
   searchBtn: {
-    marginLeft: 10,
+    marginLeft: s(10),
     backgroundColor: '#1D4ED8',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingHorizontal: s(14),
+    paddingVertical: vs(12),
+    borderRadius: ms(10),
   },
 
   playerCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 10,
+    padding: s(12),
+    borderRadius: ms(12),
+    marginBottom: vs(10),
     elevation: 1,
   },
-  playerImg: {width: 56, height: 56, borderRadius: 30},
-  playerName: {fontSize: 16, fontWeight: '700', color: '#0F172A'},
-  playerMeta: {color: '#475569', marginTop: 4},
+  playerImg: {width: s(56), height: s(56), borderRadius: ms(30)},
+  playerName: {fontSize: rf(16), fontWeight: '700', color: '#0F172A'},
+  playerMeta: {color: '#475569', marginTop: vs(4)},
   addBtn: {
     backgroundColor: '#10B981',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: s(12),
+    paddingVertical: vs(8),
+    borderRadius: ms(8),
   },
-  addText: {color: '#fff', fontWeight: '700'},
+  addText: {color: '#fff', fontWeight: '700', fontSize: rf(14)},
 });

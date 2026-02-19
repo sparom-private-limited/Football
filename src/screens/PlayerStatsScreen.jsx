@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import API from '../api/api';
 import MainLayout from '../components/MainLayout';
+import {s, vs, ms, rf} from '../utils/responsive';
 
 export default function PlayerStatsScreen() {
   const [loading, setLoading] = useState(true);
@@ -134,9 +135,221 @@ function PerformanceItem({label, value, danger}) {
   );
 }
 
+// const styles = StyleSheet.create({
+//   container: {
+//     padding: 16,
+//   },
+
+//   center: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+
+//   profileCard: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 16,
+//     padding: 20,
+//     alignItems: 'center',
+//     marginBottom: 20,
+//     elevation: 3,
+//   },
+
+//   avatar: {
+//     width: 88,
+//     height: 88,
+//     borderRadius: 44,
+//     marginBottom: 10,
+//   },
+
+//   avatarFallback: {
+//     width: 88,
+//     height: 88,
+//     borderRadius: 44,
+//     backgroundColor: '#1D4ED8',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     marginBottom: 10,
+//   },
+
+//   avatarText: {
+//     color: '#fff',
+//     fontSize: 34,
+//     fontWeight: '800',
+//   },
+
+//   name: {
+//     fontSize: 20,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+
+//   meta: {
+//     fontSize: 14,
+//     color: '#64748B',
+//     marginTop: 4,
+//   },
+
+//   statsGrid: {
+//     flexDirection: 'row',
+//     flexWrap: 'wrap',
+//     justifyContent: 'space-between',
+//   },
+
+//   statCard: {
+//     width: '48%',
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 14,
+//     padding: 16,
+//     marginBottom: 14,
+//     elevation: 2,
+//     alignItems: 'center',
+//   },
+
+//   statValue: {
+//     fontSize: 26,
+//     fontWeight: '800',
+//     color: '#1D4ED8',
+//   },
+
+//   statLabel: {
+//     marginTop: 6,
+//     fontSize: 13,
+//     fontWeight: '600',
+//     color: '#64748B',
+//   },
+//   hero: {
+//     backgroundColor: '#1D4ED8',
+//     borderRadius: 18,
+//     padding: 20,
+//     marginBottom: 18,
+//   },
+
+//   heroTop: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     gap: 14,
+//   },
+
+//   heroAvatar: {
+//     width: 72,
+//     height: 72,
+//     borderRadius: 36,
+//   },
+
+//   heroAvatarFallback: {
+//     width: 72,
+//     height: 72,
+//     borderRadius: 36,
+//     backgroundColor: '#0F172A',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//   },
+
+//   heroAvatarText: {
+//     color: '#fff',
+//     fontSize: 28,
+//     fontWeight: '800',
+//   },
+
+//   heroName: {
+//     color: '#fff',
+//     fontSize: 20,
+//     fontWeight: '800',
+//   },
+
+//   heroRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginTop: 6,
+//     gap: 10,
+//   },
+
+//   heroPosition: {
+//     color: '#DBEAFE',
+//     fontWeight: '700',
+//   },
+
+//   heroStatus: {
+//     paddingHorizontal: 10,
+//     paddingVertical: 4,
+//     borderRadius: 10,
+//   },
+
+//   heroStatusText: {
+//     color: '#fff',
+//     fontSize: 11,
+//     fontWeight: '800',
+//   },
+
+//   impactRow: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     marginBottom: 20,
+//   },
+
+//   impactCard: {
+//     width: '30%',
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 16,
+//     paddingVertical: 18,
+//     alignItems: 'center',
+//     elevation: 3,
+//   },
+
+//   impactValue: {
+//     fontSize: 28,
+//     fontWeight: '900',
+//   },
+
+//   impactLabel: {
+//     marginTop: 6,
+//     fontSize: 13,
+//     fontWeight: '600',
+//     color: '#64748B',
+//   },
+
+//   section: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 16,
+//     padding: 16,
+//   },
+
+//   sectionTitle: {
+//     fontSize: 16,
+//     fontWeight: '800',
+//     marginBottom: 12,
+//     color: '#0F172A',
+//   },
+
+//   performanceRow: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//   },
+
+//   performanceItem: {
+//     alignItems: 'center',
+//     width: '30%',
+//   },
+
+//   performanceValue: {
+//     fontSize: 20,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+
+//   performanceLabel: {
+//     marginTop: 4,
+//     fontSize: 12,
+//     fontWeight: '600',
+//     color: '#64748B',
+//   },
+// });
+
+
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: s(16),
   },
 
   center: {
@@ -147,46 +360,46 @@ const styles = StyleSheet.create({
 
   profileCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: ms(16),
+    padding: s(20),
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: vs(20),
     elevation: 3,
   },
 
   avatar: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    marginBottom: 10,
+    width: s(88),
+    height: s(88),
+    borderRadius: s(44),
+    marginBottom: vs(10),
   },
 
   avatarFallback: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: s(88),
+    height: s(88),
+    borderRadius: s(44),
     backgroundColor: '#1D4ED8',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: vs(10),
   },
 
   avatarText: {
     color: '#fff',
-    fontSize: 34,
+    fontSize: ms(34),
     fontWeight: '800',
   },
 
   name: {
-    fontSize: 20,
+    fontSize: ms(20),
     fontWeight: '800',
     color: '#0F172A',
   },
 
   meta: {
-    fontSize: 14,
+    fontSize: rf(14),
     color: '#64748B',
-    marginTop: 4,
+    marginTop: vs(4),
   },
 
   statsGrid: {
@@ -198,48 +411,49 @@ const styles = StyleSheet.create({
   statCard: {
     width: '48%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 14,
+    borderRadius: ms(14),
+    padding: s(16),
+    marginBottom: vs(14),
     elevation: 2,
     alignItems: 'center',
   },
 
   statValue: {
-    fontSize: 26,
+    fontSize: ms(26),
     fontWeight: '800',
     color: '#1D4ED8',
   },
 
   statLabel: {
-    marginTop: 6,
-    fontSize: 13,
+    marginTop: vs(6),
+    fontSize: rf(13),
     fontWeight: '600',
     color: '#64748B',
   },
+
   hero: {
     backgroundColor: '#1D4ED8',
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 18,
+    borderRadius: ms(18),
+    padding: s(20),
+    marginBottom: vs(18),
   },
 
   heroTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: s(14),
   },
 
   heroAvatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: s(72),
+    height: s(72),
+    borderRadius: s(36),
   },
 
   heroAvatarFallback: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: s(72),
+    height: s(72),
+    borderRadius: s(36),
     backgroundColor: '#0F172A',
     alignItems: 'center',
     justifyContent: 'center',
@@ -247,77 +461,78 @@ const styles = StyleSheet.create({
 
   heroAvatarText: {
     color: '#fff',
-    fontSize: 28,
+    fontSize: ms(28),
     fontWeight: '800',
   },
 
   heroName: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: ms(20),
     fontWeight: '800',
   },
 
   heroRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
-    gap: 10,
+    marginTop: vs(6),
+    gap: s(10),
   },
 
   heroPosition: {
     color: '#DBEAFE',
     fontWeight: '700',
+    fontSize: rf(14),
   },
 
   heroStatus: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: ms(10),
   },
 
   heroStatusText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: rf(11),
     fontWeight: '800',
   },
 
   impactRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: vs(20),
   },
 
   impactCard: {
     width: '30%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    paddingVertical: 18,
+    borderRadius: ms(16),
+    paddingVertical: vs(18),
     alignItems: 'center',
     elevation: 3,
   },
 
   impactValue: {
-    fontSize: 28,
+    fontSize: ms(28),
     fontWeight: '900',
   },
 
   impactLabel: {
-    marginTop: 6,
-    fontSize: 13,
+    marginTop: vs(6),
+    fontSize: rf(13),
     fontWeight: '600',
     color: '#64748B',
   },
 
   section: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: ms(16),
+    padding: s(16),
   },
 
   sectionTitle: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '800',
-    marginBottom: 12,
+    marginBottom: vs(12),
     color: '#0F172A',
   },
 
@@ -332,14 +547,14 @@ const styles = StyleSheet.create({
   },
 
   performanceValue: {
-    fontSize: 20,
+    fontSize: ms(20),
     fontWeight: '800',
     color: '#0F172A',
   },
 
   performanceLabel: {
-    marginTop: 4,
-    fontSize: 12,
+    marginTop: vs(4),
+    fontSize: rf(12),
     fontWeight: '600',
     color: '#64748B',
   },

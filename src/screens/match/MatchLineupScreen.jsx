@@ -17,6 +17,7 @@ import API from '../../api/api';
 import { submitMatchLineup, getMatchLineups } from '../../api/match.api';
 import useNavigationHelper from '../../navigation/Navigationhelper';
 import MainLayout from '../../components/MainLayout';
+import { s, vs, ms, rf } from '../../utils/responsive';
 
 export default function MatchLineupScreen() {
   const route = useRoute();
@@ -242,10 +243,58 @@ const nav = useNavigationHelper();
   );
 }
 
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     padding: 16,
+//     backgroundColor: '#F8FAFC',
+//   },
+//   center: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+//   title: {
+//     fontSize: 20,
+//     fontWeight: '700',
+//     marginBottom: 10,
+//   },
+//   lockedText: {
+//     color: '#DC2626',
+//     fontWeight: '600',
+//     marginBottom: 8,
+//   },
+//   pitchCard: {
+//     backgroundColor: '#fff',
+//     borderRadius: 12,
+//     padding: 10,
+//     marginBottom: 12,
+//     elevation: 2,
+//   },
+//   section: {
+//     fontSize: 16,
+//     fontWeight: '600',
+//     marginVertical: 8,
+//   },
+//   saveBtn: {
+//     backgroundColor: '#2563EB',
+//     padding: 14,
+//     borderRadius: 10,
+//     alignItems: 'center',
+//     marginTop: 12,
+//   },
+//   saveText: {
+//     color: '#fff',
+//     fontWeight: '700',
+//     fontSize: 16,
+//   },
+// });
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: s(16),
     backgroundColor: '#F8FAFC',
   },
   center: {
@@ -254,37 +303,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 20,
+    fontSize: ms(20),
     fontWeight: '700',
-    marginBottom: 10,
+    marginBottom: vs(10),
   },
   lockedText: {
     color: '#DC2626',
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: vs(8),
+    fontSize: rf(14),
   },
   pitchCard: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: 12,
+    borderRadius: ms(12),
+    padding: s(10),
+    marginBottom: vs(12),
     elevation: 2,
   },
   section: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '600',
-    marginVertical: 8,
+    marginVertical: vs(8),
   },
   saveBtn: {
     backgroundColor: '#2563EB',
-    padding: 14,
-    borderRadius: 10,
+    padding: s(14),
+    borderRadius: ms(10),
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: vs(12),
   },
   saveText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: rf(16),
   },
 });

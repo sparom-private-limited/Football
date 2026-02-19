@@ -156,6 +156,131 @@ function DrawerItem({icon, label, onPress, active}) {
 }
 
 /* ===== STYLES ===== */
+// const styles = StyleSheet.create({
+//   container: {
+//     flexGrow: 1,
+//     backgroundColor: '#FFFFFF',
+//   },
+
+//   /* BRAND */
+//   brandWrap: {
+//     alignItems: 'center',
+//     paddingTop: 24,
+//     paddingBottom: 16,
+//   },
+
+//   brandLogo: {
+//     width: 48,
+//     height: 48,
+//     borderRadius: 12,
+//     backgroundColor: '#2563EB',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     marginBottom: 6,
+//   },
+
+//   brandLogoText: {
+//     fontSize: 22,
+//     color: '#FFFFFF',
+//     fontWeight: '900',
+//   },
+
+//   brandName: {
+//     fontSize: 14,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   /* PROFILE */
+//   profileCard: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     paddingHorizontal: 16,
+//     paddingVertical: 14,
+//     borderBottomWidth: 1,
+//     borderColor: '#E5E7EB',
+//   },
+
+//   avatar: {
+//     width: 48,
+//     height: 48,
+//     borderRadius: 24,
+//     marginRight: 12,
+//   },
+
+//   name: {
+//     fontSize: 15,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   sub: {
+//     fontSize: 12,
+//     color: '#64748B',
+//     marginTop: 2,
+//   },
+
+//   /* ITEMS */
+//   item: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     paddingVertical: 14,
+//     paddingHorizontal: 20,
+//     marginHorizontal: 8,
+//     borderRadius: 12,
+//   },
+
+//   itemActive: {
+//     backgroundColor: '#EEF2FF',
+//   },
+
+//   iconWrap: {
+//     width: 26,
+//     alignItems: 'center',
+//     marginRight: 14,
+//   },
+
+//   label: {
+//     fontSize: 15,
+//     fontWeight: '600',
+//     color: '#1E293B',
+//   },
+
+//   labelActive: {
+//     color: '#2563EB',
+//   },
+
+//   divider: {
+//     height: 1,
+//     backgroundColor: '#E5E7EB',
+//     marginVertical: 12,
+//     marginHorizontal: 16,
+//   },
+
+//   /* LOGOUT */
+//   logout: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     padding: 16,
+//     marginTop: 'auto',
+//   },
+
+//   logoutText: {
+//     marginLeft: 14,
+//     fontSize: 15,
+//     fontWeight: '700',
+//     color: '#DC2626',
+//   },
+
+//   version: {
+//     textAlign: 'center',
+//     fontSize: 12,
+//     color: '#94A3B8',
+//     marginBottom: 16,
+//   },
+// });
+
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -165,28 +290,28 @@ const styles = StyleSheet.create({
   /* BRAND */
   brandWrap: {
     alignItems: 'center',
-    paddingTop: 24,
-    paddingBottom: 16,
+    paddingTop: vs(24),
+    paddingBottom: vs(16),
   },
 
   brandLogo: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: s(48),
+    height: s(48),
+    borderRadius: ms(12),
     backgroundColor: '#2563EB',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: vs(6),
   },
 
   brandLogoText: {
-    fontSize: 22,
+    fontSize: ms(22),
     color: '#FFFFFF',
     fontWeight: '900',
   },
 
   brandName: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#0F172A',
   },
@@ -195,39 +320,39 @@ const styles = StyleSheet.create({
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: s(16),
+    paddingVertical: vs(14),
     borderBottomWidth: 1,
     borderColor: '#E5E7EB',
   },
 
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
+    width: s(48),
+    height: s(48),
+    borderRadius: s(24),
+    marginRight: s(12),
   },
 
   name: {
-    fontSize: 15,
+    fontSize: rf(15),
     fontWeight: '700',
     color: '#0F172A',
   },
 
   sub: {
-    fontSize: 12,
+    fontSize: rf(12),
     color: '#64748B',
-    marginTop: 2,
+    marginTop: vs(2),
   },
 
   /* ITEMS */
   item: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    marginHorizontal: 8,
-    borderRadius: 12,
+    paddingVertical: vs(14),
+    paddingHorizontal: s(20),
+    marginHorizontal: s(8),
+    borderRadius: ms(12),
   },
 
   itemActive: {
@@ -235,13 +360,13 @@ const styles = StyleSheet.create({
   },
 
   iconWrap: {
-    width: 26,
+    width: s(26),
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: s(14),
   },
 
   label: {
-    fontSize: 15,
+    fontSize: rf(15),
     fontWeight: '600',
     color: '#1E293B',
   },
@@ -253,29 +378,29 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: '#E5E7EB',
-    marginVertical: 12,
-    marginHorizontal: 16,
+    marginVertical: vs(12),
+    marginHorizontal: s(16),
   },
 
   /* LOGOUT */
   logout: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: s(16),
     marginTop: 'auto',
   },
 
   logoutText: {
-    marginLeft: 14,
-    fontSize: 15,
+    marginLeft: s(14),
+    fontSize: rf(15),
     fontWeight: '700',
     color: '#DC2626',
   },
 
   version: {
     textAlign: 'center',
-    fontSize: 12,
+    fontSize: rf(12),
     color: '#94A3B8',
-    marginBottom: 16,
+    marginBottom: vs(16),
   },
 });

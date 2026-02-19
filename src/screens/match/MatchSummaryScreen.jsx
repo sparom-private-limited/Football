@@ -12,6 +12,7 @@ import API from '../../api/api';
 import { useRoute } from '@react-navigation/native';
 import useNavigationHelper from '../../navigation/Navigationhelper';
 import Pitch from '../../components/lineup/Pitch';
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 const TABS = ['Info', 'Stats', 'Lineups', 'Timeline'];
 
@@ -434,13 +435,354 @@ function getEventConfig(type) {
 
 /* ---------- STYLES ---------- */
 
+// const styles = StyleSheet.create({
+//   /* ===== SCREEN ===== */
+
+//   container: {
+//     flex: 1,
+//     backgroundColor: '#F8FAFC',
+//     padding: 16,
+//   },
+
+//   /* ===== HEADER ===== */
+
+//   header: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     paddingVertical: 15,
+//     marginBottom: 12,
+//   },
+
+//   backBtn: {
+//     width: 50,
+//     height: 40,
+//     justifyContent: 'center',
+//   },
+
+//   back: {
+//     fontSize: 22,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   title: {
+//     flex: 1,
+//     textAlign: 'center',
+//     fontSize: 16,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+
+//   headerSpacer: {
+//     width: 50,
+//   },
+
+//   /* ===== HERO SCORE CARD ===== */
+
+//   heroCard: {
+//     backgroundColor: '#2563EB',
+//     borderRadius: 20,
+//     paddingVertical: 24, // ⬅ increase this (default ~16)
+//     paddingHorizontal: 20,
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'space-between',
+//   },
+
+//   team: {
+//     alignItems: 'center',
+//     width: 90,
+//   },
+
+//   logo: {
+//     width: 60,
+//     height: 60,
+//     borderRadius: 30,
+//   },
+
+//   logoFallback: {
+//     width: 60,
+//     height: 60,
+//     borderRadius: 32,
+//     backgroundColor: '#E5E7EB',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//   },
+
+//   logoText: {
+//     fontWeight: '800',
+//     color: '#111827',
+//   },
+
+//   teamName: {
+//     marginTop: 6,
+//     fontSize: 14,
+//     fontWeight: '700',
+//     color: '#FFFFFF',
+//     textAlign: 'center',
+//   },
+
+//   scoreBox: {
+//     alignItems: 'center',
+//   },
+
+//   scoreText: {
+//     fontSize: 40,
+//     fontWeight: '900',
+//     color: '#FFFFFF',
+//   },
+
+//   statusText: {
+//     marginTop: 4,
+//     fontSize: 12,
+//     color: '#DBEAFE',
+//     fontWeight: '700',
+//   },
+
+//   winner: {
+//     textAlign: 'center',
+//     marginVertical: 10,
+//     fontWeight: '700',
+//     color: '#1D4ED8',
+//   },
+
+//   /* ===== TABS ===== */
+
+//   tabs: {
+//     flexDirection: 'row',
+//     backgroundColor: '#E5E7EB',
+//     borderRadius: 12,
+//     marginVertical: 12,
+//   },
+
+//   tab: {
+//     flex: 1,
+//     paddingVertical: 10,
+//     alignItems: 'center',
+//   },
+
+//   activeTab: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 12,
+//   },
+
+//   tabText: {
+//     fontWeight: '700',
+//     color: '#475569',
+//   },
+
+//   activeTabText: {
+//     color: '#2563EB',
+//   },
+
+//   /* ===== STATS ===== */
+
+//   statsCard: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 20,
+//     paddingVertical: 20,
+//     paddingHorizontal: 16,
+//   },
+
+//   bigStatRow: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//     paddingVertical: 14,
+//   },
+
+//   bigNumber: {
+//     fontSize: 26,
+//     fontWeight: '900',
+//     color: '#0F172A',
+//   },
+
+//   bigLabel: {
+//     fontSize: 16,
+//     fontWeight: '700',
+//     color: '#64748B',
+//   },
+
+//   /* ===== TIMELINE ===== */
+
+//   timelineCard: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 16,
+//     padding: 12,
+//     marginBottom: 10,
+//     borderLeftWidth: 5,
+//     elevation: 2,
+//   },
+
+//   timelineHeader: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginBottom: 6, // ⬅ reduced
+//   },
+
+//   eventIcon: {
+//     fontSize: 20, // ⬅ reduced (was 26)
+//     marginRight: 8,
+//   },
+
+//   minuteBig: {
+//     fontSize: 16, // ⬅ reduced (was 20)
+//     fontWeight: '900',
+//     color: '#0F172A',
+//   },
+
+//   playerName: {
+//     fontSize: 15, // ⬅ reduced (was 18)
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+
+//   assistText: {
+//     marginTop: 4, // ⬅ tighter
+//     fontSize: 12, // ⬅ reduced
+//     fontWeight: '600',
+//     color: '#475569',
+//   },
+
+//   teamSide: {
+//     marginTop: 6, // ⬅ reduced
+//     fontSize: 11, // ⬅ reduced
+//     fontWeight: '700',
+//     color: '#64748B',
+//   },
+
+//   /* ===== INFO ===== */
+
+//   infoGrid: {
+//     flexDirection: 'row',
+//     flexWrap: 'wrap',
+//     justifyContent: 'space-between',
+//   },
+
+//   infoBigCard: {
+//     width: '48%',
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 20,
+//     padding: 18,
+//     marginBottom: 14,
+//     elevation: 2,
+//   },
+
+//   infoIcon: {
+//     fontSize: 26,
+//     marginBottom: 10,
+//   },
+
+//   infoBigLabel: {
+//     fontSize: 14,
+//     fontWeight: '700',
+//     color: '#64748B',
+//   },
+
+//   infoBigValue: {
+//     marginTop: 6,
+//     fontSize: 16,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+//   lineupsCard: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 20,
+//     padding: 16,
+//   },
+
+//   lineupTeamTitle: {
+//     marginVertical: 10,
+//     fontSize: 15,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//     textAlign: 'center',
+//   },
+
+//   /* ===== LINEUPS ===== */
+
+//   lineupsCard: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 20,
+//     padding: 16,
+//   },
+
+//   teamSelector: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     gap: 12,
+//     marginBottom: 14,
+//   },
+
+//   teamSelectBtn: {
+//     flex: 1,
+//     paddingVertical: 12,
+//     borderRadius: 14,
+//     backgroundColor: '#F1F5F9',
+//     alignItems: 'center',
+//   },
+
+//   teamSelectActive: {
+//     backgroundColor: '#2563EB',
+//   },
+
+//   teamSelectText: {
+//     fontSize: 14,
+//     fontWeight: '800',
+//     color: '#334155',
+//   },
+
+//   teamSelectTextActive: {
+//     color: '#FFFFFF',
+//   },
+
+//   pitchWrapper: {
+//     borderRadius: 18,
+//     overflow: 'hidden',
+//     backgroundColor: '#0F5132',
+//     padding: 6,
+//     marginBottom: 14,
+//   },
+
+//   benchTitle: {
+//     fontSize: 13,
+//     fontWeight: '800',
+//     color: '#64748B',
+//     marginBottom: 8,
+//   },
+
+//   benchItem: {
+//     backgroundColor: '#F8FAFC',
+//     borderRadius: 12,
+//     paddingVertical: 10,
+//     paddingHorizontal: 14,
+//     marginBottom: 8,
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//   },
+
+//   benchText: {
+//     fontSize: 14,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   lineupHint: {
+//     textAlign: 'center',
+//     marginTop: 20,
+//     fontSize: 13,
+//     fontWeight: '600',
+//     color: '#64748B',
+//   },
+// });
+
 const styles = StyleSheet.create({
   /* ===== SCREEN ===== */
 
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
-    padding: 16,
+    padding: s(16),
   },
 
   /* ===== HEADER ===== */
@@ -448,18 +790,18 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
-    marginBottom: 12,
+    paddingVertical: vs(15),
+    marginBottom: vs(12),
   },
 
   backBtn: {
-    width: 50,
-    height: 40,
+    width: s(50),
+    height: vs(40),
     justifyContent: 'center',
   },
 
   back: {
-    fontSize: 22,
+    fontSize: ms(22),
     fontWeight: '700',
     color: '#0F172A',
   },
@@ -467,22 +809,22 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '800',
     color: '#0F172A',
   },
 
   headerSpacer: {
-    width: 50,
+    width: s(50),
   },
 
   /* ===== HERO SCORE CARD ===== */
 
   heroCard: {
     backgroundColor: '#2563EB',
-    borderRadius: 20,
-    paddingVertical: 24, // ⬅ increase this (default ~16)
-    paddingHorizontal: 20,
+    borderRadius: ms(20),
+    paddingVertical: vs(24),
+    paddingHorizontal: s(20),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -490,19 +832,19 @@ const styles = StyleSheet.create({
 
   team: {
     alignItems: 'center',
-    width: 90,
+    width: s(90),
   },
 
   logo: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: s(60),
+    height: s(60),
+    borderRadius: s(30),
   },
 
   logoFallback: {
-    width: 60,
-    height: 60,
-    borderRadius: 32,
+    width: s(60),
+    height: s(60),
+    borderRadius: s(32),
     backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
@@ -511,11 +853,12 @@ const styles = StyleSheet.create({
   logoText: {
     fontWeight: '800',
     color: '#111827',
+    fontSize: rf(14),
   },
 
   teamName: {
-    marginTop: 6,
-    fontSize: 14,
+    marginTop: vs(6),
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -526,23 +869,24 @@ const styles = StyleSheet.create({
   },
 
   scoreText: {
-    fontSize: 40,
+    fontSize: ms(40),
     fontWeight: '900',
     color: '#FFFFFF',
   },
 
   statusText: {
-    marginTop: 4,
-    fontSize: 12,
+    marginTop: vs(4),
+    fontSize: rf(12),
     color: '#DBEAFE',
     fontWeight: '700',
   },
 
   winner: {
     textAlign: 'center',
-    marginVertical: 10,
+    marginVertical: vs(10),
     fontWeight: '700',
     color: '#1D4ED8',
+    fontSize: rf(14),
   },
 
   /* ===== TABS ===== */
@@ -550,24 +894,25 @@ const styles = StyleSheet.create({
   tabs: {
     flexDirection: 'row',
     backgroundColor: '#E5E7EB',
-    borderRadius: 12,
-    marginVertical: 12,
+    borderRadius: ms(12),
+    marginVertical: vs(12),
   },
 
   tab: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: vs(10),
     alignItems: 'center',
   },
 
   activeTab: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: ms(12),
   },
 
   tabText: {
     fontWeight: '700',
     color: '#475569',
+    fontSize: rf(13),
   },
 
   activeTabText: {
@@ -578,26 +923,26 @@ const styles = StyleSheet.create({
 
   statsCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    paddingVertical: 20,
-    paddingHorizontal: 16,
+    borderRadius: ms(20),
+    paddingVertical: vs(20),
+    paddingHorizontal: s(16),
   },
 
   bigStatRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: vs(14),
   },
 
   bigNumber: {
-    fontSize: 26,
+    fontSize: ms(26),
     fontWeight: '900',
     color: '#0F172A',
   },
 
   bigLabel: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '700',
     color: '#64748B',
   },
@@ -606,9 +951,9 @@ const styles = StyleSheet.create({
 
   timelineCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 10,
+    borderRadius: ms(16),
+    padding: s(12),
+    marginBottom: vs(10),
     borderLeftWidth: 5,
     elevation: 2,
   },
@@ -616,36 +961,36 @@ const styles = StyleSheet.create({
   timelineHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6, // ⬅ reduced
+    marginBottom: vs(6),
   },
 
   eventIcon: {
-    fontSize: 20, // ⬅ reduced (was 26)
-    marginRight: 8,
+    fontSize: ms(20),
+    marginRight: s(8),
   },
 
   minuteBig: {
-    fontSize: 16, // ⬅ reduced (was 20)
+    fontSize: rf(16),
     fontWeight: '900',
     color: '#0F172A',
   },
 
   playerName: {
-    fontSize: 15, // ⬅ reduced (was 18)
+    fontSize: rf(15),
     fontWeight: '800',
     color: '#0F172A',
   },
 
   assistText: {
-    marginTop: 4, // ⬅ tighter
-    fontSize: 12, // ⬅ reduced
+    marginTop: vs(4),
+    fontSize: rf(12),
     fontWeight: '600',
     color: '#475569',
   },
 
   teamSide: {
-    marginTop: 6, // ⬅ reduced
-    fontSize: 11, // ⬅ reduced
+    marginTop: vs(6),
+    fontSize: rf(11),
     fontWeight: '700',
     color: '#64748B',
   },
@@ -661,38 +1006,39 @@ const styles = StyleSheet.create({
   infoBigCard: {
     width: '48%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 14,
+    borderRadius: ms(20),
+    padding: s(18),
+    marginBottom: vs(14),
     elevation: 2,
   },
 
   infoIcon: {
-    fontSize: 26,
-    marginBottom: 10,
+    fontSize: ms(26),
+    marginBottom: vs(10),
   },
 
   infoBigLabel: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#64748B',
   },
 
   infoBigValue: {
-    marginTop: 6,
-    fontSize: 16,
+    marginTop: vs(6),
+    fontSize: rf(16),
     fontWeight: '800',
     color: '#0F172A',
   },
+
   lineupsCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: ms(20),
+    padding: s(16),
   },
 
   lineupTeamTitle: {
-    marginVertical: 10,
-    fontSize: 15,
+    marginVertical: vs(10),
+    fontSize: rf(15),
     fontWeight: '800',
     color: '#0F172A',
     textAlign: 'center',
@@ -700,23 +1046,17 @@ const styles = StyleSheet.create({
 
   /* ===== LINEUPS ===== */
 
-  lineupsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 16,
-  },
-
   teamSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 14,
+    gap: s(12),
+    marginBottom: vs(14),
   },
 
   teamSelectBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingVertical: vs(12),
+    borderRadius: ms(14),
     backgroundColor: '#F1F5F9',
     alignItems: 'center',
   },
@@ -726,7 +1066,7 @@ const styles = StyleSheet.create({
   },
 
   teamSelectText: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '800',
     color: '#334155',
   },
@@ -736,41 +1076,42 @@ const styles = StyleSheet.create({
   },
 
   pitchWrapper: {
-    borderRadius: 18,
+    borderRadius: ms(18),
     overflow: 'hidden',
     backgroundColor: '#0F5132',
-    padding: 6,
-    marginBottom: 14,
+    padding: s(6),
+    marginBottom: vs(14),
   },
 
   benchTitle: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '800',
     color: '#64748B',
-    marginBottom: 8,
+    marginBottom: vs(8),
   },
 
   benchItem: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    marginBottom: 8,
+    borderRadius: ms(12),
+    paddingVertical: vs(10),
+    paddingHorizontal: s(14),
+    marginBottom: vs(8),
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
 
   benchText: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#0F172A',
   },
 
   lineupHint: {
     textAlign: 'center',
-    marginTop: 20,
-    fontSize: 13,
+    marginTop: vs(20),
+    fontSize: rf(13),
     fontWeight: '600',
     color: '#64748B',
   },
 });
+

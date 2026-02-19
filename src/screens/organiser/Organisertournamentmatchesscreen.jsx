@@ -14,6 +14,7 @@ import {useRoute, useNavigation} from '@react-navigation/native';
 import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import useNavigationHelper from '../../navigation/Navigationhelper';
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 export default function OrganiserTournamentMatchesScreen() {
   const route = useRoute();
@@ -392,68 +393,342 @@ function getKnockoutRoundName(roundNum, totalRounds) {
 
 // ================= STYLES =================
 
+// const styles = StyleSheet.create({
+//   scrollContent: {
+//     paddingBottom: 20,
+//   },
+
+//   topHeader: {
+//     paddingHorizontal: 20,
+//     paddingTop: 20,
+//     marginBottom: 12,
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//   },
+
+//   title: {
+//     fontSize: 24,
+//     fontWeight: '800',
+//     color: '#111827',
+//   },
+
+//   subtitle: {
+//     fontSize: 14,
+//     color: '#6B7280',
+//     marginTop: 6,
+//   },
+
+//   liveBadge: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     backgroundColor: '#EF4444',
+//     paddingHorizontal: 14,
+//     paddingVertical: 6,
+//     borderRadius: 20,
+//   },
+
+//   liveDot: {
+//     width: 8,
+//     height: 8,
+//     borderRadius: 4,
+//     backgroundColor: '#FFF',
+//     marginRight: 6,
+//   },
+
+//   liveText: {
+//     color: '#FFF',
+//     fontWeight: '700',
+//     fontSize: 12,
+//   },
+
+//   heroCard: {
+//     marginHorizontal: 20,
+//     marginBottom: 24,
+//     borderRadius: 20,
+//     padding: 20,
+//     backgroundColor: '#EEF2FF',
+//   },
+
+//   heroTitle: {
+//     fontSize: 24,
+//     fontWeight: '800',
+//     marginTop: 12,
+//     marginBottom: 18,
+//     color: '#111827',
+//   },
+
+//   metaRow: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//   },
+
+//   metaText: {
+//     fontSize: 13,
+//     color: '#6B7280',
+//     fontWeight: '600',
+//   },
+
+//   generatedBadge: {
+//     backgroundColor: '#2563EB',
+//     paddingHorizontal: 12,
+//     paddingVertical: 4,
+//     borderRadius: 20,
+//   },
+
+//   generatedText: {
+//     color: '#FFF',
+//     fontSize: 10,
+//     fontWeight: '700',
+//   },
+
+//   primaryBtn: {
+//     backgroundColor: '#2563EB',
+//     paddingVertical: 14,
+//     paddingHorizontal: 28,
+//     borderRadius: 18,
+//     alignSelf: 'flex-start',
+//   },
+
+//   primaryBtnText: {
+//     color: '#FFF',
+//     fontWeight: '700',
+//     fontSize: 14,
+//   },
+
+//   sectionTitle: {
+//     fontSize: 20,
+//     fontWeight: '800',
+//     marginHorizontal: 20,
+//     marginBottom: 16,
+//     color: '#111827',
+//   },
+
+//   matchCard: {
+//     marginHorizontal: 20,
+//     marginBottom: 16,
+//     backgroundColor: '#FFFFFF',
+//     paddingVertical: 18,
+//     paddingHorizontal: 20,
+//     borderRadius: 20,
+//     shadowColor: '#000',
+//     shadowOpacity: 0.06,
+//     shadowRadius: 12,
+//     elevation: 3,
+//   },
+
+//   matchTopRow: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     marginBottom: 12,
+//   },
+
+//   teamRowModern: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'space-between',
+//   },
+
+//   teamModern: {
+//     fontSize: 16,
+//     fontWeight: '700',
+//     color: '#111827',
+//     flex: 1,
+//   },
+//   matchTeamsRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'space-between',
+//     marginTop: 12,
+//   },
+//   teamRowCompact: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     flex: 1,
+//     gap: 8,
+//   },
+
+//   teamNameCompact: {
+//     fontSize: 18,
+//     fontWeight: '700',
+//     color: '#111827',
+//     flexShrink: 1,
+//   },
+
+//   teamBlock: {
+//     flex: 1,
+//     alignItems: 'center',
+//   },
+//   teamNameModern: {
+//     fontSize: 14,
+//     fontWeight: '700',
+//     color: '#111827',
+//     textAlign: 'center',
+//   },
+//   centerBlock: {
+//     width: 70,
+//     alignItems: 'center',
+//   },
+
+//   vsText: {
+//     fontSize: 14,
+//     fontWeight: '800',
+//     color: '#2563EB',
+//   },
+//   vsModern: {
+//     fontSize: 13,
+//     fontWeight: '700',
+//     color: '#2563EB',
+//     marginHorizontal: 10,
+//   },
+
+//   venueModern: {
+//     marginTop: 10,
+//     fontSize: 12,
+//     color: '#64748B',
+//   },
+//   teamLogo: {
+//     width: 45,
+//     height: 45,
+//     borderRadius: 25,
+//   },
+//   logoFallback: {
+//     width: 38,
+//     height: 38,
+//     borderRadius: 19,
+//     backgroundColor: '#E5E7EB',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//   },
+//   logoFallbackText: {
+//     fontWeight: '800',
+//     color: '#111827',
+//     fontSize: 30,
+//   },
+//   secondaryBtn: {
+//     marginHorizontal: 20,
+//     backgroundColor: '#E5E7EB',
+//     paddingVertical: 18,
+//     borderRadius: 18,
+//     alignItems: 'center',
+//     marginBottom: 18,
+//   },
+
+//   secondaryBtnText: {
+//     fontWeight: '700',
+//     color: '#111827',
+//     fontSize: 15,
+//   },
+
+//   dangerBtn: {
+//     marginHorizontal: 20,
+//     backgroundColor: '#DC2626',
+//     paddingVertical: 18,
+//     borderRadius: 20,
+//     alignItems: 'center',
+//   },
+
+//   dangerBtnText: {
+//     color: '#FFF',
+//     fontWeight: '700',
+//     fontSize: 16,
+//   },
+
+//   matchStatusBadge: {
+//     paddingHorizontal: 10,
+//     paddingVertical: 4,
+//     borderRadius: 14,
+//     backgroundColor: '#9CA3AF',
+//     alignSelf: 'flex-start', // prevents vertical stretch
+//   },
+//   matchStatusText: {
+//     color: '#FFF',
+//     fontSize: 10,
+//     fontWeight: '700',
+//   },
+//   matchStage: {
+//     flex: 1,
+//     fontSize: 13,
+//     fontWeight: '600',
+//     color: '#6B7280',
+//   },
+//   dateText: {
+//   fontSize: 13,
+//   fontWeight: '700',
+//   color: '#111827',
+// },
+
+// timeText: {
+//   fontSize: 12,
+//   color: '#6B7280',
+//   marginTop: 2,
+// },
+// });
+
+
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: vs(20),
   },
 
   topHeader: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    marginBottom: 12,
+    paddingHorizontal: s(20),
+    paddingTop: vs(20),
+    marginBottom: vs(12),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
 
   title: {
-    fontSize: 24,
+    fontSize: ms(24),
     fontWeight: '800',
     color: '#111827',
   },
 
   subtitle: {
-    fontSize: 14,
+    fontSize: rf(14),
     color: '#6B7280',
-    marginTop: 6,
+    marginTop: vs(6),
   },
 
   liveBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#EF4444',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: s(14),
+    paddingVertical: vs(6),
+    borderRadius: ms(20),
   },
 
   liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: s(8),
+    height: s(8),
+    borderRadius: s(4),
     backgroundColor: '#FFF',
-    marginRight: 6,
+    marginRight: s(6),
   },
 
   liveText: {
     color: '#FFF',
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: rf(12),
   },
 
   heroCard: {
-    marginHorizontal: 20,
-    marginBottom: 24,
-    borderRadius: 20,
-    padding: 20,
+    marginHorizontal: s(20),
+    marginBottom: vs(24),
+    borderRadius: ms(20),
+    padding: s(20),
     backgroundColor: '#EEF2FF',
   },
 
   heroTitle: {
-    fontSize: 24,
+    fontSize: ms(24),
     fontWeight: '800',
-    marginTop: 12,
-    marginBottom: 18,
+    marginTop: vs(12),
+    marginBottom: vs(18),
     color: '#111827',
   },
 
@@ -464,53 +739,53 @@ const styles = StyleSheet.create({
   },
 
   metaText: {
-    fontSize: 13,
+    fontSize: rf(13),
     color: '#6B7280',
     fontWeight: '600',
   },
 
   generatedBadge: {
     backgroundColor: '#2563EB',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
+    paddingHorizontal: s(12),
+    paddingVertical: vs(4),
+    borderRadius: ms(20),
   },
 
   generatedText: {
     color: '#FFF',
-    fontSize: 10,
+    fontSize: rf(10),
     fontWeight: '700',
   },
 
   primaryBtn: {
     backgroundColor: '#2563EB',
-    paddingVertical: 14,
-    paddingHorizontal: 28,
-    borderRadius: 18,
+    paddingVertical: vs(14),
+    paddingHorizontal: s(28),
+    borderRadius: ms(18),
     alignSelf: 'flex-start',
   },
 
   primaryBtnText: {
     color: '#FFF',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: rf(14),
   },
 
   sectionTitle: {
-    fontSize: 20,
+    fontSize: ms(20),
     fontWeight: '800',
-    marginHorizontal: 20,
-    marginBottom: 16,
+    marginHorizontal: s(20),
+    marginBottom: vs(16),
     color: '#111827',
   },
 
   matchCard: {
-    marginHorizontal: 20,
-    marginBottom: 16,
+    marginHorizontal: s(20),
+    marginBottom: vs(16),
     backgroundColor: '#FFFFFF',
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    borderRadius: 20,
+    paddingVertical: vs(18),
+    paddingHorizontal: s(20),
+    borderRadius: ms(20),
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -520,7 +795,7 @@ const styles = StyleSheet.create({
   matchTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: vs(12),
   },
 
   teamRowModern: {
@@ -530,26 +805,28 @@ const styles = StyleSheet.create({
   },
 
   teamModern: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '700',
     color: '#111827',
     flex: 1,
   },
+
   matchTeamsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 12,
+    marginTop: vs(12),
   },
+
   teamRowCompact: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 8,
+    gap: s(8),
   },
 
   teamNameCompact: {
-    fontSize: 18,
+    fontSize: rf(18),
     fontWeight: '700',
     color: '#111827',
     flexShrink: 1,
@@ -559,108 +836,118 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
+
   teamNameModern: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#111827',
     textAlign: 'center',
   },
+
   centerBlock: {
-    width: 70,
+    width: s(70),
     alignItems: 'center',
   },
 
   vsText: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '800',
     color: '#2563EB',
   },
+
   vsModern: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '700',
     color: '#2563EB',
-    marginHorizontal: 10,
+    marginHorizontal: s(10),
   },
 
   venueModern: {
-    marginTop: 10,
-    fontSize: 12,
+    marginTop: vs(10),
+    fontSize: rf(12),
     color: '#64748B',
   },
+
   teamLogo: {
-    width: 45,
-    height: 45,
-    borderRadius: 25,
+    width: s(45),
+    height: s(45),
+    borderRadius: s(25),
   },
+
   logoFallback: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: s(38),
+    height: s(38),
+    borderRadius: s(19),
     backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
+
   logoFallbackText: {
     fontWeight: '800',
     color: '#111827',
-    fontSize: 30,
+    fontSize: ms(30),
   },
+
   secondaryBtn: {
-    marginHorizontal: 20,
+    marginHorizontal: s(20),
     backgroundColor: '#E5E7EB',
-    paddingVertical: 18,
-    borderRadius: 18,
+    paddingVertical: vs(18),
+    borderRadius: ms(18),
     alignItems: 'center',
-    marginBottom: 18,
+    marginBottom: vs(18),
   },
 
   secondaryBtnText: {
     fontWeight: '700',
     color: '#111827',
-    fontSize: 15,
+    fontSize: rf(15),
   },
 
   dangerBtn: {
-    marginHorizontal: 20,
+    marginHorizontal: s(20),
     backgroundColor: '#DC2626',
-    paddingVertical: 18,
-    borderRadius: 20,
+    paddingVertical: vs(18),
+    borderRadius: ms(20),
     alignItems: 'center',
   },
 
   dangerBtnText: {
     color: '#FFF',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: rf(16),
   },
 
   matchStatusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 14,
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: ms(14),
     backgroundColor: '#9CA3AF',
-    alignSelf: 'flex-start', // prevents vertical stretch
+    alignSelf: 'flex-start',
   },
+
   matchStatusText: {
     color: '#FFF',
-    fontSize: 10,
+    fontSize: rf(10),
     fontWeight: '700',
   },
+
   matchStage: {
     flex: 1,
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '600',
     color: '#6B7280',
   },
-  dateText: {
-  fontSize: 13,
-  fontWeight: '700',
-  color: '#111827',
-},
 
-timeText: {
-  fontSize: 12,
-  color: '#6B7280',
-  marginTop: 2,
-},
+  dateText: {
+    fontSize: rf(13),
+    fontWeight: '700',
+    color: '#111827',
+  },
+
+  timeText: {
+    fontSize: rf(12),
+    color: '#6B7280',
+    marginTop: vs(2),
+  },
 });

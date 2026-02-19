@@ -1,5 +1,6 @@
 import React from "react";
 import { TouchableOpacity, View, Text, StyleSheet, Image } from "react-native";
+import { s, vs, ms, rf } from "../../utils/responsive";
 
 export default function PlayerSlot({ player, highlighted, onPress }) {
   return (
@@ -38,9 +39,9 @@ export default function PlayerSlot({ player, highlighted, onPress }) {
 
 const styles = StyleSheet.create({
   slot: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: s(58),
+    height: s(58),
+    borderRadius: s(29),
     borderWidth: 1,
     borderStyle: "dashed",
     borderColor: "#CBD5E1",
@@ -57,19 +58,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#1D4ED8",
   },
   avatar: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: s(58),
+    height: s(58),
+    borderRadius: s(29),
   },
   initial: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: ms(18),
     fontWeight: "700",
   },
   name: {
-    marginTop: 4,
-    width: 70,
-    fontSize: 10,
+    marginTop: vs(4),
+    width: s(70),
+    fontSize: rf(10),
     textAlign: "center",
     color: "#F8FAFC",
   },

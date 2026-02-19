@@ -7,6 +7,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { s, vs, ms, rf } from "../../utils/responsive";
 
 export default function DraggablePlayer({ player, onDrop }) {
   const translateX = useSharedValue(0);
@@ -58,20 +59,21 @@ export default function DraggablePlayer({ player, onDrop }) {
 
 const styles = StyleSheet.create({
   player: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: s(72),
+    height: s(72),
+    borderRadius: s(36),
     backgroundColor: "#1D4ED8",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginRight: s(12),
   },
   number: {
     color: "#fff",
     fontWeight: "700",
+    fontSize: rf(14),
   },
   name: {
     color: "#E5E7EB",
-    fontSize: 10,
+    fontSize: rf(10),
   },
 });

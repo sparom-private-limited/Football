@@ -13,6 +13,7 @@ import {
 import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 const Label = ({ text }) => <Text style={styles.label}>{text}</Text>;
 
@@ -272,28 +273,150 @@ const handleJoin = async tournamentId => {
   );
 }
 
+// const styles = StyleSheet.create({
+//   container: { padding: 16 },
+
+//   label: {
+//     fontSize: 13,
+//     fontWeight: '600',
+//     color: '#475569',
+//     marginBottom: 6,
+//   },
+
+//   input: {
+//     backgroundColor: '#F8FAFC',
+//     borderRadius: 12,
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//     padding: 12,
+//     marginBottom: 12,
+//   },
+
+//   filterRow: {
+//     flexDirection: 'row',
+//     gap: 12,
+//   },
+
+//   filterItem: {
+//     flex: 1,
+//   },
+
+//   card: {
+//     backgroundColor: '#FFFFFF',
+//     padding: 16,
+//     borderRadius: 14,
+//     marginBottom: 12,
+//     elevation: 2,
+//   },
+
+//   cardDisabled: {
+//     opacity: 0.5,
+//   },
+
+//   cardHeader: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//   },
+
+//   title: {
+//     fontSize: 16,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//   },
+
+//   joinedTag: {
+//     fontSize: 12,
+//     fontWeight: '700',
+//     color: '#16A34A',
+//   },
+
+//   meta: {
+//     fontSize: 13,
+//     color: '#64748B',
+//     marginTop: 4,
+//   },
+
+//   joinBtn: {
+//     marginTop: 10,
+//     backgroundColor: '#2563EB',
+//     paddingVertical: 8,
+//     borderRadius: 10,
+//     alignItems: 'center',
+//   },
+
+//   joinBtnText: {
+//     color: '#FFFFFF',
+//     fontWeight: '700',
+//     fontSize: 14,
+//   },
+
+//   fullText: {
+//     marginTop: 6,
+//     color: '#DC2626',
+//     fontSize: 12,
+//     fontWeight: '600',
+//   },
+//   dateInput: {
+//     backgroundColor: '#F8FAFC',
+//     borderRadius: 12,
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//     padding: 12,
+//     marginBottom: 12,
+//   },
+
+//   dateText: {
+//     fontSize: 14,
+//     color: '#0F172A',
+//   },
+
+//   placeholderText: {
+//     color: '#94A3B8',
+//   },
+//   resetRow: {
+//     alignItems: 'flex-end',
+//     marginBottom: 8,
+//   },
+
+//   resetBtn: {
+//     paddingHorizontal: 12,
+//     paddingVertical: 6,
+//     borderRadius: 8,
+//     backgroundColor: '#F1F5F9',
+//   },
+
+//   resetBtnText: {
+//     fontSize: 12,
+//     fontWeight: '600',
+//     color: '#2563EB',
+//   },
+// });
+
+
 const styles = StyleSheet.create({
-  container: { padding: 16 },
+  container: { padding: s(16) },
 
   label: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '600',
     color: '#475569',
-    marginBottom: 6,
+    marginBottom: vs(6),
   },
 
   input: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
+    borderRadius: ms(12),
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    padding: 12,
-    marginBottom: 12,
+    padding: s(12),
+    marginBottom: vs(12),
+    fontSize: rf(14),
   },
 
   filterRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: s(12),
   },
 
   filterItem: {
@@ -302,9 +425,9 @@ const styles = StyleSheet.create({
 
   card: {
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 14,
-    marginBottom: 12,
+    padding: s(16),
+    borderRadius: ms(14),
+    marginBottom: vs(12),
     elevation: 2,
   },
 
@@ -319,74 +442,76 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '700',
     color: '#0F172A',
   },
 
   joinedTag: {
-    fontSize: 12,
+    fontSize: rf(12),
     fontWeight: '700',
     color: '#16A34A',
   },
 
   meta: {
-    fontSize: 13,
+    fontSize: rf(13),
     color: '#64748B',
-    marginTop: 4,
+    marginTop: vs(4),
   },
 
   joinBtn: {
-    marginTop: 10,
+    marginTop: vs(10),
     backgroundColor: '#2563EB',
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingVertical: vs(8),
+    borderRadius: ms(10),
     alignItems: 'center',
   },
 
   joinBtnText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: rf(14),
   },
 
   fullText: {
-    marginTop: 6,
+    marginTop: vs(6),
     color: '#DC2626',
-    fontSize: 12,
+    fontSize: rf(12),
     fontWeight: '600',
   },
+
   dateInput: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
+    borderRadius: ms(12),
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    padding: 12,
-    marginBottom: 12,
+    padding: s(12),
+    marginBottom: vs(12),
   },
 
   dateText: {
-    fontSize: 14,
+    fontSize: rf(14),
     color: '#0F172A',
   },
 
   placeholderText: {
     color: '#94A3B8',
   },
+
   resetRow: {
     alignItems: 'flex-end',
-    marginBottom: 8,
+    marginBottom: vs(8),
   },
 
   resetBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: s(12),
+    paddingVertical: vs(6),
+    borderRadius: ms(8),
     backgroundColor: '#F1F5F9',
   },
 
   resetBtnText: {
-    fontSize: 12,
+    fontSize: rf(12),
     fontWeight: '600',
     color: '#2563EB',
   },

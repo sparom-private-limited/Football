@@ -16,6 +16,7 @@ import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import {launchImageLibrary} from 'react-native-image-picker';
 import useNavigationHelper from '../../navigation/Navigationhelper';
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 export default function OrganiserProfileScreen() {
   const nav = useNavigationHelper();
@@ -321,6 +322,233 @@ function Section({title, children}) {
 
 /* ---------------- STYLES ---------------- */
 
+// const styles = StyleSheet.create({
+//   center: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+
+//   container: {
+//     padding: 16,
+//     paddingBottom: 40,
+//     backgroundColor: '#F1F5F9',
+//   },
+
+//   card: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 16,
+//     padding: 16,
+//     shadowColor: '#000',
+//     shadowOpacity: 0.06,
+//     shadowRadius: 8,
+//     elevation: 4,
+//   },
+
+//   /* LOGO */
+//   logoSection: {
+//     alignItems: 'center',
+//     marginBottom: 24,
+//   },
+
+//   logoCircle: {
+//     width: 96,
+//     height: 96,
+//     borderRadius: 48,
+//     backgroundColor: '#E2E8F0',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     marginBottom: 8,
+//     overflow: 'hidden', // ✅ Important for circular images
+//   },
+
+//   logoImg: {
+//     width: 96,
+//     height: 96,
+//   },
+
+//   logoPlaceholder: {
+//     color: '#64748B',
+//     fontWeight: '700',
+//   },
+
+//   logoAction: {
+//     color: '#2563EB',
+//     fontWeight: '600',
+//     marginTop: 4,
+//   },
+
+//   /* INPUTS */
+//   inputGroup: {
+//     marginBottom: 16,
+//   },
+
+//   label: {
+//     fontWeight: '600',
+//     marginBottom: 6,
+//     color: '#334155',
+//   },
+
+//   input: {
+//     backgroundColor: '#F8FAFC',
+//     borderRadius: 12,
+//     padding: 12,
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//     color: '#0F172A',
+//   },
+
+//   multiline: {
+//     height: 90,
+//     textAlignVertical: 'top',
+//   },
+
+//   readOnly: {
+//     backgroundColor: '#F1F5F9',
+//     color: '#475569',
+//   },
+
+//   /* BUTTONS */
+//   buttonRow: {
+//     flexDirection: 'row',
+//     gap: 12,
+//     marginTop: 16,
+//   },
+
+//   primaryBtn: {
+//     flex: 1,
+//     backgroundColor: '#2563EB',
+//     paddingVertical: 14,
+//     borderRadius: 14,
+//   },
+
+//   primaryBtnText: {
+//     color: '#fff',
+//     fontWeight: '700',
+//     textAlign: 'center',
+//     fontSize: 16,
+//   },
+
+//   cancelBtn: {
+//     flex: 1,
+//     backgroundColor: '#F1F5F9',
+//     paddingVertical: 14,
+//     borderRadius: 14,
+//     borderWidth: 1,
+//     borderColor: '#E2E8F0',
+//   },
+
+//   cancelBtnText: {
+//     color: '#475569',
+//     fontWeight: '700',
+//     textAlign: 'center',
+//     fontSize: 16,
+//   },
+
+//   secondaryBtn: {
+//     backgroundColor: '#0F172A',
+//     paddingVertical: 14,
+//     borderRadius: 14,
+//     marginTop: 16,
+//   },
+
+//   secondaryBtnText: {
+//     color: '#fff',
+//     fontWeight: '700',
+//     textAlign: 'center',
+//     fontSize: 16,
+//   },
+
+//   disabled: {
+//     opacity: 0.6,
+//   },
+//   previewOverlay: {
+//     flex: 1,
+//     backgroundColor: 'rgba(0,0,0,0.95)',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+
+//   previewImage: {
+//     width: '100%',
+//     height: '80%',
+//   },
+
+//   previewClose: {
+//     position: 'absolute',
+//     top: 40,
+//     right: 20,
+//     zIndex: 10,
+//   },
+
+//   previewCloseText: {
+//     color: '#fff',
+//     fontSize: 26,
+//     fontWeight: '700',
+//   },
+//   hero: {
+//     alignItems: 'center',
+//     marginBottom: 28,
+//   },
+
+//   heroLogo: {
+//     width: 110,
+//     height: 110,
+//     borderRadius: 55,
+//     backgroundColor: '#1D4ED8',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     elevation: 6,
+//   },
+
+//   heroLogoImg: {
+//     width: '100%',
+//     height: '100%',
+//     borderRadius: 55,
+//   },
+
+//   heroLogoText: {
+//     color: '#fff',
+//     fontSize: 42,
+//     fontWeight: '900',
+//   },
+
+//   heroTitle: {
+//     marginTop: 14,
+//     fontSize: 22,
+//     fontWeight: '800',
+//     color: '#020617',
+//     textAlign: 'center',
+//   },
+
+//   heroSubtitle: {
+//     marginTop: 4,
+//     fontSize: 14,
+//     color: '#64748B',
+//   },
+
+//   heroEditBtn: {
+//     marginTop: 14,
+//     paddingHorizontal: 20,
+//     paddingVertical: 8,
+//     borderRadius: 999,
+//     backgroundColor: '#1D4ED8',
+//   },
+
+//   heroEditText: {
+//     color: '#fff',
+//     fontWeight: '700',
+//   },
+
+//   sectionTitle: {
+//     fontSize: 13,
+//     fontWeight: '700',
+//     color: '#64748B',
+//     marginBottom: 12,
+//     letterSpacing: 0.4,
+//   },
+// });
+
 const styles = StyleSheet.create({
   center: {
     flex: 1,
@@ -329,15 +557,15 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: s(16),
+    paddingBottom: vs(40),
     backgroundColor: '#F1F5F9',
   },
 
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: ms(16),
+    padding: s(16),
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -347,58 +575,62 @@ const styles = StyleSheet.create({
   /* LOGO */
   logoSection: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: vs(24),
   },
 
   logoCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: s(96),
+    height: s(96),
+    borderRadius: s(48),
     backgroundColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
-    overflow: 'hidden', // ✅ Important for circular images
+    marginBottom: vs(8),
+    overflow: 'hidden',
   },
 
   logoImg: {
-    width: 96,
-    height: 96,
+    width: s(96),
+    height: s(96),
   },
 
   logoPlaceholder: {
     color: '#64748B',
     fontWeight: '700',
+    fontSize: rf(14),
   },
 
   logoAction: {
     color: '#2563EB',
     fontWeight: '600',
-    marginTop: 4,
+    marginTop: vs(4),
+    fontSize: rf(14),
   },
 
   /* INPUTS */
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: vs(16),
   },
 
   label: {
     fontWeight: '600',
-    marginBottom: 6,
+    marginBottom: vs(6),
     color: '#334155',
+    fontSize: rf(14),
   },
 
   input: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: ms(12),
+    padding: s(12),
     borderWidth: 1,
     borderColor: '#E2E8F0',
     color: '#0F172A',
+    fontSize: rf(14),
   },
 
   multiline: {
-    height: 90,
+    height: vs(90),
     textAlignVertical: 'top',
   },
 
@@ -410,29 +642,29 @@ const styles = StyleSheet.create({
   /* BUTTONS */
   buttonRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
+    gap: s(12),
+    marginTop: vs(16),
   },
 
   primaryBtn: {
     flex: 1,
     backgroundColor: '#2563EB',
-    paddingVertical: 14,
-    borderRadius: 14,
+    paddingVertical: vs(14),
+    borderRadius: ms(14),
   },
 
   primaryBtnText: {
     color: '#fff',
     fontWeight: '700',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: rf(16),
   },
 
   cancelBtn: {
     flex: 1,
     backgroundColor: '#F1F5F9',
-    paddingVertical: 14,
-    borderRadius: 14,
+    paddingVertical: vs(14),
+    borderRadius: ms(14),
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
@@ -441,26 +673,27 @@ const styles = StyleSheet.create({
     color: '#475569',
     fontWeight: '700',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: rf(16),
   },
 
   secondaryBtn: {
     backgroundColor: '#0F172A',
-    paddingVertical: 14,
-    borderRadius: 14,
-    marginTop: 16,
+    paddingVertical: vs(14),
+    borderRadius: ms(14),
+    marginTop: vs(16),
   },
 
   secondaryBtnText: {
     color: '#fff',
     fontWeight: '700',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: rf(16),
   },
 
   disabled: {
     opacity: 0.6,
   },
+
   previewOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.95)',
@@ -475,25 +708,26 @@ const styles = StyleSheet.create({
 
   previewClose: {
     position: 'absolute',
-    top: 40,
-    right: 20,
+    top: vs(40),
+    right: s(20),
     zIndex: 10,
   },
 
   previewCloseText: {
     color: '#fff',
-    fontSize: 26,
+    fontSize: ms(26),
     fontWeight: '700',
   },
+
   hero: {
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: vs(28),
   },
 
   heroLogo: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: s(110),
+    height: s(110),
+    borderRadius: s(55),
     backgroundColor: '#1D4ED8',
     justifyContent: 'center',
     alignItems: 'center',
@@ -503,47 +737,48 @@ const styles = StyleSheet.create({
   heroLogoImg: {
     width: '100%',
     height: '100%',
-    borderRadius: 55,
+    borderRadius: s(55),
   },
 
   heroLogoText: {
     color: '#fff',
-    fontSize: 42,
+    fontSize: ms(42),
     fontWeight: '900',
   },
 
   heroTitle: {
-    marginTop: 14,
-    fontSize: 22,
+    marginTop: vs(14),
+    fontSize: ms(22),
     fontWeight: '800',
     color: '#020617',
     textAlign: 'center',
   },
 
   heroSubtitle: {
-    marginTop: 4,
-    fontSize: 14,
+    marginTop: vs(4),
+    fontSize: rf(14),
     color: '#64748B',
   },
 
   heroEditBtn: {
-    marginTop: 14,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 999,
+    marginTop: vs(14),
+    paddingHorizontal: s(20),
+    paddingVertical: vs(8),
+    borderRadius: ms(999),
     backgroundColor: '#1D4ED8',
   },
 
   heroEditText: {
     color: '#fff',
     fontWeight: '700',
+    fontSize: rf(14),
   },
 
   sectionTitle: {
-    fontSize: 13,
+    fontSize: rf(13),
     fontWeight: '700',
     color: '#64748B',
-    marginBottom: 12,
+    marginBottom: vs(12),
     letterSpacing: 0.4,
   },
 });

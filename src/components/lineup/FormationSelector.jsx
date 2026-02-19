@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { s, vs, ms, rf } from "../../utils/responsive";
 
 export default function FormationSelector({
   value,
@@ -32,33 +33,35 @@ export default function FormationSelector({
 }
 
 const styles = StyleSheet.create({
- container: {
-  alignItems: "center",
-  marginTop: 16,
-  marginBottom: 20,
-},
+  container: {
+    alignItems: "center",
+    marginTop: vs(16),
+    marginBottom: vs(20),
+  },
   button: {
     backgroundColor: "#1D4ED8",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 22,
+    paddingHorizontal: s(24),
+    paddingVertical: vs(12),
+    borderRadius: ms(22),
   },
   buttonText: {
     color: "#fff",
     fontWeight: "600",
+    fontSize: rf(14),
   },
- dropdown: {
-  marginTop: 8,
-  width: 160,
-  backgroundColor: "#fff",
-  borderRadius: 14,
-  elevation: 6,
-},
+  dropdown: {
+    marginTop: vs(8),
+    width: s(160),
+    backgroundColor: "#fff",
+    borderRadius: ms(14),
+    elevation: 6,
+  },
   item: {
-    paddingVertical: 12,
+    paddingVertical: vs(12),
     alignItems: "center",
   },
   itemText: {
     fontWeight: "500",
+    fontSize: rf(14),
   },
 });

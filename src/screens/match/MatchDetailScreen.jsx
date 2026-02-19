@@ -17,6 +17,7 @@ import {useAuth} from '../../context/AuthContext';
 import useNavigationHelper from '../../navigation/Navigationhelper';
 import MainLayout from '../../components/MainLayout';
 import LinearGradient from 'react-native-linear-gradient';
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 export default function MatchDetailScreen() {
   const route = useRoute();
@@ -478,10 +479,244 @@ function InfoTile({label, value}) {
 
 /* ---------- Styles ---------- */
 
-const styles = StyleSheet.create({
-scroll: { flex: 1, backgroundColor: '#F1F5F9' },
+// const styles = StyleSheet.create({
+// scroll: { flex: 1, backgroundColor: '#F1F5F9' },
 
-container: { padding: 16, paddingBottom: 30 },
+// container: { padding: 16, paddingBottom: 30 },
+
+//   center: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+
+//   /* ---------- HERO CARD ---------- */
+
+//   heroCard: {
+//     borderRadius: 24,
+//     overflow: 'hidden',
+//     marginBottom: 20,
+//   },
+
+//   heroGradient: {
+//     padding: 22,
+//   },
+
+//   heroTeamsRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'space-between',
+//   },
+
+//   heroLogo: {
+//     width: 80,
+//     height: 80,
+//     borderRadius: 40,
+//     borderWidth: 3,
+//     borderColor: '#FFFFFF',
+//   },
+
+//   heroTeamName: {
+//     color: '#FFFFFF',
+//     fontWeight: '700',
+//     marginTop: 8,
+//     fontSize: 14,
+//     textAlign: 'center',
+//   },
+
+//   heroScore: {
+//     fontSize: 26,
+//     fontWeight: '900',
+//     color: '#FFFFFF',
+//   },
+
+//   heroVS: {
+//     fontSize: 18,
+//     fontWeight: '700',
+//     color: '#DBEAFE',
+//   },
+
+//   heroBottom: {
+//     marginTop: 20,
+//     alignItems: 'center',
+//   },
+
+//   heroDate: {
+//     color: '#E0F2FE',
+//     marginTop: 6,
+//     fontSize: 14,
+//   },
+
+//   heroVenue: {
+//     color: '#BFDBFE',
+//     fontSize: 13,
+//     marginTop: 2,
+//   },
+
+//   /* ---------- CARD ---------- */
+
+//   card: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 18,
+//     padding: 18,
+//     marginBottom: 16,
+//     shadowColor: '#000',
+//     shadowOpacity: 0.04,
+//     shadowRadius: 6,
+//     elevation: 2,
+//   },
+
+//   sectionTitle: {
+//     fontSize: 16,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//     marginBottom: 12,
+//   },
+
+//   /* ---------- INFO GRID ---------- */
+
+//   infoGrid: {
+//     flexDirection: 'row',
+//     flexWrap: 'wrap',
+//     justifyContent: 'space-between',
+//   },
+
+//   infoTile: {
+//     width: '48%',
+//     backgroundColor: '#F8FAFC',
+//     padding: 14,
+//     borderRadius: 16,
+//     marginBottom: 14,
+//   },
+
+//   tileLabel: {
+//     fontSize: 12,
+//     color: '#6B7280',
+//   },
+
+//   tileValue: {
+//     fontSize: 16,
+//     fontWeight: '800',
+//     marginTop: 4,
+//     color: '#111827',
+//   },
+
+//   /* ---------- LINEUP STATUS ---------- */
+
+//   lineupStatusRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginBottom: 8,
+//   },
+
+//   teamName: {
+//     flex: 1,
+//     color: '#0F172A',
+//     fontWeight: '600',
+//   },
+
+//   statusDot: {
+//     width: 8,
+//     height: 8,
+//     borderRadius: 4,
+//     marginRight: 6,
+//   },
+
+//   statusDotGreen: {
+//     backgroundColor: '#22C55E',
+//   },
+
+//   statusDotRed: {
+//     backgroundColor: '#EF4444',
+//   },
+
+//   statusText: {
+//     fontSize: 14,
+//     fontWeight: '600',
+//   },
+
+//   statusTextGreen: {
+//     color: '#22C55E',
+//   },
+
+//   statusTextRed: {
+//     color: '#EF4444',
+//   },
+
+//   /* ---------- BUTTONS ---------- */
+
+//   row: {
+//     flexDirection: 'row',
+//     gap: 12,
+//     marginBottom: 12,
+//   },
+
+//  btn: {
+//   width: '100%',
+//   paddingVertical: 15,
+//   borderRadius: 12,
+//   alignItems: 'center',
+//   justifyContent: 'center',
+//   marginBottom: 12,
+// },
+
+//   text: {
+//     color: '#FFFFFF',
+//     fontSize: 16,
+//     fontWeight: '600',
+//   },
+
+//   /* ---------- BADGE ---------- */
+
+//   badge: {
+//     alignSelf: 'flex-start',
+//     paddingHorizontal: 10,
+//     paddingVertical: 4,
+//     borderRadius: 12,
+//     marginTop: 4,
+//   },
+
+//   badgeText: {
+//     color: '#fff',
+//     fontWeight: '700',
+//     fontSize: 12,
+//   },
+
+//   /* ---------- HELPERS ---------- */
+
+//   helperText: {
+//     textAlign: 'center',
+//     color: '#64748B',
+//     fontSize: 14,
+//     fontStyle: 'italic',
+//     marginTop: 8,
+//   },
+
+//  countdownBox: {
+//   marginTop: 12,
+//   backgroundColor: '#DBEAFE',      // light blue bg
+//   paddingVertical: 12,
+//   paddingHorizontal: 20,
+//   borderRadius: 12,
+//   alignItems: 'center',
+//   alignSelf: 'stretch',            // full width
+//   borderWidth: 1,
+//   borderColor: '#BFDBFE',  
+//   marginBottom: 20,
+// },
+// countdownText: {
+//   color: '#1E3A8A',                // dark blue text
+//   fontWeight: '700',
+//   fontSize: 15,
+//   letterSpacing: 0.3,
+// },
+// });
+
+
+const styles = StyleSheet.create({
+  scroll: { flex: 1, backgroundColor: '#F1F5F9' },
+
+  container: { padding: s(16), paddingBottom: vs(30) },
 
   center: {
     flex: 1,
@@ -492,13 +727,13 @@ container: { padding: 16, paddingBottom: 30 },
   /* ---------- HERO CARD ---------- */
 
   heroCard: {
-    borderRadius: 24,
+    borderRadius: ms(24),
     overflow: 'hidden',
-    marginBottom: 20,
+    marginBottom: vs(20),
   },
 
   heroGradient: {
-    padding: 22,
+    padding: s(22),
   },
 
   heroTeamsRow: {
@@ -508,9 +743,9 @@ container: { padding: 16, paddingBottom: 30 },
   },
 
   heroLogo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: s(80),
+    height: s(80),
+    borderRadius: s(40),
     borderWidth: 3,
     borderColor: '#FFFFFF',
   },
@@ -518,47 +753,47 @@ container: { padding: 16, paddingBottom: 30 },
   heroTeamName: {
     color: '#FFFFFF',
     fontWeight: '700',
-    marginTop: 8,
-    fontSize: 14,
+    marginTop: vs(8),
+    fontSize: rf(14),
     textAlign: 'center',
   },
 
   heroScore: {
-    fontSize: 26,
+    fontSize: ms(26),
     fontWeight: '900',
     color: '#FFFFFF',
   },
 
   heroVS: {
-    fontSize: 18,
+    fontSize: ms(18),
     fontWeight: '700',
     color: '#DBEAFE',
   },
 
   heroBottom: {
-    marginTop: 20,
+    marginTop: vs(20),
     alignItems: 'center',
   },
 
   heroDate: {
     color: '#E0F2FE',
-    marginTop: 6,
-    fontSize: 14,
+    marginTop: vs(6),
+    fontSize: rf(14),
   },
 
   heroVenue: {
     color: '#BFDBFE',
-    fontSize: 13,
-    marginTop: 2,
+    fontSize: rf(13),
+    marginTop: vs(2),
   },
 
   /* ---------- CARD ---------- */
 
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 16,
+    borderRadius: ms(18),
+    padding: s(18),
+    marginBottom: vs(16),
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 6,
@@ -566,10 +801,10 @@ container: { padding: 16, paddingBottom: 30 },
   },
 
   sectionTitle: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '700',
     color: '#0F172A',
-    marginBottom: 12,
+    marginBottom: vs(12),
   },
 
   /* ---------- INFO GRID ---------- */
@@ -583,20 +818,20 @@ container: { padding: 16, paddingBottom: 30 },
   infoTile: {
     width: '48%',
     backgroundColor: '#F8FAFC',
-    padding: 14,
-    borderRadius: 16,
-    marginBottom: 14,
+    padding: s(14),
+    borderRadius: ms(16),
+    marginBottom: vs(14),
   },
 
   tileLabel: {
-    fontSize: 12,
+    fontSize: rf(12),
     color: '#6B7280',
   },
 
   tileValue: {
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '800',
-    marginTop: 4,
+    marginTop: vs(4),
     color: '#111827',
   },
 
@@ -605,20 +840,21 @@ container: { padding: 16, paddingBottom: 30 },
   lineupStatusRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: vs(8),
   },
 
   teamName: {
     flex: 1,
     color: '#0F172A',
     fontWeight: '600',
+    fontSize: rf(14),
   },
 
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
+    width: s(8),
+    height: s(8),
+    borderRadius: s(4),
+    marginRight: s(6),
   },
 
   statusDotGreen: {
@@ -630,7 +866,7 @@ container: { padding: 16, paddingBottom: 30 },
   },
 
   statusText: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '600',
   },
 
@@ -646,22 +882,22 @@ container: { padding: 16, paddingBottom: 30 },
 
   row: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
+    gap: s(12),
+    marginBottom: vs(12),
   },
 
- btn: {
-  width: '100%',
-  paddingVertical: 15,
-  borderRadius: 12,
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginBottom: 12,
-},
+  btn: {
+    width: '100%',
+    paddingVertical: vs(15),
+    borderRadius: ms(12),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: vs(12),
+  },
 
   text: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: rf(16),
     fontWeight: '600',
   },
 
@@ -669,16 +905,16 @@ container: { padding: 16, paddingBottom: 30 },
 
   badge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginTop: 4,
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: ms(12),
+    marginTop: vs(4),
   },
 
   badgeText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: rf(12),
   },
 
   /* ---------- HELPERS ---------- */
@@ -686,27 +922,28 @@ container: { padding: 16, paddingBottom: 30 },
   helperText: {
     textAlign: 'center',
     color: '#64748B',
-    fontSize: 14,
+    fontSize: rf(14),
     fontStyle: 'italic',
-    marginTop: 8,
+    marginTop: vs(8),
   },
 
- countdownBox: {
-  marginTop: 12,
-  backgroundColor: '#DBEAFE',      // light blue bg
-  paddingVertical: 12,
-  paddingHorizontal: 20,
-  borderRadius: 12,
-  alignItems: 'center',
-  alignSelf: 'stretch',            // full width
-  borderWidth: 1,
-  borderColor: '#BFDBFE',  
-  marginBottom: 20,
-},
-countdownText: {
-  color: '#1E3A8A',                // dark blue text
-  fontWeight: '700',
-  fontSize: 15,
-  letterSpacing: 0.3,
-},
+  countdownBox: {
+    marginTop: vs(12),
+    backgroundColor: '#DBEAFE',
+    paddingVertical: vs(12),
+    paddingHorizontal: s(20),
+    borderRadius: ms(12),
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    marginBottom: vs(20),
+  },
+
+  countdownText: {
+    color: '#1E3A8A',
+    fontWeight: '700',
+    fontSize: rf(15),
+    letterSpacing: 0.3,
+  },
 });

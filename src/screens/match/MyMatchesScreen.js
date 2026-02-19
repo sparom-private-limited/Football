@@ -11,6 +11,7 @@ import {
 import {getMyMatches} from '../../api/match.api';
 import useNavigationHelper from '../../navigation/Navigationhelper';
 import {useAuth} from '../../context/AuthContext'; 
+import {s, vs, ms, rf} from '../../utils/responsive';
 
 export default function MyMatchesScreen({type, route}) {
   const nav = useNavigationHelper();
@@ -229,14 +230,158 @@ function TeamLogo({team}) {
 
 /* ---------- Styles ---------- */
 
+// const styles = StyleSheet.create({
+//   center: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+
+//   card: {
+//     backgroundColor: '#FFFFFF',
+//     borderRadius: 16,
+//     padding: 16,
+//     marginBottom: 16,
+//     elevation: 3,
+//     shadowColor: '#000',
+//     shadowOffset: {width: 0, height: 2},
+//     shadowOpacity: 0.1,
+//     shadowRadius: 4,
+//   },
+
+//   cancelledCard: {
+//     opacity: 0.6,
+//   },
+
+//   teamsRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'space-between',
+//     marginBottom: 12,
+//   },
+
+//   teamBlock: {
+//     width: 90,
+//     alignItems: 'center',
+//   },
+
+//   teamName: {
+//     marginTop: 6,
+//     fontSize: 14,
+//     fontWeight: '700',
+//     color: '#0F172A',
+//     textAlign: 'center',
+//   },
+
+//   scoreBlock: {
+//     minWidth: 60,
+//     alignItems: 'center',
+//   },
+
+//   score: {
+//     fontSize: 22,
+//     fontWeight: '800',
+//     color: '#0F172A',
+//   },
+
+//   vs: {
+//     fontSize: 14,
+//     fontWeight: '700',
+//     color: '#64748B',
+//   },
+
+//   logo: {
+//     width: 64,
+//     height: 64,
+//     borderRadius: 32,
+//   },
+
+//   logoFallback: {
+//     width: 64, // ← FIXED: was 42, now matches logo size
+//     height: 64,
+//     borderRadius: 32,
+//     backgroundColor: '#E5E7EB',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//   },
+
+//   logoText: {
+//     fontSize: 24, // ← Added size
+//     fontWeight: '800',
+//     color: '#374151',
+//   },
+
+//   meta: {
+//     textAlign: 'center',
+//     color: '#64748B',
+//     marginTop: 4,
+//     fontSize: 12,
+//   },
+
+//   badge: {
+//     alignSelf: 'center',
+//     paddingHorizontal: 12,
+//     paddingVertical: 4,
+//     borderRadius: 20,
+//     marginTop: 6,
+//   },
+
+//   badgeText: {
+//     color: '#FFFFFF',
+//     fontWeight: '700',
+//     fontSize: 12,
+//   },
+
+//   empty: {
+//     textAlign: 'center',
+//     marginTop: 40,
+//     color: '#64748B',
+//     fontSize: 16,
+//   },
+
+//   // ← ADD ERROR STYLES
+//   errorText: {
+//     color: '#EF4444',
+//     fontSize: 16,
+//     textAlign: 'center',
+//     marginBottom: 16,
+//     paddingHorizontal: 32,
+//     lineHeight: 24,
+//   },
+
+//   retryButton: {
+//     backgroundColor: '#2563EB',
+//     paddingHorizontal: 24,
+//     paddingVertical: 12,
+//     borderRadius: 8,
+//     marginTop: 8,
+//   },
+
+//   retryText: {
+//     color: '#FFFFFF',
+//     fontWeight: '600',
+//     fontSize: 16,
+//   },
+//   myTeamBadge: {
+//     backgroundColor: '#3B82F6',
+//     paddingHorizontal: 8,
+//     paddingVertical: 2,
+//     borderRadius: 10,
+//     marginTop: 4,
+//   },
+
+//   myTeamText: {
+//     color: '#FFFFFF',
+//     fontSize: 10,
+//     fontWeight: '700',
+//   },
+// });
+
+
 const styles = StyleSheet.create({
   center: {flex: 1, justifyContent: 'center', alignItems: 'center'},
 
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: ms(16),
+    padding: s(16),
+    marginBottom: vs(16),
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
@@ -252,56 +397,56 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: vs(12),
   },
 
   teamBlock: {
-    width: 90,
+    width: s(90),
     alignItems: 'center',
   },
 
   teamName: {
-    marginTop: 6,
-    fontSize: 14,
+    marginTop: vs(6),
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#0F172A',
     textAlign: 'center',
   },
 
   scoreBlock: {
-    minWidth: 60,
+    minWidth: s(60),
     alignItems: 'center',
   },
 
   score: {
-    fontSize: 22,
+    fontSize: ms(22),
     fontWeight: '800',
     color: '#0F172A',
   },
 
   vs: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '700',
     color: '#64748B',
   },
 
   logo: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: s(64),
+    height: s(64),
+    borderRadius: s(32),
   },
 
   logoFallback: {
-    width: 64, // ← FIXED: was 42, now matches logo size
-    height: 64,
-    borderRadius: 32,
+    width: s(64),
+    height: s(64),
+    borderRadius: s(32),
     backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   logoText: {
-    fontSize: 24, // ← Added size
+    fontSize: ms(24),
     fontWeight: '800',
     color: '#374151',
   },
@@ -309,65 +454,65 @@ const styles = StyleSheet.create({
   meta: {
     textAlign: 'center',
     color: '#64748B',
-    marginTop: 4,
-    fontSize: 12,
+    marginTop: vs(4),
+    fontSize: rf(12),
   },
 
   badge: {
     alignSelf: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginTop: 6,
+    paddingHorizontal: s(12),
+    paddingVertical: vs(4),
+    borderRadius: ms(20),
+    marginTop: vs(6),
   },
 
   badgeText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: rf(12),
   },
 
   empty: {
     textAlign: 'center',
-    marginTop: 40,
+    marginTop: vs(40),
     color: '#64748B',
-    fontSize: 16,
+    fontSize: rf(16),
   },
 
-  // ← ADD ERROR STYLES
   errorText: {
     color: '#EF4444',
-    fontSize: 16,
+    fontSize: rf(16),
     textAlign: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 32,
-    lineHeight: 24,
+    marginBottom: vs(16),
+    paddingHorizontal: s(32),
+    lineHeight: vs(24),
   },
 
   retryButton: {
     backgroundColor: '#2563EB',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 8,
+    paddingHorizontal: s(24),
+    paddingVertical: vs(12),
+    borderRadius: ms(8),
+    marginTop: vs(8),
   },
 
   retryText: {
     color: '#FFFFFF',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: rf(16),
   },
+
   myTeamBadge: {
     backgroundColor: '#3B82F6',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    marginTop: 4,
+    paddingHorizontal: s(8),
+    paddingVertical: vs(2),
+    borderRadius: ms(10),
+    marginTop: vs(4),
   },
 
   myTeamText: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: rf(10),
     fontWeight: '700',
   },
 });

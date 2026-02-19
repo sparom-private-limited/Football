@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { s, vs, ms, rf } from '../../utils/responsive';
 
 export default function PlayerAvatar({ player, selected, onPress }) {
   return (
@@ -22,13 +23,13 @@ export default function PlayerAvatar({ player, selected, onPress }) {
 const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: s(14),
   },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    overflow: 'hidden', // ✅ IMPORTANT
+    width: s(64),
+    height: s(64),
+    borderRadius: s(32),
+    overflow: 'hidden',
     backgroundColor: '#2563EB',
     justifyContent: 'center',
     alignItems: 'center',
@@ -38,19 +39,19 @@ const styles = StyleSheet.create({
     borderColor: '#FACC15',
   },
   image: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: s(64),
+    height: s(64),
+    borderRadius: s(32),
   },
   initial: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 20,
+    fontSize: ms(20),
   },
   name: {
-    marginTop: 4,
-    fontSize: 12,
-    maxWidth: 70,
+    marginTop: vs(4),
+    fontSize: rf(12),
+    maxWidth: s(70),
     textAlign: 'center',
   },
 });
