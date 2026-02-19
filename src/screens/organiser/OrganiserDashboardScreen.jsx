@@ -183,50 +183,23 @@ function PrimaryBtn({label, onPress}) {
   );
 }
 
-function WarningBtn({label, onPress}) {
-  return (
-    <TouchableOpacity style={styles.warningBtn} onPress={onPress}>
-      <Text style={styles.primaryBtnText}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
 function StatusBadge({status}) {
-  const colorMap = {
-    DRAFT: '#94A3B8',
-    REGISTRATION_OPEN: '#22C55E',
-    REGISTRATION_CLOSED: '#F97316',
-    FIXTURES_GENERATED: '#2563EB',
-    LIVE: '#DC2626',
-    COMPLETED: '#64748B',
+  const map = {
+    DRAFT: {bg: '#F1F5F9', text: '#475569'},
+    REGISTRATION_OPEN: {bg: '#DCFCE7', text: '#166534'},
+    REGISTRATION_CLOSED: {bg: '#FEF3C7', text: '#92400E'},
+    FIXTURES_GENERATED: {bg: '#DBEAFE', text: '#1D4ED8'},
+    LIVE: {bg: '#FEE2E2', text: '#B91C1C'},
+    COMPLETED: {bg: '#E2E8F0', text: '#334155'},
   };
 
+  const colors = map[status] || map.DRAFT;
+
   return (
-    <View style={styles.badge}>
-      <Text style={[styles.badgeText, {color: colorMap[status] || '#475569'}]}>
+    <View style={[styles.badge, {backgroundColor: colors.bg}]}>
+      <Text style={[styles.badgeText, {color: colors.text}]}>
         {status.replaceAll('_', ' ')}
       </Text>
-    </View>
-  );
-}
-
-function Empty({text}) {
-  return <Text style={styles.emptyText}>{text}</Text>;
-}
-
-function ProfileBanner({onPress}) {
-  return (
-    <View style={styles.banner}>
-      <View>
-        <Text style={styles.bannerTitle}>Complete your organiser profile</Text>
-        <Text style={styles.bannerText}>
-          Unlock tournament creation & management features.
-        </Text>
-      </View>
-
-      <TouchableOpacity style={styles.bannerBtn} onPress={onPress}>
-        <Text style={styles.bannerBtnText}>Complete Profile</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -264,34 +237,14 @@ function formatDate(date) {
   });
 }
 
-function MatchCard({item, nav}) {
-  return (
-    <TouchableOpacity
-      style={styles.matchCard}
-      onPress={() => nav.toMatch('MatchDetail', {matchId: item._id})}>
-      <Text style={styles.matchTitle}>
-        {item.homeTeam.teamName} vs {item.awayTeam.teamName}
-      </Text>
-      <StatusBadge status={item.status} />
-    </TouchableOpacity>
-  );
-}
-
-function StatCard({label, value}) {
-  return (
-    <View style={styles.statCard}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
 /* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 10,
+    paddingTop: 16,
+    paddingBottom: 40,
+    backgroundColor: '#F1F5F9',
   },
 
   center: {
@@ -300,205 +253,97 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
+  /* ---------------- HERO ---------------- */
+
   heroHeader: {
-    marginBottom: 18,
+    marginBottom: 28,
   },
 
   heroTitle: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#020617',
-    letterSpacing: 0.3,
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.3,
   },
 
   heroSub: {
     marginTop: 6,
     fontSize: 14,
     color: '#64748B',
-    fontWeight: '500',
   },
 
+  /* ---------------- PROFILE BANNER ---------------- */
+
   profileBanner: {
-    backgroundColor: '#EEF2FF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 22,
-    borderLeftWidth: 4,
-    borderLeftColor: '#2563EB',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 26,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
 
   profileTitle: {
-    color: '#1E293B',
-    fontSize: 16,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
   },
 
   profileText: {
     marginTop: 4,
-    color: '#475569',
     fontSize: 13,
-  },
-
-  sectionCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 16,
-  },
-
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 12,
-    color: '#0F172A',
-  },
-
-  card: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 12,
-  },
-
-  cardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-
-  metaText: {
-    marginTop: 4,
-    fontSize: 12,
     color: '#64748B',
   },
 
-  matchCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-
-  matchTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#0F172A',
-  },
-
-  emptyText: {
-    color: '#94A3B8',
-    fontSize: 13,
-  },
+  /* ---------------- SECTION ---------------- */
 
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 18,
+  },
+
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
   },
 
   viewAll: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#2563EB',
   },
 
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-  },
-
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'capitalize',
-  },
-
-  primaryBtn: {
-    backgroundColor: '#2563EB',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-
-  primaryBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-
-  warningBtn: {
-    backgroundColor: '#F97316',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  /* EMPTY STATE */
-  emptyCard: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    padding: 20,
-    borderRadius: 16,
-    alignItems: 'center',
-    elevation: 3,
-  },
-
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 4,
-  },
-
-  emptyText: {
-    fontSize: 13,
-    color: '#64748B',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
+  /* ---------------- TOURNAMENT CARD ---------------- */
 
   tournamentCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
-    elevation: 6,
+    borderRadius: 22,
+    padding: 20,
+    marginBottom: 18,
 
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 6},
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-
-    borderLeftWidth: 4,
-    borderLeftColor: '#2563EB', // default
+    shadowColor: '#0F172A',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
   },
 
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 14,
   },
 
   tournamentName: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#020617',
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0F172A',
     flex: 1,
-    marginRight: 8,
+    marginRight: 12,
   },
 
   metaRow: {
@@ -508,46 +353,66 @@ const styles = StyleSheet.create({
   },
 
   metaText: {
-    fontSize: 12,
-    color: '#475569',
+    fontSize: 13,
+    color: '#334155',
   },
+
   metaMuted: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#64748B',
-    fontWeight: '500',
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginTop: 24,
   },
 
-  statCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    paddingVertical: 20,
-    alignItems: 'center',
+  /* ---------------- STATUS BADGE ---------------- */
 
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
+  badge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
   },
 
-  statValue: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: '#020617',
-  },
-
-  statLabel: {
-    marginTop: 6,
-    fontSize: 12,
+  badgeText: {
+    fontSize: 11,
     fontWeight: '600',
-    color: '#64748B',
     letterSpacing: 0.4,
+  },
+
+  /* ---------------- PRIMARY BUTTON ---------------- */
+
+  primaryBtn: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+
+  primaryBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  /* ---------------- EMPTY STATE ---------------- */
+
+  emptyCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 26,
+    borderRadius: 22,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+
+  emptyText: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 6,
+    textAlign: 'center',
   },
 });

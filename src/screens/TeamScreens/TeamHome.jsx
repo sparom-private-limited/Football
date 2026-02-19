@@ -605,6 +605,7 @@ import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import AppRefreshView from '../../components/AppRefreshView';
 import useNavigationHelper from '../../navigation/Navigationhelper';
+import { moderateScale, scale, verticalScale,normalizeFont } from '../../utils/responsive';
 
 export default function TeamHome() {
   const nav = useNavigationHelper();

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -6,18 +6,22 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
+  Image,
+  ScrollView,
 } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import {useRoute, useNavigation} from '@react-navigation/native';
 
-import { getMatchById, respondToMatch, cancelMatch } from '../../api/match.api';
+import {getMatchById, respondToMatch, cancelMatch} from '../../api/match.api';
 import API from '../../api/api';
-import { useAuth } from '../../context/AuthContext';
+import {useAuth} from '../../context/AuthContext';
 import useNavigationHelper from '../../navigation/Navigationhelper';
-  
+import MainLayout from '../../components/MainLayout';
+import LinearGradient from 'react-native-linear-gradient';
+
 export default function MatchDetailScreen() {
   const route = useRoute();
-const nav = useNavigationHelper();
-  const { user } = useAuth();
+  const nav = useNavigationHelper();
+  const {user} = useAuth();
 
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +34,7 @@ const nav = useNavigationHelper();
   useEffect(() => {
     if (!matchId) {
       console.log('❌ Missing matchId, redirecting');
-      nav.replace("MyMatches");
+      nav.replace('MyMatches');
       return;
     }
     loadInitial();
@@ -50,12 +54,11 @@ const nav = useNavigationHelper();
         } catch (teamErr) {
           console.log('Team not found for team user:', teamErr);
           Alert.alert('No Team Found', 'You need to create a team first.', [
-            { text: 'OK', onPress: () => nav.back() },
+            {text: 'OK', onPress: () => nav.back()},
           ]);
           return;
         }
       } else {
-        // Organiser doesn't need a team
         setMyTeam({});
       }
     } catch (e) {
@@ -90,7 +93,7 @@ const nav = useNavigationHelper();
       'Start Match?',
       'Once started, lineups cannot be changed and the match timer will begin.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        {text: 'Cancel', style: 'cancel'},
         {
           text: 'Start Match',
           style: 'default',
@@ -103,11 +106,10 @@ const nav = useNavigationHelper();
   const confirmStartMatch = async () => {
     setActionLoading(true);
     try {
-      const response = await API.post('/api/match/start', { matchId });
+      const response = await API.post('/api/match/start', {matchId});
 
       // Just replace current screen with MatchConsole
-      nav.replace('MatchConsole', { matchId });
-
+      nav.replace('MatchConsole', {matchId});
     } catch (e) {
       console.error('START MATCH ERROR:', e.response?.data || e.message);
       Alert.alert(
@@ -119,6 +121,18 @@ const nav = useNavigationHelper();
     }
   };
 
+  const formatDate = date =>
+    new Date(date).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+  const formatTime = date =>
+    new Date(date).toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   /* -------------------- LOADER -------------------- */
   if (loading) {
     return (
@@ -145,7 +159,8 @@ const nav = useNavigationHelper();
 
   // Team-specific checks
   const isMyTeam =
-    myTeam && myTeam._id &&
+    myTeam &&
+    myTeam._id &&
     (myTeam._id === match.homeTeam?._id || myTeam._id === match.awayTeam?._id);
 
   const isOpponent = user?.role === 'team' && !isCreator && isMyTeam;
@@ -201,7 +216,7 @@ const nav = useNavigationHelper();
       'Reject Match?',
       'Are you sure you want to reject this match request?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        {text: 'Cancel', style: 'cancel'},
         {
           text: 'Reject',
           style: 'destructive',
@@ -231,14 +246,14 @@ const nav = useNavigationHelper();
 
   const handleCancel = async () => {
     Alert.alert('Cancel Match?', 'This action cannot be undone.', [
-      { text: 'No', style: 'cancel' },
+      {text: 'No', style: 'cancel'},
       {
         text: 'Yes, Cancel',
         style: 'destructive',
         onPress: async () => {
           setActionLoading(true);
           try {
-            await cancelMatch({ matchId });
+            await cancelMatch({matchId});
             await loadInitial();
           } catch (e) {
             console.error('❌ CANCEL ERROR:', e.response?.data || e.message);
@@ -251,118 +266,151 @@ const nav = useNavigationHelper();
     ]);
   };
 
+  const getCountdown = date => {
+    const diff = new Date(date) - new Date();
+    if (diff <= 0) return null;
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff / (1000 * 60)) % 60);
+
+    return `${hours}h ${mins}m`;
+  };
   /* -------------------- UI -------------------- */
   return (
-    <View style={styles.container}>
-      {/* HEADER CARD */}
-      <View style={styles.card}>
-        <Text style={styles.title}>
-          {match.homeTeam.teamName} vs {match.awayTeam.teamName}
-        </Text>
-        <StatusBadge status={match.status} />
-        {isTournamentMatch && (
-          <View style={styles.tournamentBadge}>
-            <Text style={styles.tournamentText}>🏆 Tournament Match</Text>
+    <MainLayout title="Match Details">
+      <ScrollView style={styles.container}>
+        {/* HEADER CARD */}
+        <View style={styles.heroCard}>
+          <LinearGradient
+            colors={['#2563EB', '#4477e5']}
+            style={styles.heroGradient}>
+            <View style={styles.heroTeamsRow}>
+              <TeamBlock team={match.homeTeam} />
+
+              <View style={styles.centerScore}>
+                {match.status === 'LIVE' || match.status === 'COMPLETED' ? (
+                  <Text style={styles.heroScore}>
+                    {match.score?.home ?? 0} : {match.score?.away ?? 0}
+                  </Text>
+                ) : (
+                  <Text style={styles.heroVS}>VS</Text>
+                )}
+              </View>
+
+              <TeamBlock team={match.awayTeam} />
+            </View>
+
+            <View style={styles.heroBottom}>
+              <StatusBadge status={match.status} />
+
+              <Text style={styles.heroDate}>
+                <Text>
+                  {formatDate(match.scheduledAt)} •{' '}
+                  {formatTime(match.scheduledAt)}
+                </Text>
+              </Text>
+
+              <Text style={styles.heroVenue}>📍 {match.venue || 'TBD'}</Text>
+            </View>
+          </LinearGradient>
+        </View>
+
+        {/* MATCH INFO */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Match Info</Text>
+
+          <View style={styles.infoGrid}>
+            <InfoTile label="Format" value={match.format} />
+            <InfoTile label="Type" value={match.matchType} />
+            <InfoTile label="Round" value={match.round || '—'} />
+            <InfoTile label="Created" value={formatDate(match.createdAt)} />
+          </View>
+        </View>
+        {/* LINEUP STATUS CARD */}
+        {match.status === 'ACCEPTED' && (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Lineup Status</Text>
+            <LineupStatus
+              teamName={match.homeTeam.teamName}
+              submitted={!!match.lineups?.home?.submittedAt}
+            />
+            <LineupStatus
+              teamName={match.awayTeam.teamName}
+              submitted={!!match.lineups?.away?.submittedAt}
+            />
           </View>
         )}
-      </View>
 
-      {/* MATCH INFO */}
-      <View style={styles.card}>
-        <Info
-          label="Date"
-          value={new Date(match.scheduledAt).toLocaleString()}
-        />
-        <Info label="Venue" value={match.venue || 'TBD'} />
-        <Info label="Format" value={match.format} />
-        <Info label="Type" value={match.matchType} />
-      </View>
+        {/* ACTION BUTTONS */}
+        {showRespond && (
+          <View style={styles.row}>
+            <ActionBtn
+              label="Accept"
+              color="#22C55E"
+              loading={actionLoading}
+              onPress={handleAccept}
+              flex
+            />
+            <ActionBtn
+              label="Reject"
+              color="#EF4444"
+              loading={actionLoading}
+              onPress={handleReject}
+              flex
+            />
+          </View>
+        )}
 
-      {/* LINEUP STATUS CARD */}
-      {match.status === 'ACCEPTED' && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Lineup Status</Text>
-          <LineupStatus
-            teamName={match.homeTeam.teamName}
-            submitted={!!match.lineups?.home?.submittedAt}
-          />
-          <LineupStatus
-            teamName={match.awayTeam.teamName}
-            submitted={!!match.lineups?.away?.submittedAt}
-          />
-        </View>
-      )}
-
-      {/* ACTION BUTTONS */}
-      {showRespond && (
-        <View style={styles.row}>
+        {showCancel && (
           <ActionBtn
-            label="Accept"
-            color="#22C55E"
+            label="Cancel Match"
+            color="#64748B"
             loading={actionLoading}
-            onPress={handleAccept}
+            onPress={handleCancel}
           />
+        )}
+
+        {showStart && (
           <ActionBtn
-            label="Reject"
-            color="#EF4444"
+            label="🚀 Start Match"
+            color="#1D4ED8"
             loading={actionLoading}
-            onPress={handleReject}
+            onPress={handleStartMatch}
           />
-        </View>
-      )}
+        )}
 
-      {showCancel && (
-        <ActionBtn
-          label="Cancel Match"
-          color="#64748B"
-          loading={actionLoading}
-          onPress={handleCancel}
-        />
-      )}
+        {canEditLineup && (
+          <ActionBtn
+            label={myLineupSubmitted ? 'View Lineup' : 'Add Lineup'}
+            color="#2563EB"
+            onPress={() => nav.toMatch('MatchLineup', {matchId})}
+          />
+        )}
 
-      {showStart && (
-        <ActionBtn
-          label="🚀 Start Match"
-          color="#1D4ED8"
-          loading={actionLoading}
-          onPress={handleStartMatch}
-        />
-      )}
+        {/* HELPER TEXT */}
+        {!canStartMatch && match.status === 'ACCEPTED' && (
+          <Text style={styles.helperText}>
+            {isTournamentMatch
+              ? '⏳ Waiting for tournament organiser to start the match'
+              : '⏳ Waiting for match creator to start the match'}
+          </Text>
+        )}
 
-      {canEditLineup && (
-        <ActionBtn
-          label={myLineupSubmitted ? 'View Lineup' : 'Add Lineup'}
-          color="#2563EB"
-          onPress={() =>
-            nav.toMatch('MatchLineup', { matchId })
-          }
-        />
-      )}
-
-      {/* HELPER TEXT */}
-      {!canStartMatch && match.status === 'ACCEPTED' && (
-        <Text style={styles.helperText}>
-          {isTournamentMatch
-            ? '⏳ Waiting for tournament organiser to start the match'
-            : '⏳ Waiting for match creator to start the match'}
-        </Text>
-      )}
-    </View>
+        {getCountdown(match.scheduledAt) && (
+          <View style={styles.countdownBox}>
+            <Text style={styles.countdownText}>
+              Starts in {getCountdown(match.scheduledAt)}
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+    </MainLayout>
   );
 }
 
 /* ---------- Small Components ---------- */
 
-function Info({ label, value }) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  );
-}
-
-function LineupStatus({ teamName, submitted }) {
+function LineupStatus({teamName, submitted}) {
   return (
     <View style={styles.lineupStatusRow}>
       <Text style={styles.teamName}>{teamName}</Text>
@@ -376,31 +424,25 @@ function LineupStatus({ teamName, submitted }) {
         style={[
           styles.statusText,
           submitted ? styles.statusTextGreen : styles.statusTextRed,
-        ]}
-      >
+        ]}>
         {submitted ? 'Submitted' : 'Pending'}
       </Text>
     </View>
   );
 }
 
-function ActionBtn({ label, color, loading, onPress }) {
+function ActionBtn({label, color, loading, onPress, flex}) {
   return (
     <TouchableOpacity
-      style={[styles.btn, { backgroundColor: color }]}
+      style={[styles.btn, {backgroundColor: color}, flex && {flex: 1, width: undefined}]}
       onPress={onPress}
-      disabled={loading}
-    >
-      {loading ? (
-        <ActivityIndicator color="#FFFFFF" />
-      ) : (
-        <Text style={styles.text}>{label}</Text>
-      )}
+      disabled={loading}>
+      {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.text}>{label}</Text>}
     </TouchableOpacity>
   );
 }
 
-function StatusBadge({ status }) {
+function StatusBadge({status}) {
   const map = {
     PENDING: '#FACC15',
     ACCEPTED: '#22C55E',
@@ -410,8 +452,26 @@ function StatusBadge({ status }) {
     COMPLETED: '#8B5CF6',
   };
   return (
-    <View style={[styles.badge, { backgroundColor: map[status] || '#64748B' }]}>
+    <View style={[styles.badge, {backgroundColor: map[status] || '#64748B'}]}>
       <Text style={styles.badgeText}>{status}</Text>
+    </View>
+  );
+}
+
+function TeamBlock({team}) {
+  return (
+    <View style={styles.teamBlockModern}>
+      <Image source={{uri: team?.teamLogoUrl}} style={styles.heroLogo} />
+      <Text style={styles.heroTeamName}>{team?.teamName}</Text>
+    </View>
+  );
+}
+
+function InfoTile({label, value}) {
+  return (
+    <View style={styles.infoTile}>
+      <Text style={styles.tileLabel}>{label}</Text>
+      <Text style={styles.tileValue}>{value}</Text>
     </View>
   );
 }
@@ -419,27 +479,90 @@ function StatusBadge({ status }) {
 /* ---------- Styles ---------- */
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#F1F5F9' },
+scroll: { flex: 1, backgroundColor: '#F1F5F9' },
 
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+container: { padding: 16, paddingBottom: 30 },
 
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
-  title: {
+  /* ---------- HERO CARD ---------- */
+
+  heroCard: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+
+  heroGradient: {
+    padding: 22,
+  },
+
+  heroTeamsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  heroLogo: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
+
+  heroTeamName: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    marginTop: 8,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+
+  heroScore: {
+    fontSize: 26,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+
+  heroVS: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#0F172A',
-    marginBottom: 8,
+    fontWeight: '700',
+    color: '#DBEAFE',
+  },
+
+  heroBottom: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+
+  heroDate: {
+    color: '#E0F2FE',
+    marginTop: 6,
+    fontSize: 14,
+  },
+
+  heroVenue: {
+    color: '#BFDBFE',
+    fontSize: 13,
+    marginTop: 2,
+  },
+
+  /* ---------- CARD ---------- */
+
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
 
   sectionTitle: {
@@ -449,14 +572,35 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  infoRow: {
+  /* ---------- INFO GRID ---------- */
+
+  infoGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 10,
   },
 
-  infoLabel: { color: '#64748B', fontWeight: '600' },
-  infoValue: { color: '#0F172A', fontWeight: '700' },
+  infoTile: {
+    width: '48%',
+    backgroundColor: '#F8FAFC',
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 14,
+  },
+
+  tileLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+
+  tileValue: {
+    fontSize: 16,
+    fontWeight: '800',
+    marginTop: 4,
+    color: '#111827',
+  },
+
+  /* ---------- LINEUP STATUS ---------- */
 
   lineupStatusRow: {
     flexDirection: 'row',
@@ -477,16 +621,28 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
 
-  statusDotGreen: { backgroundColor: '#22C55E' },
-  statusDotRed: { backgroundColor: '#EF4444' },
+  statusDotGreen: {
+    backgroundColor: '#22C55E',
+  },
+
+  statusDotRed: {
+    backgroundColor: '#EF4444',
+  },
 
   statusText: {
     fontSize: 14,
     fontWeight: '600',
   },
 
-  statusTextGreen: { color: '#22C55E' },
-  statusTextRed: { color: '#EF4444' },
+  statusTextGreen: {
+    color: '#22C55E',
+  },
+
+  statusTextRed: {
+    color: '#EF4444',
+  },
+
+  /* ---------- BUTTONS ---------- */
 
   row: {
     flexDirection: 'row',
@@ -494,20 +650,22 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  btn: {
-    flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+ btn: {
+  width: '100%',
+  paddingVertical: 15,
+  borderRadius: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 12,
+},
 
   text: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
+
+  /* ---------- BADGE ---------- */
 
   badge: {
     alignSelf: 'flex-start',
@@ -523,20 +681,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  tournamentBadge: {
-    backgroundColor: '#F59E0B',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-    marginTop: 8,
-  },
-
-  tournamentText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 12,
-  },
+  /* ---------- HELPERS ---------- */
 
   helperText: {
     textAlign: 'center',
@@ -545,4 +690,23 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginTop: 8,
   },
+
+ countdownBox: {
+  marginTop: 12,
+  backgroundColor: '#DBEAFE',      // light blue bg
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 12,
+  alignItems: 'center',
+  alignSelf: 'stretch',            // full width
+  borderWidth: 1,
+  borderColor: '#BFDBFE',  
+  marginBottom: 20,
+},
+countdownText: {
+  color: '#1E3A8A',                // dark blue text
+  fontWeight: '700',
+  fontSize: 15,
+  letterSpacing: 0.3,
+},
 });

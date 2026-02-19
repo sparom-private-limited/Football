@@ -16,6 +16,7 @@ import { FORMATIONS } from '../../components/lineup/FormationMap';
 import API from '../../api/api';
 import { submitMatchLineup, getMatchLineups } from '../../api/match.api';
 import useNavigationHelper from '../../navigation/Navigationhelper';
+import MainLayout from '../../components/MainLayout';
 
 export default function MatchLineupScreen() {
   const route = useRoute();
@@ -184,6 +185,7 @@ const nav = useNavigationHelper();
 
 
   return (
+    < MainLayout title="Match Lineup">
     <View style={styles.container}>
       <Text style={styles.title}>Match Lineup</Text>
 
@@ -236,6 +238,7 @@ const nav = useNavigationHelper();
         </TouchableOpacity>
       )}
     </View>
+    </MainLayout>
   );
 }
 
