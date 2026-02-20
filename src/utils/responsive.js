@@ -21,8 +21,8 @@ import { Dimensions, PixelRatio, Platform } from 'react-native';
 
 // ─── Base Design Dimensions ───────────────────────────────────
 // Change these to match the screen size you originally designed for.
-const BASE_WIDTH  = 375; // iPhone 11 / 13 mini logical width
-const BASE_HEIGHT = 812; // iPhone 11 / 13 mini logical height
+const BASE_WIDTH  = 400; 
+const BASE_HEIGHT = 920; 
 
 // ─── Current Device Dimensions ───────────────────────────────
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -57,7 +57,7 @@ export const vs = (size) => Math.round(heightRatio * size);
  * @param {number} factor - scaling aggressiveness 0 (none) to 1 (full), default 0.5
  * @returns {number}
  */
-export const ms = (size, factor = 0.5) =>
+export const ms = (size, factor = 0.3) =>
   Math.round(size + (s(size) - size) * factor);
 
 /**

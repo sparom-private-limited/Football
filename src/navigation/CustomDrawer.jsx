@@ -17,6 +17,8 @@ import Fontisto from 'react-native-vector-icons/Fontisto';
 import {useAuth} from '../context/AuthContext';
 import useNavigationHelper from '../navigation/Navigationhelper';
 
+import {s,ms,vs,rf} from '../utils/responsive';
+
 export default function CustomDrawer(props) {
   const nav = useNavigationHelper();
   const {user, logout} = useAuth();

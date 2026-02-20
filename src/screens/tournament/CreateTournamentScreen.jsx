@@ -14,8 +14,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import API from "../../api/api";
 import MainLayout from "../../components/MainLayout";
 import {s, vs, ms, rf} from "../../utils/responsive";
+import useNavigationHelper from '../../navigation/Navigationhelper';
 
-export default function CreateTournamentScreen({ nav }) {
+export default function CreateTournamentScreen() {
+   const nav = useNavigationHelper();
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -86,12 +88,17 @@ const [dateType, setDateType] = useState(null); // "start" | "end"
         endDate: form.endDate,
       });
 
-      nav.replace("MyTournaments");
+      nav.toTournament("MyTournaments");
     } catch (err) {
-      Alert.alert(
-        "Error",
-        err.response?.data?.message || "Failed to create tournament"
-      );
+      // Alert.alert(
+      //   "Error",
+      //   err.response?.data?.message || "Failed to create tournament"
+      // );
+  console.log("ERR RESPONSE:", err.response?.data);
+  console.log("ERR STATUS:", err.response?.status);
+  console.log("ERR MESSAGE:", err.message);
+  Alert.alert("Error", err.message || "Failed"); // ✅ show err.message not response
+
     } finally {
       setLoading(false);
     }
@@ -435,6 +442,7 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     marginBottom: vs(14),
     fontSize: rf(14),
+     color: "#0F172A",  
   },
 
   textArea: {
