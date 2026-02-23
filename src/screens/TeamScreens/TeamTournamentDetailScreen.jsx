@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  ScrollView
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import API from '../../api/api';
@@ -75,7 +76,7 @@ const nav = useNavigationHelper();
   return (
     <MainLayout title={tournament.name} forceBack>
       {/* ---- TOURNAMENT META ---- */}
-      <View style={styles.metaCard}>
+      <ScrollView style={styles.metaCard}>
         <Text style={styles.metaText}>
           Status: {tournament.status.replace('_', ' ')}
         </Text>
@@ -91,7 +92,7 @@ const nav = useNavigationHelper();
             <Text style={styles.primaryText}>Join Tournament</Text>
           </TouchableOpacity>
         )}
-      </View>
+      </ScrollView>
 
       {/* ---- MATCHES ---- */}
       <FlatList

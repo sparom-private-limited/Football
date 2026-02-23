@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   StyleSheet,
+  ScrollView
 } from 'react-native';
 import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
@@ -101,7 +102,7 @@ export default function OrganiserDashboardScreen() {
       onRefresh={() => loadDashboard(true)}
       style={{flex: 1}}>
       <MainLayout title="Dashboard">
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
           {/* HERO HEADER */}
           <View style={styles.heroHeader}>
             <Text style={styles.heroTitle}>Organiser Dashboard</Text>
@@ -168,7 +169,7 @@ export default function OrganiserDashboardScreen() {
             value={matches.filter(m => m.status === 'LIVE').length}
           />
         </View> */}
-        </View>
+        </ScrollView>
       </MainLayout>
     </AppRefreshView>
   );

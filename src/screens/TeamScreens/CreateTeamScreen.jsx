@@ -91,7 +91,7 @@ export default function CreateTeamScreen() {
 
   return (
     <MainLayout title="Create Team">
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <Text style={styles.title}>Create Team</Text>
 
         <TouchableOpacity
@@ -146,7 +146,7 @@ export default function CreateTeamScreen() {
         </TouchableOpacity>
 
         <View style={{height: 40}} />
-      </View>
+      </ScrollView>
     </MainLayout>
   );
 }

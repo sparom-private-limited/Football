@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Image,
+  ScrollView
 } from 'react-native';
 import {getMyMatches} from '../../api/match.api';
 import useNavigationHelper from '../../navigation/Navigationhelper';

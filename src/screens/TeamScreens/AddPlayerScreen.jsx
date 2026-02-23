@@ -10,6 +10,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  ScrollView
 } from 'react-native';
 import MainLayout from '../../components/MainLayout';
 import API from '../../api/api';
@@ -87,8 +88,8 @@ export default function AddPlayerScreen() {
   );
 
   return (
-    <MainLayout scroll={false}>
-      <View style={styles.container}>
+    <MainLayout title="Add Player">
+      <ScrollView style={styles.container}>
         <Text style={styles.title}>Add Player</Text>
 
         <View style={styles.row}>
@@ -121,7 +122,7 @@ export default function AddPlayerScreen() {
             nestedScrollEnabled={true} // ✅ FIX
           />
         )}
-      </View>
+      </ScrollView>
     </MainLayout>
   );
 }

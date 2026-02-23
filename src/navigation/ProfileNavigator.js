@@ -30,7 +30,7 @@ export default function ProfileNavigator() {
       <Stack.Screen
         name="PlayerStats"
         component={PlayerStatsScreen}
-        options={{title: 'Player Stats'}}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

@@ -42,314 +42,150 @@ export default function PlayerStatsScreen() {
     );
   }
 
-  const stats = [
-    {label: 'Matches', value: player.matchesPlayed},
-    {label: 'Goals', value: player.goals},
-    {label: 'Assists', value: player.assists},
-    {label: 'Clean Sheets', value: player.cleanSheets},
-    {label: 'Yellow Cards', value: player.yellowCards},
-    {label: 'Red Cards', value: player.redCards},
-  ];
+  if (!player) {
+    return (
+      <MainLayout title="My Stats">
+        <View style={styles.center}>
+          <Text style={styles.emptyText}>No player data found.</Text>
+        </View>
+      </MainLayout>
+    );
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* PLAYER HEADER */}
-      <View style={styles.hero}>
-        <View style={styles.heroTop}>
-          {player.profileImageUrl ? (
-            <Image
-              source={{uri: player.profileImageUrl}}
-              style={styles.heroAvatar}
-            />
-          ) : (
-            <View style={styles.heroAvatarFallback}>
-              <Text style={styles.heroAvatarText}>
-                {user?.name?.[0]?.toUpperCase()}
-              </Text>
-            </View>
-          )}
+    <MainLayout title="My Stats">
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}>
 
-          <View style={{flex: 1}}>
-            <Text style={styles.heroName}>{user?.name}</Text>
-
-            <View style={styles.heroRow}>
-              <Text style={styles.heroPosition}>{player.position}</Text>
-              <View
-                style={[
-                  styles.heroStatus,
-                  {backgroundColor: player.teamId ? '#16A34A' : '#F97316'},
-                ]}>
-                <Text style={styles.heroStatusText}>
-                  {player.teamId ? 'SIGNED' : 'FREE AGENT'}
+        {/* ── HERO CARD ── */}
+        <View style={styles.hero}>
+          <View style={styles.heroTop}>
+            {player.profileImageUrl ? (
+              <Image
+                source={{uri: player.profileImageUrl}}
+                style={styles.heroAvatar}
+              />
+            ) : (
+              <View style={styles.heroAvatarFallback}>
+                <Text style={styles.heroAvatarText}>
+                  {user?.name?.[0]?.toUpperCase() || 'P'}
                 </Text>
+              </View>
+            )}
+
+            <View style={{flex: 1}}>
+              <Text style={styles.heroName}>{user?.name}</Text>
+              <View style={styles.heroRow}>
+                <Text style={styles.heroPosition}>{player.position || 'Player'}</Text>
+                <View
+                  style={[
+                    styles.heroStatus,
+                    {backgroundColor: player.teamId ? '#16A34A' : '#F97316'},
+                  ]}>
+                  <Text style={styles.heroStatusText}>
+                    {player.teamId ? 'SIGNED' : 'FREE AGENT'}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
-        </View>
-      </View>
 
-      {/* QUICK STATS GRID */}
-      <View style={styles.impactRow}>
-        <ImpactStat label="Goals" value={player.goals} color="#16A34A" />
-        <ImpactStat label="Assists" value={player.assists} color="#2563EB" />
-        <ImpactStat
-          label="Matches"
-          value={player.matchesPlayed}
-          color="#0F172A"
-        />
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Performance</Text>
-
-        <View style={styles.performanceRow}>
-          <PerformanceItem label="Clean Sheets" value={player.cleanSheets} />
-          <PerformanceItem
-            label="Yellow Cards"
-            value={player.yellowCards}
-            danger
-          />
-          <PerformanceItem label="Red Cards" value={player.redCards} danger />
+          {/* Season summary inside hero */}
+          <View style={styles.heroStats}>
+            <HeroStat label="Matches" value={player.matchesPlayed ?? 0} />
+            <View style={styles.heroDivider} />
+            <HeroStat label="Goals" value={player.goals ?? 0} />
+            <View style={styles.heroDivider} />
+            <HeroStat label="Assists" value={player.assists ?? 0} />
+          </View>
         </View>
-      </View>
-    </ScrollView>
+
+        {/* ── ATTACKING ── */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>⚽</Text>
+            <Text style={styles.sectionTitle}>Attacking</Text>
+          </View>
+          <View style={styles.statGrid}>
+            <StatTile label="Goals" value={player.goals ?? 0} color="#16A34A" />
+            <StatTile label="Assists" value={player.assists ?? 0} color="#2563EB" />
+          </View>
+        </View>
+
+        {/* ── DISCIPLINE ── */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>🟨</Text>
+            <Text style={styles.sectionTitle}>Discipline</Text>
+          </View>
+          <View style={styles.statGrid}>
+            <StatTile
+              label="Yellow Cards"
+              value={player.yellowCards ?? 0}
+              color="#EAB308"
+            />
+            <StatTile
+              label="Red Cards"
+              value={player.redCards ?? 0}
+              color="#DC2626"
+            />
+          </View>
+        </View>
+
+        {/* ── GOALKEEPER / DEFENCE ── */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>🧤</Text>
+            <Text style={styles.sectionTitle}>Defence</Text>
+          </View>
+          <View style={styles.statGrid}>
+            <StatTile
+              label="Clean Sheets"
+              value={player.cleanSheets ?? 0}
+              color="#0EA5E9"
+            />
+            <StatTile
+              label="Matches Played"
+              value={player.matchesPlayed ?? 0}
+              color="#6366F1"
+            />
+          </View>
+        </View>
+
+      </ScrollView>
+    </MainLayout>
   );
 }
 
-function ImpactStat({label, value, color}) {
+/* ── Sub Components ── */
+
+function HeroStat({label, value}) {
   return (
-    <View style={styles.impactCard}>
-      <Text style={[styles.impactValue, {color}]}>{value}</Text>
-      <Text style={styles.impactLabel}>{label}</Text>
+    <View style={styles.heroStatItem}>
+      <Text style={styles.heroStatValue}>{value}</Text>
+      <Text style={styles.heroStatLabel}>{label}</Text>
     </View>
   );
 }
 
-function PerformanceItem({label, value, danger}) {
+function StatTile({label, value, color}) {
   return (
-    <View style={styles.performanceItem}>
-      <Text style={styles.performanceValue}>{value}</Text>
-      <Text style={[styles.performanceLabel, danger && {color: '#DC2626'}]}>
-        {label}
-      </Text>
+    <View style={styles.statTile}>
+      <Text style={[styles.statTileValue, {color}]}>{value}</Text>
+      <Text style={styles.statTileLabel}>{label}</Text>
+      {/* Bottom accent bar */}
+      <View style={[styles.statTileBar, {backgroundColor: color}]} />
     </View>
   );
 }
 
-// const styles = StyleSheet.create({
-//   container: {
-//     padding: 16,
-//   },
-
-//   center: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-
-//   profileCard: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 16,
-//     padding: 20,
-//     alignItems: 'center',
-//     marginBottom: 20,
-//     elevation: 3,
-//   },
-
-//   avatar: {
-//     width: 88,
-//     height: 88,
-//     borderRadius: 44,
-//     marginBottom: 10,
-//   },
-
-//   avatarFallback: {
-//     width: 88,
-//     height: 88,
-//     borderRadius: 44,
-//     backgroundColor: '#1D4ED8',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     marginBottom: 10,
-//   },
-
-//   avatarText: {
-//     color: '#fff',
-//     fontSize: 34,
-//     fontWeight: '800',
-//   },
-
-//   name: {
-//     fontSize: 20,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//   },
-
-//   meta: {
-//     fontSize: 14,
-//     color: '#64748B',
-//     marginTop: 4,
-//   },
-
-//   statsGrid: {
-//     flexDirection: 'row',
-//     flexWrap: 'wrap',
-//     justifyContent: 'space-between',
-//   },
-
-//   statCard: {
-//     width: '48%',
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 14,
-//     padding: 16,
-//     marginBottom: 14,
-//     elevation: 2,
-//     alignItems: 'center',
-//   },
-
-//   statValue: {
-//     fontSize: 26,
-//     fontWeight: '800',
-//     color: '#1D4ED8',
-//   },
-
-//   statLabel: {
-//     marginTop: 6,
-//     fontSize: 13,
-//     fontWeight: '600',
-//     color: '#64748B',
-//   },
-//   hero: {
-//     backgroundColor: '#1D4ED8',
-//     borderRadius: 18,
-//     padding: 20,
-//     marginBottom: 18,
-//   },
-
-//   heroTop: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     gap: 14,
-//   },
-
-//   heroAvatar: {
-//     width: 72,
-//     height: 72,
-//     borderRadius: 36,
-//   },
-
-//   heroAvatarFallback: {
-//     width: 72,
-//     height: 72,
-//     borderRadius: 36,
-//     backgroundColor: '#0F172A',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-
-//   heroAvatarText: {
-//     color: '#fff',
-//     fontSize: 28,
-//     fontWeight: '800',
-//   },
-
-//   heroName: {
-//     color: '#fff',
-//     fontSize: 20,
-//     fontWeight: '800',
-//   },
-
-//   heroRow: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginTop: 6,
-//     gap: 10,
-//   },
-
-//   heroPosition: {
-//     color: '#DBEAFE',
-//     fontWeight: '700',
-//   },
-
-//   heroStatus: {
-//     paddingHorizontal: 10,
-//     paddingVertical: 4,
-//     borderRadius: 10,
-//   },
-
-//   heroStatusText: {
-//     color: '#fff',
-//     fontSize: 11,
-//     fontWeight: '800',
-//   },
-
-//   impactRow: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     marginBottom: 20,
-//   },
-
-//   impactCard: {
-//     width: '30%',
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 16,
-//     paddingVertical: 18,
-//     alignItems: 'center',
-//     elevation: 3,
-//   },
-
-//   impactValue: {
-//     fontSize: 28,
-//     fontWeight: '900',
-//   },
-
-//   impactLabel: {
-//     marginTop: 6,
-//     fontSize: 13,
-//     fontWeight: '600',
-//     color: '#64748B',
-//   },
-
-//   section: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 16,
-//     padding: 16,
-//   },
-
-//   sectionTitle: {
-//     fontSize: 16,
-//     fontWeight: '800',
-//     marginBottom: 12,
-//     color: '#0F172A',
-//   },
-
-//   performanceRow: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//   },
-
-//   performanceItem: {
-//     alignItems: 'center',
-//     width: '30%',
-//   },
-
-//   performanceValue: {
-//     fontSize: 20,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//   },
-
-//   performanceLabel: {
-//     marginTop: 4,
-//     fontSize: 12,
-//     fontWeight: '600',
-//     color: '#64748B',
-//   },
-// });
-
+/* ── Styles ── */
 
 const styles = StyleSheet.create({
   container: {
-    padding: s(16),
+    paddingBottom: vs(40),
+    backgroundColor: '#F1F5F9',
   },
 
   center: {
@@ -358,105 +194,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  profileCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: ms(16),
-    padding: s(20),
-    alignItems: 'center',
-    marginBottom: vs(20),
-    elevation: 3,
-  },
-
-  avatar: {
-    width: s(88),
-    height: s(88),
-    borderRadius: s(44),
-    marginBottom: vs(10),
-  },
-
-  avatarFallback: {
-    width: s(88),
-    height: s(88),
-    borderRadius: s(44),
-    backgroundColor: '#1D4ED8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: vs(10),
-  },
-
-  avatarText: {
-    color: '#fff',
-    fontSize: ms(34),
-    fontWeight: '800',
-  },
-
-  name: {
-    fontSize: ms(20),
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-
-  meta: {
-    fontSize: rf(14),
-    color: '#64748B',
-    marginTop: vs(4),
-  },
-
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-
-  statCard: {
-    width: '48%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: ms(14),
-    padding: s(16),
-    marginBottom: vs(14),
-    elevation: 2,
-    alignItems: 'center',
-  },
-
-  statValue: {
-    fontSize: ms(26),
-    fontWeight: '800',
-    color: '#1D4ED8',
-  },
-
-  statLabel: {
-    marginTop: vs(6),
-    fontSize: rf(13),
-    fontWeight: '600',
+  emptyText: {
+    fontSize: rf(15),
     color: '#64748B',
   },
 
+  /* ── HERO ── */
   hero: {
-    backgroundColor: '#1D4ED8',
-    borderRadius: ms(18),
+    backgroundColor: '#2563EB',
     padding: s(20),
-    marginBottom: vs(18),
+    marginBottom: vs(12),
   },
 
   heroTop: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: s(14),
+    marginBottom: vs(20),
   },
 
   heroAvatar: {
     width: s(72),
     height: s(72),
     borderRadius: s(36),
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.4)',
   },
 
   heroAvatarFallback: {
     width: s(72),
     height: s(72),
     borderRadius: s(36),
-    backgroundColor: '#0F172A',
+    backgroundColor: '#1E40AF',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
 
   heroAvatarText: {
@@ -467,7 +240,7 @@ const styles = StyleSheet.create({
 
   heroName: {
     color: '#fff',
-    fontSize: ms(20),
+    fontSize: ms(22),
     fontWeight: '800',
   },
 
@@ -479,15 +252,15 @@ const styles = StyleSheet.create({
   },
 
   heroPosition: {
-    color: '#DBEAFE',
+    color: '#BFDBFE',
     fontWeight: '700',
     fontSize: rf(14),
   },
 
   heroStatus: {
     paddingHorizontal: s(10),
-    paddingVertical: vs(4),
-    borderRadius: ms(10),
+    paddingVertical: vs(3),
+    borderRadius: ms(20),
   },
 
   heroStatusText: {
@@ -496,66 +269,101 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  impactRow: {
+  /* Hero bottom stat row */
+  heroStats: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: vs(20),
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: ms(14),
+    paddingVertical: vs(14),
   },
 
-  impactCard: {
-    width: '30%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: ms(16),
-    paddingVertical: vs(18),
+  heroStatItem: {
+    flex: 1,
     alignItems: 'center',
-    elevation: 3,
   },
 
-  impactValue: {
-    fontSize: ms(28),
+  heroStatValue: {
+    color: '#FFFFFF',
+    fontSize: ms(24),
     fontWeight: '900',
   },
 
-  impactLabel: {
-    marginTop: vs(6),
-    fontSize: rf(13),
+  heroStatLabel: {
+    color: '#BFDBFE',
+    fontSize: rf(12),
     fontWeight: '600',
-    color: '#64748B',
+    marginTop: vs(2),
   },
 
-  section: {
+  heroDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    marginVertical: vs(4),
+  },
+
+  /* ── SECTION CARD ── */
+  sectionCard: {
     backgroundColor: '#FFFFFF',
+    marginHorizontal: s(16),
+    marginBottom: vs(12),
     borderRadius: ms(16),
     padding: s(16),
+    elevation: 1,
+  },
+
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(8),
+    marginBottom: vs(14),
+  },
+
+  sectionIcon: {
+    fontSize: ms(18),
   },
 
   sectionTitle: {
     fontSize: rf(16),
     fontWeight: '800',
-    marginBottom: vs(12),
     color: '#0F172A',
   },
 
-  performanceRow: {
+  /* ── STAT GRID ── */
+  statGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: s(12),
   },
 
-  performanceItem: {
+  statTile: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderRadius: ms(12),
+    padding: s(14),
     alignItems: 'center',
-    width: '30%',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
   },
 
-  performanceValue: {
-    fontSize: ms(20),
-    fontWeight: '800',
-    color: '#0F172A',
+  statTileValue: {
+    fontSize: ms(32),
+    fontWeight: '900',
   },
 
-  performanceLabel: {
-    marginTop: vs(4),
+  statTileLabel: {
     fontSize: rf(12),
     fontWeight: '600',
     color: '#64748B',
+    marginTop: vs(4),
+    textAlign: 'center',
+  },
+
+  statTileBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: vs(3),
+    opacity: 0.7,
   },
 });

@@ -599,6 +599,7 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  ScrollView
 } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native'; // ✅ CORRECT IMPORT
 import API from '../../api/api';
@@ -658,7 +659,9 @@ export default function TeamHome() {
   const loadMatches = async () => {
     try {
       const matchRes = await API.get('/api/match/myMatch');
-      const matches = matchRes.data || [];
+      // const matches = matchRes.data || [];
+
+       const matches = matchRes.data.data || [];
 
       const live = matches.find(m => m.status === 'LIVE');
       setLiveMatch(live || null);
@@ -743,7 +746,7 @@ export default function TeamHome() {
       style={styles.container}
     >
       <MainLayout title="Team Home">
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
           {/* HERO SECTION */}
           <View style={styles.heroWrapper}>
             <Image
@@ -903,7 +906,7 @@ export default function TeamHome() {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </MainLayout>
     </AppRefreshView>
   );

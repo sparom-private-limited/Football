@@ -19,6 +19,7 @@ export default function PlayerHome() {
   const [isProfileCompleted, setIsProfileCompleted] = useState(false);
   const [player, setPlayer] = useState(null);
   const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('Overview');
 
   useEffect(() => {
     fetchPlayerDetails();
@@ -39,7 +40,7 @@ export default function PlayerHome() {
 
   if (loading) {
     return (
-      <MainLayout title="Home">
+      <MainLayout title="Player Profile">
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#2563EB" />
         </View>
@@ -47,14 +48,17 @@ export default function PlayerHome() {
     );
   }
 
+
   return (
-    <MainLayout title="Home">
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* PLAYER HEADER CARD */}
-        {/* PLAYER HEADER CARD */}
-        <View style={styles.profileCard}>
-          <View style={styles.profileRow}>
-            {/* AVATAR */}
+    <MainLayout title="Player Profile">
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}>
+
+        {/* ── HERO HEADER CARD ── */}
+        <View style={styles.heroCard}>
+          {/* Avatar + Name Row */}
+          <View style={styles.heroRow}>
             <View style={styles.avatarWrapper}>
               {player?.profileImageUrl ? (
                 <Image
@@ -70,270 +74,195 @@ export default function PlayerHome() {
               )}
             </View>
 
-            {/* INFO */}
-            <View style={{flex: 1}}>
-              <Text style={styles.playerName}>{user?.name}</Text>
-              <Text style={styles.playerMeta}>
+            <View style={styles.heroInfo}>
+              <View style={styles.heroNameRow}>
+                <Text style={styles.heroName}>{user?.name || 'Player'}</Text>
+                {/* Avg rating badge */}
+                <View style={styles.ratingBadge}>
+                  <Text style={styles.ratingStar}>☆</Text>
+                  <Text style={styles.ratingText}>
+                    {player?.avgRating
+                      ? `${player.avgRating} Avg rating`
+                      : 'No rating yet'}
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.heroMeta}>
                 {player?.position || 'Position'} •{' '}
-                {player?.teamId ? 'Team Player' : 'Free Agent'}
+                {player?.teamId ? 'Team Player' : 'Free Agent'} •{' '}
+                {player?.preferredFoot
+                  ? `${player.preferredFoot}-footed`
+                  : 'Not set'}
               </Text>
 
-              <View
-                style={[
-                  styles.statusBadge,
-                  {backgroundColor: player?.teamId ? '#22C55E' : '#F97316'},
-                ]}>
-                <Text style={styles.statusText}>
-                  {player?.teamId ? 'SIGNED' : 'FREE AGENT'}
-                </Text>
+              {/* Attribute pills */}
+              <View style={styles.pillsRow}>
+                {player?.pace != null && (
+                  <View style={styles.pill}>
+                    <Text style={styles.pillText}>Pace {player.pace}</Text>
+                  </View>
+                )}
+                {player?.finishing != null && (
+                  <View style={styles.pill}>
+                    <Text style={styles.pillText}>
+                      Finishing {player.finishing}
+                    </Text>
+                  </View>
+                )}
+                {player?.pressing != null && (
+                  <View style={styles.pill}>
+                    <Text style={styles.pillText}>
+                      Pressing {player.pressing}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
           </View>
         </View>
 
-        {/* PROFILE INCOMPLETE CTA */}
+        {/* ── PROFILE INCOMPLETE WARNING ── */}
         {!isProfileCompleted && (
           <View style={styles.warningCard}>
-            <Text style={styles.warningTitle}>Complete Your Profile</Text>
+            <Text style={styles.warningTitle}>⚠️ Complete Your Profile</Text>
             <Text style={styles.warningText}>
-              Complete your profile to join teams, matches and tournaments.
+              Add your details to join teams and tournaments.
             </Text>
-
             <TouchableOpacity
               style={styles.primaryBtn}
               onPress={() => nav.toProfile('PlayerProfileEdit')}>
-              <Text style={styles.primaryBtnText}>Complete Profile</Text>
+              <Text style={styles.primaryBtnText}>Complete Profile →</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* QUICK ACTIONS */}
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <View style={styles.actionsRow}>
-          <ActionCard
-            label="My Matches"
-            onPress={() => nav.toMatch('MyMatches')}
-          />
-          <ActionCard label="My Stats" onPress={() => nav.toProfile('PlayerStats')} />
-          <ActionCard
-            label="Edit Profile"
-            onPress={() => nav.toProfile('PlayerProfileEdit')}
-          />
-          <ActionCard
-            label="Tournaments"
-            onPress={() => nav.toTournament('JoinTournament')}
-          />
+        {/* ── THIS SEASON CARD ── */}
+        <View style={styles.card}>
+          <View style={styles.seasonRow}>
+            <View style={styles.seasonLeft}>
+              <View style={styles.seasonIconWrap}>
+                <Text style={styles.seasonIcon}>📈</Text>
+              </View>
+              <View>
+                <Text style={styles.seasonTitle}>This season</Text>
+                <Text style={styles.seasonMeta}>
+                  {player?.matchesPlayed || 0} matches •{' '}
+                  {player?.goals || 0} goals •{' '}
+                  {player?.assists || 0} assists
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={styles.viewStatsBtn}
+              onPress={() => nav.toProfile('PlayerStats')}>
+              <Text style={styles.viewStatsBtnText}>View full stats</Text>
+            </TouchableOpacity>
+          </View>
+        </View>       
+
+        {/* ── KEY NUMBERS CARD ── */}
+        <View style={styles.card}>
+          <View style={styles.cardHeaderRow}>
+            <View>
+              <Text style={styles.cardTitle}>Key numbers</Text>
+              <Text style={styles.cardSubtitle}>All competitions</Text>
+            </View>
+            <View style={styles.per90Badge}>
+              <Text style={styles.per90Text}>Per 90</Text>
+            </View>
+          </View>
+
+          {/* 3x2 Stat Grid */}
+          <View style={styles.statGrid}>
+            <StatCell label="Goals" value={player?.goals ?? 0} />
+            <StatCell label="Assists" value={player?.assists ?? 0} />
+            <StatCell label="Matches" value={player?.matchesPlayed ?? 0} />
+            <StatCell label="Shots on target" value={player?.shotsOnTarget ?? 0} />
+            <StatCell label="Clean sheets" value={player?.cleanSheets ?? 0} />
+            <StatCell label="Yellow cards" value={player?.yellowCards ?? 0} />
+          </View>
+
+          {/* Tag pills */}
+          <View style={styles.tagRow}>
+            {player?.teamId ? (
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>⚡ Team Player</Text>
+              </View>
+            ) : (
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>🆓 Free Agent</Text>
+              </View>
+            )}
+            {player?.position && (
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>
+                  🎯 {player.position} specialist
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
 
-        {/* PERFORMANCE SNAPSHOT */}
-        {player && (
-          <>
-            <Text style={styles.sectionTitle}>Performance</Text>
-            <View style={styles.statsRow}>
-              <StatBox label="Matches" value={player.matchesPlayed} />
-              <StatBox label="Goals" value={player.goals} />
-              <StatBox label="Assists" value={player.assists} />
-            </View>
-          </>
-        )}
+        {/* ── QUICK ACTIONS ── */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Quick Actions</Text>
+          <Text style={styles.cardSubtitle}>Jump to a section</Text>
+          <View style={styles.actionsRow}>
+            <ActionCard
+              emoji="⚽"
+              label="My Matches"
+              onPress={() => nav.toMatch('MyMatches')}
+            />
+            <ActionCard
+              emoji="📊"
+              label="My Stats"
+              onPress={() => nav.toProfile('PlayerStats')}
+            />
+            <ActionCard
+              emoji="✏️"
+              label="Edit Profile"
+              onPress={() => nav.toProfile('PlayerProfileEdit')}
+            />
+            {/* <ActionCard
+              emoji="🏆"
+              label="Tournaments"
+              onPress={() => nav.toTournament('JoinTournament')}
+            /> */}
+          </View>
+        </View>
+
       </ScrollView>
     </MainLayout>
   );
 }
 
-/* ---------- Small Components ---------- */
+/* ─── Small Components ─── */
 
-function ActionCard({label, onPress}) {
+function StatCell({label, value}) {
+  return (
+    <View style={styles.statCell}>
+      <Text style={styles.statCellValue}>{value}</Text>
+      <Text style={styles.statCellLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function ActionCard({emoji, label, onPress}) {
   return (
     <TouchableOpacity style={styles.actionCard} onPress={onPress}>
+      <Text style={styles.actionEmoji}>{emoji}</Text>
       <Text style={styles.actionText}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
-function StatBox({label, value}) {
-  return (
-    <View style={styles.statBox}>
-      <Text style={styles.statValue}>{value ?? 0}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
-/* ---------- Styles ---------- */
-
-// const styles = StyleSheet.create({
-//   container: {
-//     padding: 16,
-//     backgroundColor: '#F8FAFC',
-//   },
-
-//   center: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-
-//   profileCard: {
-//     backgroundColor: '#2665ec',
-//     padding: 18,
-//     borderRadius: 16,
-//     marginBottom: 20,
-//   },
-
-//   playerName: {
-//     fontSize: 22,
-//     fontWeight: '800',
-//     color: '#FFFFFF',
-//   },
-
-//   playerMeta: {
-//     marginTop: 6,
-//     color: '#DBEAFE',
-//     fontWeight: '600',
-//   },
-
-//   statusBadge: {
-//     alignSelf: 'flex-start',
-//     marginTop: 10,
-//     paddingHorizontal: 10,
-//     paddingVertical: 4,
-//     borderRadius: 20,
-//   },
-
-//   statusText: {
-//     color: '#fff',
-//     fontSize: 11,
-//     fontWeight: '700',
-//   },
-
-//   warningCard: {
-//     backgroundColor: '#FFF7ED',
-//     padding: 16,
-//     borderRadius: 14,
-//     marginBottom: 22,
-//   },
-
-//   warningTitle: {
-//     fontWeight: '700',
-//     color: '#9A3412',
-//     fontSize: 16,
-//   },
-
-//   warningText: {
-//     marginTop: 6,
-//     color: '#9A3412',
-//     fontSize: 14,
-//   },
-
-//   primaryBtn: {
-//     marginTop: 12,
-//     backgroundColor: '#2563EB',
-//     paddingVertical: 12,
-//     borderRadius: 10,
-//   },
-
-//   primaryBtnText: {
-//     color: '#fff',
-//     textAlign: 'center',
-//     fontWeight: '700',
-//   },
-
-//   sectionTitle: {
-//     fontSize: 16,
-//     fontWeight: '800',
-//     marginBottom: 12,
-//     color: '#0F172A',
-//   },
-
-//   actionsRow: {
-//     flexDirection: 'row',
-//     flexWrap: 'wrap',
-//     gap: 12,
-//     marginBottom: 24,
-//   },
-
-//   actionCard: {
-//     width: '48%',
-//     backgroundColor: '#fff',
-//     paddingVertical: 18,
-//     borderRadius: 14,
-//     alignItems: 'center',
-//     elevation: 2,
-//   },
-
-//   actionText: {
-//     fontWeight: '700',
-//     color: '#1E293B',
-//   },
-
-//   statsRow: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     marginBottom: 30,
-//   },
-
-//   statBox: {
-//     width: '30%',
-//     backgroundColor: '#fff',
-//     padding: 16,
-//     borderRadius: 14,
-//     alignItems: 'center',
-//     elevation: 2,
-//   },
-
-//   statValue: {
-//     fontSize: 20,
-//     fontWeight: '800',
-//     color: '#2563EB',
-//   },
-
-//   statLabel: {
-//     marginTop: 4,
-//     color: '#64748B',
-//     fontWeight: '600',
-//   },
-//   profileRow: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     gap: 14,
-//   },
-
-//   avatarWrapper: {
-//     width: 80,
-//     height: 80,
-//     borderRadius: 32,
-//     backgroundColor: '#DBEAFE',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     overflow: 'hidden',
-//   },
-
-//   avatar: {
-//     width: '100%',
-//     height: '100%',
-//   },
-
-//   avatarFallback: {
-//     width: '100%',
-//     height: '100%',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     backgroundColor: '#1D4ED8',
-//   },
-
-//   avatarText: {
-//     color: '#FFFFFF',
-//     fontSize: 26,
-//     fontWeight: '800',
-//   },
-// });
-
+/* ─── Styles ─── */
 
 const styles = StyleSheet.create({
   container: {
-    padding: s(16),
-    backgroundColor: '#F8FAFC',
+    paddingBottom: vs(40),
+    backgroundColor: '#F1F5F9',
   },
 
   center: {
@@ -342,144 +271,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  profileCard: {
-    backgroundColor: '#2665ec',
-    padding: s(18),
-    borderRadius: ms(16),
-    marginBottom: vs(20),
-  },
-
-  playerName: {
-    fontSize: ms(22),
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-
-  playerMeta: {
-    marginTop: vs(6),
-    color: '#DBEAFE',
-    fontWeight: '600',
-    fontSize: rf(14),
-  },
-
-  statusBadge: {
-    alignSelf: 'flex-start',
-    marginTop: vs(10),
-    paddingHorizontal: s(10),
-    paddingVertical: vs(4),
-    borderRadius: ms(20),
-  },
-
-  statusText: {
-    color: '#fff',
-    fontSize: rf(11),
-    fontWeight: '700',
-  },
-
-  warningCard: {
-    backgroundColor: '#FFF7ED',
-    padding: s(16),
-    borderRadius: ms(14),
-    marginBottom: vs(22),
-  },
-
-  warningTitle: {
-    fontWeight: '700',
-    color: '#9A3412',
-    fontSize: rf(16),
-  },
-
-  warningText: {
-    marginTop: vs(6),
-    color: '#9A3412',
-    fontSize: rf(14),
-  },
-
-  primaryBtn: {
-    marginTop: vs(12),
+  /* ── HERO ── */
+  heroCard: {
     backgroundColor: '#2563EB',
-    paddingVertical: vs(12),
-    borderRadius: ms(10),
-  },
-
-  primaryBtnText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: '700',
-    fontSize: rf(14),
-  },
-
-  sectionTitle: {
-    fontSize: rf(16),
-    fontWeight: '800',
+    padding: s(20),
     marginBottom: vs(12),
-    color: '#0F172A',
   },
 
-  actionsRow: {
+  heroRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: s(12),
-    marginBottom: vs(24),
-  },
-
-  actionCard: {
-    width: '48%',
-    backgroundColor: '#fff',
-    paddingVertical: vs(18),
-    borderRadius: ms(14),
-    alignItems: 'center',
-    elevation: 2,
-  },
-
-  actionText: {
-    fontWeight: '700',
-    color: '#1E293B',
-    fontSize: rf(14),
-  },
-
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: vs(30),
-  },
-
-  statBox: {
-    width: '30%',
-    backgroundColor: '#fff',
-    padding: s(16),
-    borderRadius: ms(14),
-    alignItems: 'center',
-    elevation: 2,
-  },
-
-  statValue: {
-    fontSize: ms(20),
-    fontWeight: '800',
-    color: '#2563EB',
-  },
-
-  statLabel: {
-    marginTop: vs(4),
-    color: '#64748B',
-    fontWeight: '600',
-    fontSize: rf(12),
-  },
-
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: s(14),
   },
 
   avatarWrapper: {
-    width: s(80),
-    height: s(80),
-    borderRadius: ms(32),
-    backgroundColor: '#DBEAFE',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: s(72),
+    height: s(72),
+    borderRadius: s(36),
     overflow: 'hidden',
+    backgroundColor: '#1D4ED8',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.4)',
   },
 
   avatar: {
@@ -492,12 +304,293 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1D4ED8',
+    backgroundColor: '#1E40AF',
   },
 
   avatarText: {
     color: '#FFFFFF',
-    fontSize: ms(26),
+    fontSize: ms(28),
     fontWeight: '800',
+  },
+
+  heroInfo: {
+    flex: 1,
+  },
+
+  heroNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: s(6),
+  },
+
+  heroName: {
+    fontSize: ms(22),
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: s(8),
+    paddingVertical: vs(3),
+    borderRadius: ms(20),
+    gap: s(4),
+  },
+
+  ratingStar: {
+    fontSize: rf(11),
+    color: '#FCD34D',
+  },
+
+  ratingText: {
+    fontSize: rf(11),
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+
+  heroMeta: {
+    fontSize: rf(13),
+    color: '#BFDBFE',
+    marginTop: vs(4),
+    fontWeight: '500',
+  },
+
+  pillsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: s(6),
+    marginTop: vs(10),
+  },
+
+  pill: {
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: ms(20),
+  },
+
+  pillText: {
+    color: '#FFFFFF',
+    fontSize: rf(12),
+    fontWeight: '700',
+  },
+
+  /* ── WARNING ── */
+  warningCard: {
+    backgroundColor: '#FFF7ED',
+    padding: s(16),
+    marginHorizontal: s(16),
+    borderRadius: ms(14),
+    marginBottom: vs(12),
+    borderLeftWidth: 4,
+    borderLeftColor: '#F97316',
+  },
+
+  warningTitle: {
+    fontWeight: '700',
+    color: '#9A3412',
+    fontSize: rf(15),
+  },
+
+  warningText: {
+    marginTop: vs(4),
+    color: '#9A3412',
+    fontSize: rf(13),
+  },
+
+  primaryBtn: {
+    marginTop: vs(10),
+    backgroundColor: '#2563EB',
+    paddingVertical: vs(10),
+    borderRadius: ms(8),
+    alignItems: 'center',
+  },
+
+  primaryBtnText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: '700',
+    fontSize: rf(14),
+  },
+
+  /* ── CARD ── */
+  card: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: s(16),
+    marginBottom: vs(12),
+    padding: s(16),
+    borderRadius: ms(16),
+    elevation: 1,
+  },
+
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: vs(14),
+  },
+
+  cardTitle: {
+    fontSize: rf(16),
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+
+  cardSubtitle: {
+    fontSize: rf(12),
+    color: '#64748B',
+    marginTop: vs(2),
+  },
+
+  /* ── THIS SEASON ── */
+  seasonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  seasonLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(12),
+    flex: 1,
+  },
+
+  seasonIconWrap: {
+    width: s(38),
+    height: s(38),
+    borderRadius: ms(10),
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  seasonIcon: {
+    fontSize: ms(18),
+  },
+
+  seasonTitle: {
+    fontSize: rf(14),
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+
+  seasonMeta: {
+    fontSize: rf(12),
+    color: '#64748B',
+    marginTop: vs(2),
+  },
+
+  viewStatsBtn: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: s(10),
+    paddingVertical: vs(6),
+    borderRadius: ms(8),
+  },
+
+  viewStatsBtnText: {
+    fontSize: rf(12),
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+
+
+  /* ── PER90 BADGE ── */
+  per90Badge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: ms(8),
+  },
+
+  per90Text: {
+    fontSize: rf(11),
+    fontWeight: '700',
+    color: '#64748B',
+  },
+
+  /* ── STAT GRID ── */
+  statGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: s(8),
+    marginBottom: vs(12),
+  },
+
+  statCell: {
+    width: '30.5%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: ms(10),
+    padding: s(12),
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+  },
+
+  statCellValue: {
+    fontSize: ms(22),
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+
+  statCellLabel: {
+    fontSize: rf(11),
+    color: '#64748B',
+    marginTop: vs(2),
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+
+  /* ── TAGS ── */
+  tagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: s(8),
+  },
+
+  tag: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: s(12),
+    paddingVertical: vs(5),
+    borderRadius: ms(20),
+  },
+
+  tagText: {
+    fontSize: rf(12),
+    color: '#2563EB',
+    fontWeight: '600',
+  },
+
+  /* ── QUICK ACTIONS ── */
+  actionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: s(10),
+    marginTop: vs(12),
+  },
+
+  actionCard: {
+    width: '47%',
+    backgroundColor: '#F8FAFC',
+    paddingVertical: vs(16),
+    borderRadius: ms(12),
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+
+  actionEmoji: {
+    fontSize: ms(24),
+    marginBottom: vs(6),
+  },
+
+  actionText: {
+    fontWeight: '700',
+    color: '#1E293B',
+    fontSize: rf(13),
   },
 });

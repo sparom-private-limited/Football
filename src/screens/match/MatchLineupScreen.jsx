@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  LayoutAnimation,
+  ScrollView
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 
@@ -187,7 +187,7 @@ const nav = useNavigationHelper();
 
   return (
     < MainLayout title="Match Lineup">
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Match Lineup</Text>
 
       {isLocked && (
@@ -238,7 +238,7 @@ const nav = useNavigationHelper();
           <Text style={styles.saveText}>Submit Lineup</Text>
         </TouchableOpacity>
       )}
-    </View>
+    </ScrollView>
     </MainLayout>
   );
 }

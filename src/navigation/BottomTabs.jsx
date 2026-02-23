@@ -275,6 +275,18 @@ export default function BottomTabs() {
           key={tab.name}
           name={tab.name}
           component={tab.component}
+          listeners={
+            tab.name === 'ProfileNavigator'
+              ? ({navigation}) => ({
+                  tabPress: e => {
+                    e.preventDefault();
+                    navigation.navigate('ProfileNavigator', {
+                      screen: 'PlayerProfileView', // ✅ always reset to first screen
+                    });
+                  },
+                })
+              : undefined
+          }
           options={{
             tabBarShowLabel: false,
             tabBarIcon: ({focused}) => (

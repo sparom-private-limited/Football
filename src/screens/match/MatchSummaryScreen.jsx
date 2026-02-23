@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
+  ScrollView
 } from 'react-native';
 import API from '../../api/api';
 import { useRoute } from '@react-navigation/native';
@@ -150,7 +151,7 @@ const normalizeEvent = e => {
   const isDraw = match.score.home === match.score.away;
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -330,7 +331,7 @@ const normalizeEvent = e => {
           />
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 

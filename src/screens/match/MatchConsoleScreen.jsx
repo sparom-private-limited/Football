@@ -9,6 +9,7 @@ import {
   Alert,
   BackHandler,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import API from '../../api/api';
@@ -666,7 +667,7 @@ export default function MatchConsoleScreen() {
 
   // ================= RENDER =================
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {!socketConnected && (
         <View style={styles.socketStatus}>
           <ActivityIndicator size="small" color="#DC2626" />
@@ -1156,7 +1157,7 @@ export default function MatchConsoleScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }
 

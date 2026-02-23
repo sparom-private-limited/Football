@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  ScrollView
 } from 'react-native';
 import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
@@ -161,7 +162,7 @@ const handleJoin = async tournamentId => {
 
   return (
     <MainLayout title="Join Tournament" forceBack>
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         {/* SEARCH */}
         <Label text="Search Tournament" />
         <TextInput
@@ -259,7 +260,7 @@ const handleJoin = async tournamentId => {
             }}
           />
         )}
-      </View>
+      </ScrollView>
       {showDatePicker && Platform.OS === 'android' && (
         <DateTimePicker
           value={fromDate ? new Date(fromDate) : today}

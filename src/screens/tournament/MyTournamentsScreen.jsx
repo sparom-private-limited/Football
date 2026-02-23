@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  ScrollView
 } from 'react-native';
 import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
