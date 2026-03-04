@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,10 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import API from '../../api/api';
-import { useRoute } from '@react-navigation/native';
+import {useRoute} from '@react-navigation/native';
 import useNavigationHelper from '../../navigation/Navigationhelper';
 import Pitch from '../../components/lineup/Pitch';
 import {s, vs, ms, rf} from '../../utils/responsive';
@@ -18,7 +18,7 @@ import {s, vs, ms, rf} from '../../utils/responsive';
 const TABS = ['Info', 'Stats', 'Lineups', 'Timeline'];
 
 export default function MatchSummaryScreen() {
-  const { params } = useRoute();
+  const {params} = useRoute();
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Stats');
@@ -36,14 +36,14 @@ export default function MatchSummaryScreen() {
           .map(s => [s.slotKey, s.player]),
       );
     };
-    return { home: mapSide('home'), away: mapSide('away') };
+    return {home: mapSide('home'), away: mapSide('away')};
   }, [lineups]);
 
-  useEffect(() => { 
-  setLoading(true);
-  setMatch(null);
-  load(); 
-}, [params.matchId]); 
+  useEffect(() => {
+    setLoading(true);
+    setMatch(null);
+    load();
+  }, [params.matchId]);
 
   const load = async () => {
     try {
@@ -52,15 +52,19 @@ export default function MatchSummaryScreen() {
         API.get(`/api/match/${params.matchId}/lineups`),
       ]);
 
-      const normalizeEvent = e => ({
-        type: e.type,
-        minute: e.minute,
-        team: String(e.teamId || e.team),
-        teamName: e.teamName || 'Unknown Team',
-        player: e.player ? { name: e.player } : null,
-        assistPlayer: e.assist ? { name: e.assist } : null,
-        substitutedPlayer: e.substitutedPlayer ? { name: e.substitutedPlayer } : null,
-      });
+      const normalizeEvent = e => {
+        return {
+          type: e.type,
+          minute: e.minute,
+          team: e.teamId || e.team || null,
+          teamName: e.teamName || 'Unknown Team',
+          player: e.player ? {name: e.player} : null,
+          assistPlayer: e.assist ? {name: e.assist} : null,
+          substitutedPlayer: e.substitutedPlayer
+            ? {name: e.substitutedPlayer}
+            : null,
+        };
+      };
 
       const summary = summaryRes.data;
 
@@ -84,7 +88,7 @@ export default function MatchSummaryScreen() {
           home: summary.teams.home.score,
           away: summary.teams.away.score,
         },
-        winner: summary.winner ? { teamName: summary.winner.teamName } : null,
+        winner: summary.winner ? {teamName: summary.winner.teamName} : null,
         events: [
           ...summary.summary.goals.map(normalizeEvent),
           ...summary.summary.cards.map(normalizeEvent),
@@ -103,12 +107,20 @@ export default function MatchSummaryScreen() {
   const stats = useMemo(() => {
     if (!match) return null;
     const base = {
-      home: { goals: 0, fouls: 0, yellow: 0, red: 0 },
-      away: { goals: 0, fouls: 0, yellow: 0, red: 0 },
+      home: {goals: 0, fouls: 0, yellow: 0, red: 0},
+      away: {goals: 0, fouls: 0, yellow: 0, red: 0},
     };
     match.events.forEach(e => {
-      const side = String(e.team) === String(match.homeTeam._id) ? 'home' : 'away';
-      if (['GOAL', 'PENALTY_GOAL', 'OWN_GOAL'].includes(e.type)) base[side].goals++;
+      let side;
+      if (e.team) {
+        // ✅ Use ID if available
+        side = String(e.team) === String(match.homeTeam._id) ? 'home' : 'away';
+      } else {
+        // ✅ Fallback to teamName for cards
+        side = e.teamName === match.homeTeam.teamName ? 'home' : 'away';
+      }
+      if (['GOAL', 'PENALTY_GOAL', 'OWN_GOAL'].includes(e.type))
+        base[side].goals++;
       if (e.type === 'YELLOW') base[side].yellow++;
       if (e.type === 'RED') base[side].red++;
       if (e.type === 'FOUL') base[side].fouls++;
@@ -116,7 +128,7 @@ export default function MatchSummaryScreen() {
     return base;
   }, [match]);
 
-  if (loading) return <ActivityIndicator style={{ marginTop: 40 }} />;
+  if (loading) return <ActivityIndicator style={{marginTop: 40}} />;
 
   const isDraw = match.score.home === match.score.away;
 
@@ -162,9 +174,12 @@ export default function MatchSummaryScreen() {
           <TouchableOpacity
             key={tab}
             style={[styles.tab, activeTab === tab && styles.activeTab]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+            onPress={() => setActiveTab(tab)}>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === tab && styles.activeTabText,
+              ]}>
               {tab}
             </Text>
           </TouchableOpacity>
@@ -174,10 +189,26 @@ export default function MatchSummaryScreen() {
       {/* STATS TAB */}
       {activeTab === 'Stats' && (
         <View style={styles.statsCard}>
-          <BigStat label="Goals" left={stats.home.goals} right={stats.away.goals} />
-          <BigStat label="Yellow Cards" left={stats.home.yellow} right={stats.away.yellow} />
-          <BigStat label="Red Cards" left={stats.home.red} right={stats.away.red} />
-          <BigStat label="Fouls" left={stats.home.fouls} right={stats.away.fouls} />
+          <BigStat
+            label="Goals"
+            left={stats.home.goals}
+            right={stats.away.goals}
+          />
+          <BigStat
+            label="Yellow Cards"
+            left={stats.home.yellow}
+            right={stats.away.yellow}
+          />
+          <BigStat
+            label="Red Cards"
+            left={stats.home.red}
+            right={stats.away.red}
+          />
+          <BigStat
+            label="Fouls"
+            left={stats.home.fouls}
+            right={stats.away.fouls}
+          />
         </View>
       )}
 
@@ -186,19 +217,31 @@ export default function MatchSummaryScreen() {
         <View style={styles.lineupsCard}>
           <View style={styles.teamSelector}>
             <TouchableOpacity
-              style={[styles.teamSelectBtn, selectedLineupTeam === 'home' && styles.teamSelectActive]}
-              onPress={() => setSelectedLineupTeam('home')}
-            >
-              <Text style={[styles.teamSelectText, selectedLineupTeam === 'home' && styles.teamSelectTextActive]}>
+              style={[
+                styles.teamSelectBtn,
+                selectedLineupTeam === 'home' && styles.teamSelectActive,
+              ]}
+              onPress={() => setSelectedLineupTeam('home')}>
+              <Text
+                style={[
+                  styles.teamSelectText,
+                  selectedLineupTeam === 'home' && styles.teamSelectTextActive,
+                ]}>
                 {match.homeTeam.teamName}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.teamSelectBtn, selectedLineupTeam === 'away' && styles.teamSelectActive]}
-              onPress={() => setSelectedLineupTeam('away')}
-            >
-              <Text style={[styles.teamSelectText, selectedLineupTeam === 'away' && styles.teamSelectTextActive]}>
+              style={[
+                styles.teamSelectBtn,
+                selectedLineupTeam === 'away' && styles.teamSelectActive,
+              ]}
+              onPress={() => setSelectedLineupTeam('away')}>
+              <Text
+                style={[
+                  styles.teamSelectText,
+                  selectedLineupTeam === 'away' && styles.teamSelectTextActive,
+                ]}>
                 {match.awayTeam.teamName}
               </Text>
             </TouchableOpacity>
@@ -227,7 +270,9 @@ export default function MatchSummaryScreen() {
           )}
 
           {!selectedLineupTeam && (
-            <Text style={styles.lineupHint}>Tap a team name to view lineup</Text>
+            <Text style={styles.lineupHint}>
+              Tap a team name to view lineup
+            </Text>
           )}
         </View>
       )}
@@ -256,15 +301,15 @@ export default function MatchSummaryScreen() {
         `${item.type}-${item.minute}-${item.player?.name || 'x'}-${index}`
       }
       ListHeaderComponent={ListHeader}
-      renderItem={({ item }) => (
+      renderItem={({item}) => (
         <TimelineCard event={item} homeTeamId={match.homeTeam._id} />
       )}
       ListEmptyComponent={
         isTimeline ? (
-          <Text style={{ padding: 16, color: '#475569' }}>No events yet</Text>
+          <Text style={{padding: 16, color: '#475569'}}>No events yet</Text>
         ) : null
       }
-      contentContainerStyle={{ paddingBottom: 30 }}
+      contentContainerStyle={{paddingBottom: 30}}
       style={styles.container}
     />
   );
@@ -272,11 +317,11 @@ export default function MatchSummaryScreen() {
 
 /* ---------- UI PARTS ---------- */
 
-function Team({ team }) {
+function Team({team}) {
   return (
     <View style={styles.team}>
       {team.teamLogoUrl ? (
-        <Image source={{ uri: team.teamLogoUrl }} style={styles.logo} />
+        <Image source={{uri: team.teamLogoUrl}} style={styles.logo} />
       ) : (
         <View style={styles.logoFallback}>
           <Text style={styles.logoText}>{team.teamName[0]}</Text>
@@ -287,7 +332,7 @@ function Team({ team }) {
   );
 }
 
-function BigStat({ label, left, right }) {
+function BigStat({label, left, right}) {
   return (
     <View style={styles.bigStatRow}>
       <Text style={styles.bigNumber}>{left}</Text>
@@ -297,7 +342,7 @@ function BigStat({ label, left, right }) {
   );
 }
 
-function InfoCard({ label, value, icon }) {
+function InfoCard({label, value, icon}) {
   return (
     <View style={styles.infoBigCard}>
       <Text style={styles.infoIcon}>{icon}</Text>
@@ -307,16 +352,16 @@ function InfoCard({ label, value, icon }) {
   );
 }
 
-function TimelineCard({ event, homeTeamId }) {
+function TimelineCard({event, homeTeamId}) {
   const isHome = String(event.team) === String(homeTeamId);
 
   const config = getEventConfig(event.type);
 
   return (
-    <View style={[styles.timelineCard, { borderLeftColor: config.color }]}>
+    <View style={[styles.timelineCard, {borderLeftColor: config.color}]}>
       {/* TOP ROW */}
       <View style={styles.timelineHeader}>
-        <Text style={[styles.eventIcon, { color: config.color }]}>
+        <Text style={[styles.eventIcon, {color: config.color}]}>
           {config.icon}
         </Text>
 
@@ -341,7 +386,7 @@ function TimelineCard({ event, homeTeamId }) {
       )}
 
       {/* TEAM SIDE */}
-<Text style={styles.teamSide}>{event.teamName}</Text>
+      <Text style={styles.teamSide}>{event.teamName}</Text>
     </View>
   );
 }
@@ -350,22 +395,22 @@ function getEventConfig(type) {
   switch (type) {
     case 'GOAL':
     case 'PENALTY_GOAL':
-      return { icon: '⚽', color: '#16A34A' };
+      return {icon: '⚽', color: '#16A34A'};
 
     case 'OWN_GOAL':
-      return { icon: '🥅', color: '#DC2626' };
+      return {icon: '🥅', color: '#DC2626'};
 
     case 'YELLOW':
-      return { icon: '🟨', color: '#FACC15' };
+      return {icon: '🟨', color: '#FACC15'};
 
     case 'RED':
-      return { icon: '🟥', color: '#DC2626' };
+      return {icon: '🟥', color: '#DC2626'};
 
     case 'SUBSTITUTION':
-      return { icon: '🔄', color: '#2563EB' };
+      return {icon: '🔄', color: '#2563EB'};
 
     default:
-      return { icon: '•', color: '#64748B' };
+      return {icon: '•', color: '#64748B'};
   }
 }
 
@@ -1050,4 +1095,3 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
 });
-

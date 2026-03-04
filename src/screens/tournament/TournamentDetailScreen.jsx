@@ -31,6 +31,7 @@ export default function TournamentDetailScreen() {
   const isFocused = useIsFocused();
   const {user} = useAuth();
   const [fixtures, setFixtures] = useState([]);
+  const [standings, setStandings] = useState([]);
 
   const load = async () => {
     try {
@@ -58,8 +59,23 @@ export default function TournamentDetailScreen() {
       }
 
       setTournament({...tournamentData, teamContext});
-      const matchRes = await API.get(`/api/tournament/${tournamentId}/matches`);
+
+      // ✅ fetch fixtures and standings in parallel
+      const [matchRes, standingsRes] = await Promise.all([
+        API.get(`/api/tournament/${tournamentId}/matches`).catch(() => ({
+          data: [],
+        })),
+        // ✅ only fetch standings for LEAGUE
+        tournamentData.format === 'LEAGUE'
+          ? API.get(`/api/tournament/${tournamentId}/standings`).catch(() => ({
+              data: [],
+            }))
+          : Promise.resolve({data: []}),
+      ]);
+
+      console.log('STANDINGS:', JSON.stringify(standingsRes.data, null, 2));
       setFixtures(matchRes.data || []);
+      setStandings(standingsRes.data || []);
     } catch (err) {
       Alert.alert('Error', 'Failed to load tournament', [
         {text: 'OK', onPress: () => nav.back()},
@@ -588,14 +604,39 @@ export default function TournamentDetailScreen() {
             <View style={styles.cardHeaderRow}>
               <Text style={styles.cardTitle}>Standings</Text>
             </View>
-            {tournament.format !== 'LEAGUE' ? (
+
+            {tournament.format === 'KNOCKOUT' ? (
+              // ✅ Knockout — show bracket link instead
               <View style={styles.noTeamsBox}>
                 <Text style={styles.noTeamsIcon}>🏆</Text>
                 <Text style={styles.noTeamsText}>
-                  Standings are only available for League format tournaments
+                  Knockout tournaments use a bracket format
+                </Text>
+                {['FIXTURES_GENERATED', 'LIVE', 'COMPLETED'].includes(
+                  tournament.status,
+                ) && (
+                  <TouchableOpacity
+                    style={styles.viewBracketBtn}
+                    onPress={() =>
+                      nav.to('OrganiserTournamentMatches', {
+                        tournamentId: tournament._id,
+                        tournamentName: tournament.name,
+                      })
+                    }>
+                    <Text style={styles.viewBracketText}>View Bracket</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : standings.length === 0 ? (
+              // ✅ League but no data yet
+              <View style={styles.noTeamsBox}>
+                <Text style={styles.noTeamsIcon}>📊</Text>
+                <Text style={styles.noTeamsText}>
+                  Standings will appear once matches are played
                 </Text>
               </View>
             ) : (
+              // ✅ League with data — navigate to full standings
               <TouchableOpacity
                 style={styles.viewBracketBtn}
                 onPress={() =>
@@ -1281,9 +1322,10 @@ const styles = StyleSheet.create({
   },
   viewBracketBtn: {
     backgroundColor: '#2563EB',
-    marginHorizontal: s(16),
+    marginHorizontal: s(25),
     marginBottom: vs(16),
     paddingVertical: vs(16),
+    paddingHorizontal: vs(20),
     borderRadius: ms(16),
     alignItems: 'center',
     shadowColor: '#2563EB',
@@ -1390,4 +1432,5 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     marginTop: vs(2),
   },
+  
 });

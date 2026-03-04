@@ -158,35 +158,39 @@ export default function MatchDetailScreen() {
   const isCreator = match.createdBy?._id === user?._id;
   const isOrganiser = user?.role === 'organiser';
 
-  // Team-specific checks
-  const isMyTeam =
-    myTeam &&
-    myTeam._id &&
-    (myTeam._id === match.homeTeam?._id || myTeam._id === match.awayTeam?._id);
+  // ✅ Define mySide FIRST before using it
+  const mySide =
+    myTeam && myTeam._id
+      ? myTeam._id.toString() === match.homeTeam?._id?.toString()
+        ? 'home'
+        : myTeam._id.toString() === match.awayTeam?._id?.toString()
+        ? 'away'
+        : null
+      : null;
 
+  // ✅ Use .toString() for ObjectId comparison
+  const isMyTeam = mySide !== null;
   const isOpponent = user?.role === 'team' && !isCreator && isMyTeam;
 
   // Who can start match?
   const canStartMatch = isTournamentMatch ? isOrganiser : isCreator;
 
-  // Button visibility
-  const showRespond = match.status === 'PENDING' && isOpponent;
+  // ✅ Now mySide is defined so these work correctly
+  const myAcceptance = mySide ? match.acceptance?.[mySide] : false;
+  const myTeamAccepted = mySide ? match.acceptance?.[mySide] : false;
+
+  const showRespond = match.status === 'PENDING' && isOpponent && !myAcceptance;
   const showCancel =
     ['PENDING', 'ACCEPTED'].includes(match.status) &&
     isCreator &&
     !isTournamentMatch;
   const showStart = match.status === 'ACCEPTED' && canStartMatch;
 
-  // Lineup management (only for teams)
-  const mySide =
-    isMyTeam && myTeam && myTeam._id
-      ? myTeam._id === match.homeTeam._id
-        ? 'home'
-        : 'away'
-      : null;
-
   const myLineupSubmitted = mySide && match.lineups?.[mySide]?.submittedAt;
   const canEditLineup = mySide && !['LIVE', 'COMPLETED'].includes(match.status);
+
+  const showWaitingForOpponent =
+    isTournamentMatch && match.status === 'PENDING' && myTeamAccepted;
 
   /* -------------------- ACTIONS -------------------- */
   const handleAccept = async () => {
@@ -302,15 +306,13 @@ export default function MatchDetailScreen() {
             </View>
 
             <View style={styles.heroBottom}>
-              <StatusBadge status={match.status} />
-
+              <View style={{alignItems: 'center'}}>
+                <StatusBadge status={match.status} />
+              </View>
               <Text style={styles.heroDate}>
-                <Text>
-                  {formatDate(match.scheduledAt)} •{' '}
-                  {formatTime(match.scheduledAt)}
-                </Text>
+                {formatDate(match.scheduledAt)} •{' '}
+                {formatTime(match.scheduledAt)}
               </Text>
-
               <Text style={styles.heroVenue}>📍 {match.venue || 'TBD'}</Text>
             </View>
           </LinearGradient>
@@ -327,8 +329,16 @@ export default function MatchDetailScreen() {
             <InfoTile label="Created" value={formatDate(match.createdAt)} />
           </View>
         </View>
+
+        {showWaitingForOpponent && (
+          <Text style={styles.helperText}>
+            ✅ You have accepted. Waiting for opponent to accept...
+          </Text>
+        )}
         {/* LINEUP STATUS CARD */}
-        {match.status === 'ACCEPTED' && (
+        {/* LINEUP STATUS CARD */}
+        {(match.status === 'ACCEPTED' ||
+          (isTournamentMatch && match.status === 'PENDING')) && (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Lineup Status</Text>
             <LineupStatus
@@ -435,10 +445,18 @@ function LineupStatus({teamName, submitted}) {
 function ActionBtn({label, color, loading, onPress, flex}) {
   return (
     <TouchableOpacity
-      style={[styles.btn, {backgroundColor: color}, flex && {flex: 1, width: undefined}]}
+      style={[
+        styles.btn,
+        {backgroundColor: color},
+        flex && {flex: 1, width: undefined},
+      ]}
       onPress={onPress}
       disabled={loading}>
-      {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.text}>{label}</Text>}
+      {loading ? (
+        <ActivityIndicator color="#FFFFFF" />
+      ) : (
+        <Text style={styles.text}>{label}</Text>
+      )}
     </TouchableOpacity>
   );
 }
@@ -701,7 +719,7 @@ function InfoTile({label, value}) {
 //   alignItems: 'center',
 //   alignSelf: 'stretch',            // full width
 //   borderWidth: 1,
-//   borderColor: '#BFDBFE',  
+//   borderColor: '#BFDBFE',
 //   marginBottom: 20,
 // },
 // countdownText: {
@@ -712,11 +730,10 @@ function InfoTile({label, value}) {
 // },
 // });
 
-
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: '#F1F5F9' },
+  scroll: {flex: 1, backgroundColor: '#F1F5F9'},
 
-  container: { padding: s(16), paddingBottom: vs(30) },
+  container: {padding: s(16), paddingBottom: vs(30)},
 
   center: {
     flex: 1,
