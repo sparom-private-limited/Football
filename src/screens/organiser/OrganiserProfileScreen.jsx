@@ -17,6 +17,7 @@ import MainLayout from '../../components/MainLayout';
 import {launchImageLibrary} from 'react-native-image-picker';
 import useNavigationHelper from '../../navigation/Navigationhelper';
 import {s, vs, ms, rf} from '../../utils/responsive';
+import {useAuth} from '../../context/AuthContext';
 
 export default function OrganiserProfileScreen() {
   const nav = useNavigationHelper();
@@ -25,6 +26,7 @@ export default function OrganiserProfileScreen() {
   const [editMode, setEditMode] = useState(false);
   const [profileExists, setProfileExists] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const {user} = useAuth();
 
   const [form, setForm] = useState({
     name: '',
@@ -63,9 +65,7 @@ export default function OrganiserProfileScreen() {
   const loadProfile = async () => {
     try {
       setPageLoading(true);
-
       const res = await API.get('/api/organiser/profile');
-
       setForm({
         name: res.data.name || '',
         description: res.data.description || '',
@@ -73,13 +73,20 @@ export default function OrganiserProfileScreen() {
         contactPhone: res.data.contactPhone || '',
         location: res.data.location || '',
       });
-
       setSavedLogoUrl(res.data.logoUrl || null);
-      setNewLogo(null); // ✅ Reset picked logo
+      setNewLogo(null);
       setProfileExists(true);
       setEditMode(false);
     } catch (err) {
-      console.log('ℹ️ No profile found, entering create mode');
+      if (err.response?.status === 404) {
+        // ✅ Pre-fill from auth context user data
+        setForm(prev => ({
+          ...prev,
+          name: user?.name || '',
+          contactEmail: user?.email || '',
+          contactPhone: user?.mobile || '',
+        }));
+      }
       setProfileExists(false);
       setEditMode(true);
     } finally {
@@ -161,17 +168,32 @@ export default function OrganiserProfileScreen() {
         {/* PROFILE CARD */}
         {/* ===== HERO SECTION ===== */}
         <View style={styles.hero}>
+          {/* Logo — tap to preview OR pick in edit mode */}
           <TouchableOpacity
             activeOpacity={0.9}
-            onPress={() => displayLogo && setPreviewImage(displayLogo)}>
+            onPress={() =>
+              editMode
+                ? pickLogo()
+                : displayLogo && setPreviewImage(displayLogo)
+            }>
             <View style={styles.heroLogo}>
               {displayLogo ? (
                 <Image source={{uri: displayLogo}} style={styles.heroLogoImg} />
               ) : (
-                <Text style={styles.heroLogoText}>{form.name?.[0] || 'O'}</Text>
+                <View style={styles.logoPlaceholder}>
+                  <Text style={styles.logoPlaceholderIcon}>🏢</Text>
+                  <Text style={styles.logoPlaceholderText}>Add Logo</Text>
+                </View>
               )}
             </View>
           </TouchableOpacity>
+
+          {/* Show upload hint text in edit mode */}
+          {editMode && (
+            <Text style={styles.uploadHint}>
+              {displayLogo ? 'Tap logo to change' : 'Tap logo to upload'}
+            </Text>
+          )}
 
           <Text style={styles.heroTitle}>{form.name || 'Organisation'}</Text>
 
@@ -322,233 +344,6 @@ function Section({title, children}) {
 
 /* ---------------- STYLES ---------------- */
 
-// const styles = StyleSheet.create({
-//   center: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-
-//   container: {
-//     padding: 16,
-//     paddingBottom: 40,
-//     backgroundColor: '#F1F5F9',
-//   },
-
-//   card: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 16,
-//     padding: 16,
-//     shadowColor: '#000',
-//     shadowOpacity: 0.06,
-//     shadowRadius: 8,
-//     elevation: 4,
-//   },
-
-//   /* LOGO */
-//   logoSection: {
-//     alignItems: 'center',
-//     marginBottom: 24,
-//   },
-
-//   logoCircle: {
-//     width: 96,
-//     height: 96,
-//     borderRadius: 48,
-//     backgroundColor: '#E2E8F0',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     marginBottom: 8,
-//     overflow: 'hidden', // ✅ Important for circular images
-//   },
-
-//   logoImg: {
-//     width: 96,
-//     height: 96,
-//   },
-
-//   logoPlaceholder: {
-//     color: '#64748B',
-//     fontWeight: '700',
-//   },
-
-//   logoAction: {
-//     color: '#2563EB',
-//     fontWeight: '600',
-//     marginTop: 4,
-//   },
-
-//   /* INPUTS */
-//   inputGroup: {
-//     marginBottom: 16,
-//   },
-
-//   label: {
-//     fontWeight: '600',
-//     marginBottom: 6,
-//     color: '#334155',
-//   },
-
-//   input: {
-//     backgroundColor: '#F8FAFC',
-//     borderRadius: 12,
-//     padding: 12,
-//     borderWidth: 1,
-//     borderColor: '#E2E8F0',
-//     color: '#0F172A',
-//   },
-
-//   multiline: {
-//     height: 90,
-//     textAlignVertical: 'top',
-//   },
-
-//   readOnly: {
-//     backgroundColor: '#F1F5F9',
-//     color: '#475569',
-//   },
-
-//   /* BUTTONS */
-//   buttonRow: {
-//     flexDirection: 'row',
-//     gap: 12,
-//     marginTop: 16,
-//   },
-
-//   primaryBtn: {
-//     flex: 1,
-//     backgroundColor: '#2563EB',
-//     paddingVertical: 14,
-//     borderRadius: 14,
-//   },
-
-//   primaryBtnText: {
-//     color: '#fff',
-//     fontWeight: '700',
-//     textAlign: 'center',
-//     fontSize: 16,
-//   },
-
-//   cancelBtn: {
-//     flex: 1,
-//     backgroundColor: '#F1F5F9',
-//     paddingVertical: 14,
-//     borderRadius: 14,
-//     borderWidth: 1,
-//     borderColor: '#E2E8F0',
-//   },
-
-//   cancelBtnText: {
-//     color: '#475569',
-//     fontWeight: '700',
-//     textAlign: 'center',
-//     fontSize: 16,
-//   },
-
-//   secondaryBtn: {
-//     backgroundColor: '#0F172A',
-//     paddingVertical: 14,
-//     borderRadius: 14,
-//     marginTop: 16,
-//   },
-
-//   secondaryBtnText: {
-//     color: '#fff',
-//     fontWeight: '700',
-//     textAlign: 'center',
-//     fontSize: 16,
-//   },
-
-//   disabled: {
-//     opacity: 0.6,
-//   },
-//   previewOverlay: {
-//     flex: 1,
-//     backgroundColor: 'rgba(0,0,0,0.95)',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-
-//   previewImage: {
-//     width: '100%',
-//     height: '80%',
-//   },
-
-//   previewClose: {
-//     position: 'absolute',
-//     top: 40,
-//     right: 20,
-//     zIndex: 10,
-//   },
-
-//   previewCloseText: {
-//     color: '#fff',
-//     fontSize: 26,
-//     fontWeight: '700',
-//   },
-//   hero: {
-//     alignItems: 'center',
-//     marginBottom: 28,
-//   },
-
-//   heroLogo: {
-//     width: 110,
-//     height: 110,
-//     borderRadius: 55,
-//     backgroundColor: '#1D4ED8',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     elevation: 6,
-//   },
-
-//   heroLogoImg: {
-//     width: '100%',
-//     height: '100%',
-//     borderRadius: 55,
-//   },
-
-//   heroLogoText: {
-//     color: '#fff',
-//     fontSize: 42,
-//     fontWeight: '900',
-//   },
-
-//   heroTitle: {
-//     marginTop: 14,
-//     fontSize: 22,
-//     fontWeight: '800',
-//     color: '#020617',
-//     textAlign: 'center',
-//   },
-
-//   heroSubtitle: {
-//     marginTop: 4,
-//     fontSize: 14,
-//     color: '#64748B',
-//   },
-
-//   heroEditBtn: {
-//     marginTop: 14,
-//     paddingHorizontal: 20,
-//     paddingVertical: 8,
-//     borderRadius: 999,
-//     backgroundColor: '#1D4ED8',
-//   },
-
-//   heroEditText: {
-//     color: '#fff',
-//     fontWeight: '700',
-//   },
-
-//   sectionTitle: {
-//     fontSize: 13,
-//     fontWeight: '700',
-//     color: '#64748B',
-//     marginBottom: 12,
-//     letterSpacing: 0.4,
-//   },
-// });
-
 const styles = StyleSheet.create({
   center: {
     flex: 1,
@@ -605,6 +400,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: vs(4),
     fontSize: rf(14),
+  },
+
+  logoPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoPlaceholderIcon: {
+    fontSize: ms(28),
+  },
+  logoPlaceholderText: {
+    fontSize: rf(11),
+    color: '#94A3B8',
+    marginTop: vs(4),
+    fontWeight: '500',
   },
 
   /* INPUTS */

@@ -490,6 +490,7 @@ const styles = StyleSheet.create({
     borderRadius: ms(8),
     padding: s(12),
     fontSize: rf(16),
+    color: '#0F172A',
   },
   primaryBtn: {
     backgroundColor: "#1D4ED8",

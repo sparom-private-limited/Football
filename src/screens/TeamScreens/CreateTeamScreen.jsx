@@ -52,8 +52,11 @@ export default function CreateTeamScreen() {
     const result = await launchImageLibrary({mediaType: 'photo'});
     if (result.didCancel) return;
     const file = result.assets[0];
-    const formatted = {uri: file.uri, name: file.fileName, type: file.type};
-    if (type === 'logo') {
+ const formatted = {
+    uri: file.uri,
+    name: file.fileName || `image_${Date.now()}.jpg`, // ✅ fallback name
+    type: file.type || 'image/jpeg',                  // ✅ fallback type
+  };    if (type === 'logo') {
       setLogo(file.uri);
       setLogoFile(formatted);
     } else {
@@ -172,6 +175,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: vs(20),
+      color: '#0F172A',
   },
 
   coverBox: {
@@ -200,13 +204,14 @@ const styles = StyleSheet.create({
 
   placeholder: {color: '#475569'},
 
-  label: {fontSize: rf(14), marginBottom: vs(5), color: '#475569'},
+  label: {fontSize: rf(14), marginBottom: vs(5), color: '#475569' },
   input: {
     backgroundColor: '#fff',
     padding: s(14),
     borderRadius: ms(10),
     borderWidth: 1,
     borderColor: '#CBD5E1',
+    color: '#475569',
   },
 
   primaryBtn: {

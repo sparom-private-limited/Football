@@ -1,28 +1,33 @@
 import React from "react";
-import { View, StyleSheet, TouchableOpacity, Image, Dimensions } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from "react-native";
 import { FORMATIONS } from "./FormationMap";
 import LinearGradient from "react-native-linear-gradient";
 import { s, vs, ms, rf } from "../../utils/responsive";
 
 const { width } = Dimensions.get("window");
-const PITCH_HEIGHT = width * 1.25; // responsive
+const PITCH_HEIGHT = width * 1.25;
+
+// ✅ Slot and avatar sizes — reduced from s(68) to s(44)
+const SLOT_SIZE = s(50);
+const AVATAR_SIZE = s(50);
+const HALF_SLOT = SLOT_SIZE / 2;
 
 export default function Pitch({
   formation,
   lineup,
   selectedPlayer,
   onSlotPress,
+  readOnly = false,
 }) {
   const positions = FORMATIONS[formation] || [];
 
   return (
     <View style={styles.pitchWrapper}>
-     <LinearGradient
+      <LinearGradient
         colors={["#1F7A3A", "#166534"]}
         style={styles.pitch}
       >
-
-         <View style={styles.grassOverlay} />
+        <View style={styles.grassOverlay} />
 
         {/* Mid line */}
         <View style={styles.midLine} />
@@ -36,29 +41,56 @@ export default function Pitch({
 
         {positions.map((pos) => {
           const player = lineup[pos.key];
+          const isSelected = selectedPlayer && player &&
+            selectedPlayer._id === player._id;
 
           return (
             <TouchableOpacity
               key={pos.key}
-              activeOpacity={0.85}
+              activeOpacity={readOnly ? 1 : 0.85}
+              disabled={readOnly}
               style={[
                 styles.slot,
                 {
                   top: pos.top,
                   left: pos.left,
-                  borderColor: player
-                    ? "#fff"
-                    : selectedPlayer
+                  width: SLOT_SIZE,
+                  height: SLOT_SIZE,
+                  marginLeft: -HALF_SLOT,
+                  marginTop: -HALF_SLOT,
+                  borderRadius: HALF_SLOT,
+
+                  // ✅ No border when player assigned — clean look
+                  // Subtle border only for empty slots or selected
+                  borderWidth: player ? 0 : 1.5,
+                  borderColor: isSelected
                     ? "#60A5FA"
-                    : "rgba(255,255,255,0.6)",
+                    : player
+                    ? "transparent"
+                    : "rgba(255,255,255,0.5)",
+
+                  backgroundColor: player
+                    ? "transparent"  // ✅ no dark bg behind avatar
+                    : "rgba(15,23,42,0.3)",
                 },
               ]}
-              onPress={() => onSlotPress(pos.key)}
+              onPress={() => !readOnly && onSlotPress?.(pos.key)}
             >
               {player ? (
                 <Image
-                  source={{ uri: player.profileImageUrl }}
-                  style={styles.avatar}
+                  source={
+                    player.profileImageUrl
+                      ? { uri: player.profileImageUrl }
+                      : null
+                  }
+                  style={[
+                    styles.avatar,
+                    {
+                      width: AVATAR_SIZE,
+                      height: AVATAR_SIZE,
+                      borderRadius: AVATAR_SIZE / 2,
+                    },
+                  ]}
                 />
               ) : (
                 <View style={styles.emptyDot} />
@@ -71,11 +103,10 @@ export default function Pitch({
   );
 }
 
-
 const styles = StyleSheet.create({
   pitchWrapper: {
     alignItems: "center",
-    marginVertical: vs(16),
+    marginVertical: vs(8), // ✅ reduced from vs(16)
   },
 
   pitch: {
@@ -95,14 +126,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.03)",
   },
 
-  /* FIELD MARKINGS */
-
   midLine: {
     position: "absolute",
     top: "50%",
     left: 0,
     right: 0,
-    height: vs(2),
+    height: vs(1.5),
     backgroundColor: "rgba(255,255,255,0.4)",
   },
 
@@ -110,12 +139,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "50%",
     left: "50%",
-    width: s(110),
-    height: s(110),
-    marginLeft: s(-55),
-    marginTop: s(-55),
-    borderRadius: s(55),
-    borderWidth: 2,
+    width: s(90),       // ✅ reduced from s(110)
+    height: s(90),
+    marginLeft: s(-45),
+    marginTop: s(-45),
+    borderRadius: s(45),
+    borderWidth: 1.5,
     borderColor: "rgba(255,255,255,0.4)",
   },
 
@@ -124,8 +153,8 @@ const styles = StyleSheet.create({
     top: 0,
     left: "25%",
     width: "50%",
-    height: vs(90),
-    borderWidth: 2,
+    height: vs(80),     // ✅ reduced from vs(90)
+    borderWidth: 1.5,
     borderColor: "rgba(255,255,255,0.4)",
   },
 
@@ -134,41 +163,31 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: "25%",
     width: "50%",
-    height: vs(90),
-    borderWidth: 2,
+    height: vs(80),     // ✅ reduced from vs(90)
+    borderWidth: 1.5,
     borderColor: "rgba(255,255,255,0.4)",
   },
 
-  /* PLAYER SLOT */
-
+  // ✅ Base slot — sizes overridden inline per slot
   slot: {
     position: "absolute",
-    width: s(68),
-    height: s(68),
-    marginLeft: s(-34),
-    marginTop: s(-34),
-    borderRadius: s(34),
-    borderWidth: 2,
-    backgroundColor: "rgba(15,23,42,0.3)",
     justifyContent: "center",
     alignItems: "center",
-    elevation: 5,
+    elevation: 4,
     shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 4,
   },
 
   avatar: {
-    width: s(60),
-    height: s(60),
-    borderRadius: s(30),
+    // width/height/borderRadius set inline
   },
 
   emptyDot: {
-    width: s(12),
-    height: s(12),
-    borderRadius: s(6),
+    width: s(10),
+    height: s(10),
+    borderRadius: s(5),
     backgroundColor: "rgba(255,255,255,0.7)",
   },
 });

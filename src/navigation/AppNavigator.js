@@ -1,35 +1,42 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from 'react';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-import BottomTabs from "./BottomTabs";
+import BottomTabs from './BottomTabs';
 
-import CreateTeamScreen from "../screens/TeamScreens/CreateTeamScreen";
-import EditTeamScreen from "../screens/TeamScreens/EditTeamScreen";
-import AddPlayerScreen from "../screens/TeamScreens/AddPlayerScreen";
-import TeamProfileScreen from "../screens/TeamScreens/TeamProfileScreen";
-import TeamLineupScreen from "../screens/TeamScreens/TeamLineupScreen";
-import ProfileNavigator from "./ProfileNavigator";
+import CreateTeamScreen from '../screens/TeamScreens/CreateTeamScreen';
+import EditTeamScreen from '../screens/TeamScreens/EditTeamScreen';
+import AddPlayerScreen from '../screens/TeamScreens/AddPlayerScreen';
+import TeamProfileScreen from '../screens/TeamScreens/TeamProfileScreen';
+import TeamLineupScreen from '../screens/TeamScreens/TeamLineupScreen';
+import TeamStatsScreen from '../screens/TeamScreens/TeamstatsScreen';
+import TeamHome from '../screens/TeamScreens/TeamHome';
+import ProfileNavigator from './ProfileNavigator';
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, gestureEnabled: false }}>
-      <Stack.Screen name="MainTabs" component={BottomTabs}  options={{
-    headerShown: false,
-    headerBackButtonMenuEnabled: false, 
-  }} />
-     <Stack.Screen
-        name="ProfileNavigator"
-        component={ProfileNavigator}
+    <Stack.Navigator
+      screenOptions={{headerShown: false, gestureEnabled: false ,  animation: 'none',}}>
+      <Stack.Screen
+        name="MainTabs"
+        component={BottomTabs}
+        options={{
+          headerShown: false,
+          headerBackButtonMenuEnabled: false,
+           animation: 'none',
+        }}
       />
-      
+      <Stack.Screen name="ProfileNavigator" component={ProfileNavigator} />
+
       {/* Team Management Screens */}
+      <Stack.Screen name="TeamHome" component={TeamHome} />
       <Stack.Screen name="CreateTeam" component={CreateTeamScreen} />
       <Stack.Screen name="EditTeam" component={EditTeamScreen} />
       <Stack.Screen name="AddPlayer" component={AddPlayerScreen} />
       <Stack.Screen name="TeamProfile" component={TeamProfileScreen} />
       <Stack.Screen name="TeamLineup" component={TeamLineupScreen} />
+      <Stack.Screen name="TeamStats" component={TeamStatsScreen} />
     </Stack.Navigator>
   );
 }

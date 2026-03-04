@@ -7,46 +7,45 @@ import {
   StyleSheet,
   ActivityIndicator,
   Image,
-  ScrollView
+  Animated,
 } from 'react-native';
 import {getMyMatches} from '../../api/match.api';
 import useNavigationHelper from '../../navigation/Navigationhelper';
-import {useAuth} from '../../context/AuthContext'; 
+import {useAuth} from '../../context/AuthContext';
 import {s, vs, ms, rf} from '../../utils/responsive';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function MyMatchesScreen({type, route}) {
   const nav = useNavigationHelper();
+    const isFocused = useIsFocused(); // ✅ Now this will work
+  
   const matchType = type || route?.params?.type;
-  const {user} = useAuth(); 
+  const {user} = useAuth();
 
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); 
+  const [error, setError] = useState(null);
   const navigatingRef = useRef(false);
+
+  useEffect(() => {
+      if (isFocused) {
+        loadMatches();
+      }
+    }, [isFocused]);
 
   const loadMatches = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
       const res = await getMyMatches();
-
       const isUpcoming = matchType?.toUpperCase() === 'UPCOMING';
-
-      const filtered = res.data.filter(m =>
+      const filtered = (res.data.data || []).filter(m =>
         isUpcoming
           ? ['PENDING', 'ACCEPTED', 'LIVE'].includes(m.status)
           : ['COMPLETED', 'CANCELLED', 'REJECTED'].includes(m.status),
       );
-
       setMatches(filtered);
     } catch (err) {
-      console.error(
-        '❌ Error loading matches:',
-        err.response?.status,
-        err.response?.data?.message,
-      );
-
       if (err.response?.status === 403) {
         setError('Access denied. Please login to view matches.');
       } else if (err.response?.status === 404) {
@@ -68,16 +67,6 @@ export default function MyMatchesScreen({type, route}) {
   }, [matchType, user]);
 
   useEffect(() => {
-    if (!matchType) {
-      console.error('❌ Type parameter is missing!');
-    }
-    loadMatches();
-  }, [loadMatches]);
-
-  useEffect(() => {
-    if (!type) {
-      console.error('❌ Type parameter is missing!');
-    }
     loadMatches();
   }, [loadMatches]);
 
@@ -85,17 +74,21 @@ export default function MyMatchesScreen({type, route}) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#2563EB" />
+        <Text style={styles.loadingText}>Loading matches...</Text>
       </View>
     );
   }
 
-  // ← ADD ERROR STATE RENDERING
   if (error) {
     return (
       <View style={styles.center}>
+        <View style={styles.errorIcon}>
+          <Text style={styles.errorIconText}>!</Text>
+        </View>
+        <Text style={styles.errorTitle}>Oops!</Text>
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity onPress={loadMatches} style={styles.retryButton}>
-          <Text style={styles.retryText}>Retry</Text>
+          <Text style={styles.retryText}>Try Again</Text>
         </TouchableOpacity>
       </View>
     );
@@ -103,23 +96,18 @@ export default function MyMatchesScreen({type, route}) {
 
   const getPlayerTeam = match => {
     if (user?.role !== 'player') return null;
-
-    // This is a simplified version - you'll need player ID from context
-    // For now, you can add this logic or skip it
     return null;
   };
 
-  const renderItem = ({item}) => {
+  const renderItem = ({item, index}) => {
     const isCompleted = item.status === 'COMPLETED';
     const isLive = item.status === 'LIVE';
-
-    // For players: determine which team they're in
+    const isCancelled = item.status === 'CANCELLED';
     const playerTeam = user?.role === 'player' ? getPlayerTeam(item) : null;
 
     const handlePress = () => {
       if (navigatingRef.current) return;
       navigatingRef.current = true;
-
       if (isCompleted) {
         nav.toMatch('MatchSummary', {matchId: item._id});
       } else if (isLive) {
@@ -127,7 +115,6 @@ export default function MyMatchesScreen({type, route}) {
       } else {
         nav.toMatch('MatchDetail', {matchId: item._id});
       }
-
       setTimeout(() => {
         navigatingRef.current = false;
       }, 400);
@@ -135,55 +122,67 @@ export default function MyMatchesScreen({type, route}) {
 
     return (
       <TouchableOpacity
-        style={[
-          styles.card,
-          item.status === 'CANCELLED' && styles.cancelledCard,
-        ]}
+        activeOpacity={0.85}
+        style={[styles.card, isCancelled && styles.cancelledCard]}
         onPress={handlePress}>
+        {/* Live pulse indicator */}
+        {isLive && (
+          <View style={styles.liveBanner}>
+            <View style={styles.liveDot} />
+            <Text style={styles.liveBannerText}>LIVE NOW</Text>
+          </View>
+        )}
+
+        {/* Teams Row */}
         <View style={styles.teamsRow}>
           {/* Home Team */}
           <View style={styles.teamBlock}>
             <TeamLogo team={item.homeTeam} />
-            <Text style={styles.teamName} numberOfLines={1}>
+            <Text style={styles.teamName} numberOfLines={2}>
               {item.homeTeam?.teamName || 'Home'}
             </Text>
-            {playerTeam === 'home' && (
-              <View style={styles.myTeamBadge}>
-                <Text style={styles.myTeamText}>YOU</Text>
-              </View>
-            )}
+            {playerTeam === 'home' && <YouBadge />}
           </View>
 
-          {/* Score / VS */}
-          <View style={styles.scoreBlock}>
-            {item.status === 'COMPLETED' || item.status === 'LIVE' ? (
-              <Text style={styles.score}>
-                {item.score?.home ?? 0} : {item.score?.away ?? 0}
-              </Text>
+          {/* Center Score / VS */}
+          <View style={styles.centerBlock}>
+            {isCompleted || isLive ? (
+              <View style={styles.scoreContainer}>
+                <Text style={styles.scoreNum}>{item.score?.home ?? 0}</Text>
+                <Text style={styles.scoreSep}>:</Text>
+                <Text style={styles.scoreNum}>{item.score?.away ?? 0}</Text>
+              </View>
             ) : (
-              <Text style={styles.vs}>VS</Text>
+              <View style={styles.vsContainer}>
+                <Text style={styles.vs}>VS</Text>
+              </View>
             )}
+            <StatusBadge status={item.status} />
           </View>
 
           {/* Away Team */}
           <View style={styles.teamBlock}>
             <TeamLogo team={item.awayTeam} />
-            <Text style={styles.teamName} numberOfLines={1}>
+            <Text style={styles.teamName} numberOfLines={2}>
               {item.awayTeam?.teamName || 'Away'}
             </Text>
-            {playerTeam === 'away' && (
-              <View style={styles.myTeamBadge}>
-                <Text style={styles.myTeamText}>YOU</Text>
-              </View>
-            )}
+            {playerTeam === 'away' && <YouBadge />}
           </View>
         </View>
 
-        <StatusBadge status={item.status} />
-
-        <Text style={styles.meta}>
-          {new Date(item.scheduledAt).toLocaleString()}
-        </Text>
+        {/* Footer */}
+        <View style={styles.cardFooter}>
+          <Text style={styles.calendarIcon}>🗓</Text>
+          <Text style={styles.meta}>
+            {new Date(item.scheduledAt).toLocaleString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </Text>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -193,28 +192,47 @@ export default function MyMatchesScreen({type, route}) {
       data={matches}
       keyExtractor={item => item._id}
       renderItem={renderItem}
-      contentContainerStyle={{padding: 16}}
-      ListEmptyComponent={<Text style={styles.empty}>No matches found</Text>}
+      contentContainerStyle={styles.listContent}
+      showsVerticalScrollIndicator={false}
+      ListEmptyComponent={
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyIcon}>🏟️</Text>
+          <Text style={styles.emptyTitle}>No matches found</Text>
+          <Text style={styles.emptySubtitle}>
+            {matchType === 'UPCOMING'
+              ? 'No upcoming matches scheduled yet.'
+              : 'No past matches to show.'}
+          </Text>
+        </View>
+      }
     />
   );
 }
 
 /* ---------- Small Components ---------- */
 
+function YouBadge() {
+  return (
+    <View style={styles.youBadge}>
+      <Text style={styles.youBadgeText}>YOU</Text>
+    </View>
+  );
+}
+
 function StatusBadge({status}) {
-  const colors = {
-    PENDING: '#FACC15',
-    ACCEPTED: '#22C55E',
-    LIVE: '#10B981', // ← ADD THIS (was missing)
-    COMPLETED: '#2563EB',
-    CANCELLED: '#64748B',
-    REJECTED: '#EF4444',
+  const config = {
+    PENDING:   {bg: '#FEF3C7', text: '#92400E', label: 'Pending'},
+    ACCEPTED:  {bg: '#D1FAE5', text: '#065F46', label: 'Accepted'},
+    LIVE:      {bg: '#DCFCE7', text: '#14532D', label: '● Live'},
+    COMPLETED: {bg: '#DBEAFE', text: '#1E3A8A', label: 'Done'},
+    CANCELLED: {bg: '#F1F5F9', text: '#475569', label: 'Cancelled'},
+    REJECTED:  {bg: '#FEE2E2', text: '#7F1D1D', label: 'Rejected'},
   };
+  const c = config[status] || config.CANCELLED;
 
   return (
-    <View
-      style={[styles.badge, {backgroundColor: colors[status] || '#64748B'}]}>
-      <Text style={styles.badgeText}>{status}</Text>
+    <View style={[styles.badge, {backgroundColor: c.bg}]}>
+      <Text style={[styles.badgeText, {color: c.text}]}>{c.label}</Text>
     </View>
   );
 }
@@ -224,296 +242,292 @@ function TeamLogo({team}) {
     <Image source={{uri: team.teamLogoUrl}} style={styles.logo} />
   ) : (
     <View style={styles.logoFallback}>
-      <Text style={styles.logoText}>{team?.teamName?.[0] || 'T'}</Text>
+      <Text style={styles.logoText}>{team?.teamName?.[0]?.toUpperCase() || 'T'}</Text>
     </View>
   );
 }
 
 /* ---------- Styles ---------- */
-
-// const styles = StyleSheet.create({
-//   center: {flex: 1, justifyContent: 'center', alignItems: 'center'},
-
-//   card: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 16,
-//     padding: 16,
-//     marginBottom: 16,
-//     elevation: 3,
-//     shadowColor: '#000',
-//     shadowOffset: {width: 0, height: 2},
-//     shadowOpacity: 0.1,
-//     shadowRadius: 4,
-//   },
-
-//   cancelledCard: {
-//     opacity: 0.6,
-//   },
-
-//   teamsRow: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//     marginBottom: 12,
-//   },
-
-//   teamBlock: {
-//     width: 90,
-//     alignItems: 'center',
-//   },
-
-//   teamName: {
-//     marginTop: 6,
-//     fontSize: 14,
-//     fontWeight: '700',
-//     color: '#0F172A',
-//     textAlign: 'center',
-//   },
-
-//   scoreBlock: {
-//     minWidth: 60,
-//     alignItems: 'center',
-//   },
-
-//   score: {
-//     fontSize: 22,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//   },
-
-//   vs: {
-//     fontSize: 14,
-//     fontWeight: '700',
-//     color: '#64748B',
-//   },
-
-//   logo: {
-//     width: 64,
-//     height: 64,
-//     borderRadius: 32,
-//   },
-
-//   logoFallback: {
-//     width: 64, // ← FIXED: was 42, now matches logo size
-//     height: 64,
-//     borderRadius: 32,
-//     backgroundColor: '#E5E7EB',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-
-//   logoText: {
-//     fontSize: 24, // ← Added size
-//     fontWeight: '800',
-//     color: '#374151',
-//   },
-
-//   meta: {
-//     textAlign: 'center',
-//     color: '#64748B',
-//     marginTop: 4,
-//     fontSize: 12,
-//   },
-
-//   badge: {
-//     alignSelf: 'center',
-//     paddingHorizontal: 12,
-//     paddingVertical: 4,
-//     borderRadius: 20,
-//     marginTop: 6,
-//   },
-
-//   badgeText: {
-//     color: '#FFFFFF',
-//     fontWeight: '700',
-//     fontSize: 12,
-//   },
-
-//   empty: {
-//     textAlign: 'center',
-//     marginTop: 40,
-//     color: '#64748B',
-//     fontSize: 16,
-//   },
-
-//   // ← ADD ERROR STYLES
-//   errorText: {
-//     color: '#EF4444',
-//     fontSize: 16,
-//     textAlign: 'center',
-//     marginBottom: 16,
-//     paddingHorizontal: 32,
-//     lineHeight: 24,
-//   },
-
-//   retryButton: {
-//     backgroundColor: '#2563EB',
-//     paddingHorizontal: 24,
-//     paddingVertical: 12,
-//     borderRadius: 8,
-//     marginTop: 8,
-//   },
-
-//   retryText: {
-//     color: '#FFFFFF',
-//     fontWeight: '600',
-//     fontSize: 16,
-//   },
-//   myTeamBadge: {
-//     backgroundColor: '#3B82F6',
-//     paddingHorizontal: 8,
-//     paddingVertical: 2,
-//     borderRadius: 10,
-//     marginTop: 4,
-//   },
-
-//   myTeamText: {
-//     color: '#FFFFFF',
-//     fontSize: 10,
-//     fontWeight: '700',
-//   },
-// });
-
-
 const styles = StyleSheet.create({
-  center: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+  listContent: {
+    padding: s(16),
+    paddingBottom: vs(32),
+  },
 
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    padding: s(24),
+  },
+
+  loadingText: {
+    marginTop: vs(12),
+    color: '#94A3B8',
+    fontSize: rf(14),
+    fontWeight: '500',
+  },
+
+  // --- Card ---
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: ms(16),
-    padding: s(16),
-    marginBottom: vs(16),
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderRadius: ms(20),
+    marginBottom: vs(14),
+    overflow: 'hidden',
+    shadowColor: '#1E3A8A',
+    shadowOffset: {width: 0, height: vs(4)},
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#EEF2FF',
   },
 
   cancelledCard: {
-    opacity: 0.6,
+    opacity: 0.55,
   },
 
+  // --- Live banner ---
+  liveBanner: {
+    backgroundColor: '#DCFCE7',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: vs(6),
+    gap: s(6),
+  },
+
+  liveDot: {
+    width: s(7),
+    height: s(7),
+    borderRadius: s(4),
+    backgroundColor: '#16A34A',
+  },
+
+  liveBannerText: {
+    color: '#15803D',
+    fontSize: rf(11),
+    fontWeight: '800',
+    letterSpacing: 1.2,
+  },
+
+  // --- Teams row ---
   teamsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: vs(12),
+    paddingHorizontal: s(16),
+    paddingTop: vs(20),
+    paddingBottom: vs(12),
   },
 
   teamBlock: {
-    width: s(90),
+    width: s(88),
     alignItems: 'center',
+    gap: vs(6),
   },
 
   teamName: {
-    marginTop: vs(6),
-    fontSize: rf(14),
+    fontSize: rf(12),
     fontWeight: '700',
+    color: '#1E293B',
+    textAlign: 'center',
+    lineHeight: vs(16),
+  },
+
+  // --- Center ---
+  centerBlock: {
+    alignItems: 'center',
+    gap: vs(8),
+    flex: 1,
+  },
+
+  scoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(4),
+  },
+
+  scoreNum: {
+    fontSize: ms(28),
+    fontWeight: '900',
     color: '#0F172A',
+    minWidth: s(28),
     textAlign: 'center',
   },
 
-  scoreBlock: {
-    minWidth: s(60),
-    alignItems: 'center',
+  scoreSep: {
+    fontSize: ms(20),
+    fontWeight: '700',
+    color: '#94A3B8',
   },
 
-  score: {
-    fontSize: ms(22),
-    fontWeight: '800',
-    color: '#0F172A',
+  vsContainer: {
+    width: s(44),
+    height: s(44),
+    borderRadius: s(22),
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
   },
 
   vs: {
-    fontSize: rf(14),
-    fontWeight: '700',
+    fontSize: rf(12),
+    fontWeight: '900',
     color: '#64748B',
+    letterSpacing: 1,
   },
 
+  // --- Logos ---
   logo: {
-    width: s(64),
-    height: s(64),
-    borderRadius: s(32),
+    width: s(60),
+    height: s(60),
+    borderRadius: s(30),
+    borderWidth: 2,
+    borderColor: '#EEF2FF',
   },
 
   logoFallback: {
-    width: s(64),
-    height: s(64),
-    borderRadius: s(32),
-    backgroundColor: '#E5E7EB',
+    width: s(60),
+    height: s(60),
+    borderRadius: s(30),
+    backgroundColor: '#EEF2FF',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#DBEAFE',
   },
 
   logoText: {
-    fontSize: ms(24),
-    fontWeight: '800',
-    color: '#374151',
+    fontSize: ms(22),
+    fontWeight: '900',
+    color: '#2563EB',
   },
 
-  meta: {
-    textAlign: 'center',
-    color: '#64748B',
-    marginTop: vs(4),
-    fontSize: rf(12),
-  },
-
+  // --- Badge ---
   badge: {
-    alignSelf: 'center',
-    paddingHorizontal: s(12),
-    paddingVertical: vs(4),
+    paddingHorizontal: s(10),
+    paddingVertical: vs(3),
     borderRadius: ms(20),
-    marginTop: vs(6),
   },
 
   badgeText: {
-    color: '#FFFFFF',
+    fontSize: rf(10),
     fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+
+  // --- Footer ---
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: vs(10),
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    gap: s(6),
+    backgroundColor: '#FAFBFF',
+  },
+
+  calendarIcon: {
     fontSize: rf(12),
   },
 
-  empty: {
-    textAlign: 'center',
-    marginTop: vs(40),
+  meta: {
     color: '#64748B',
-    fontSize: rf(16),
+    fontSize: rf(11),
+    fontWeight: '600',
+  },
+
+  // --- YOU badge ---
+  youBadge: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: s(8),
+    paddingVertical: vs(2),
+    borderRadius: ms(10),
+  },
+
+  youBadgeText: {
+    color: '#FFFFFF',
+    fontSize: rf(9),
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+
+  // --- Empty ---
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: vs(60),
+  },
+
+  emptyIcon: {
+    fontSize: ms(48),
+    marginBottom: vs(12),
+  },
+
+  emptyTitle: {
+    fontSize: rf(18),
+    fontWeight: '800',
+    color: '#1E293B',
+    marginBottom: vs(6),
+  },
+
+  emptySubtitle: {
+    fontSize: rf(13),
+    color: '#94A3B8',
+    textAlign: 'center',
+    paddingHorizontal: s(32),
+    lineHeight: vs(20),
+  },
+
+  // --- Error ---
+  errorIcon: {
+    width: s(56),
+    height: s(56),
+    borderRadius: s(28),
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: vs(12),
+  },
+
+  errorIconText: {
+    fontSize: ms(26),
+    fontWeight: '900',
+    color: '#EF4444',
+  },
+
+  errorTitle: {
+    fontSize: rf(20),
+    fontWeight: '900',
+    color: '#1E293B',
+    marginBottom: vs(6),
   },
 
   errorText: {
-    color: '#EF4444',
-    fontSize: rf(16),
+    color: '#64748B',
+    fontSize: rf(14),
     textAlign: 'center',
-    marginBottom: vs(16),
+    marginBottom: vs(20),
     paddingHorizontal: s(32),
-    lineHeight: vs(24),
+    lineHeight: vs(22),
   },
 
   retryButton: {
     backgroundColor: '#2563EB',
-    paddingHorizontal: s(24),
-    paddingVertical: vs(12),
-    borderRadius: ms(8),
-    marginTop: vs(8),
+    paddingHorizontal: s(32),
+    paddingVertical: vs(13),
+    borderRadius: ms(14),
   },
 
   retryText: {
     color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: rf(16),
-  },
-
-  myTeamBadge: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: s(8),
-    paddingVertical: vs(2),
-    borderRadius: ms(10),
-    marginTop: vs(4),
-  },
-
-  myTeamText: {
-    color: '#FFFFFF',
-    fontSize: rf(10),
     fontWeight: '700',
+    fontSize: rf(15),
+    letterSpacing: 0.3,
   },
 });

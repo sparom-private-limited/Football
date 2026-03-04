@@ -7,7 +7,8 @@ import TournamentDetailsScreen from "../screens/tournament/TournamentDetailScree
 import JoinTournamentScreen from "../screens/tournament/JoinTournamentScreen";
 import TeamTournamentDetailScreen from "../screens/TeamScreens/TeamTournamentDetailScreen";
 import OrganiserTournamentMatchesScreen from "../screens/organiser/Organisertournamentmatchesscreen"; // ✅ NEW
-import TournamentStandingsScreen from "../screens/tournament/Tournamentstandingsscreen"; // ✅ NEW
+import TournamentStandingsScreen from "../screens/tournament/Tournamentstandingsscreen"; 
+import TournamentStatsScreen from "../screens/tournament/TournamentStats";
 
 const Stack = createNativeStackNavigator();
 

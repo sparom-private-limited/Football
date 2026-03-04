@@ -97,8 +97,7 @@ const [dateType, setDateType] = useState(null); // "start" | "end"
   console.log("ERR RESPONSE:", err.response?.data);
   console.log("ERR STATUS:", err.response?.status);
   console.log("ERR MESSAGE:", err.message);
-  Alert.alert("Error", err.message || "Failed"); // ✅ show err.message not response
-
+Alert.alert("Error", err.response?.data?.message || "Failed to create tournament");
     } finally {
       setLoading(false);
     }
@@ -116,17 +115,20 @@ const openDatePicker = (type) => {
 
 const onDateChange = (event, selectedDate) => {
   if (Platform.OS === "android") {
-    setShowPicker(false);
+    setShowPicker(false); // ✅ android closes on select
   }
 
   if (event.type === "dismissed") {
+    setShowPicker(false); // ✅ add this for iOS dismiss
     return;
   }
 
-  setForm((prev) => ({
-    ...prev,
-    [dateType === "start" ? "startDate" : "endDate"]: selectedDate,
-  }));
+  if (selectedDate) { // ✅ guard against undefined
+    setForm((prev) => ({
+      ...prev,
+      [dateType === "start" ? "startDate" : "endDate"]: selectedDate,
+    }));
+  }
 };
 
 const today = new Date();
@@ -303,110 +305,6 @@ const DateBtn = ({ value, onPress }) => (
   </TouchableOpacity>
 );
 
-/* ---------------- STYLES ---------------- */
-
-// const styles = StyleSheet.create({
-//   container: { paddingBottom: 40 },
-
-//   card: {
-//     backgroundColor: "#FFFFFF",
-//     marginHorizontal: 16,
-//     marginTop: 16,
-//     padding: 16,
-//     borderRadius: 14,
-//     elevation: 2,
-//   },
-
-//   sectionTitle: {
-//     fontSize: 15,
-//     fontWeight: "600",
-//     marginBottom: 12,
-//     color: "#1E293B",
-//   },
-
-//   label: {
-//     fontSize: 13,
-//     fontWeight: "500",
-//     color: "#475569",
-//     marginBottom: 6,
-//   },
-
-//   input: {
-//     backgroundColor: "#F8FAFC",
-//     padding: 14,
-//     borderRadius: 10,
-//     borderWidth: 1,
-//     borderColor: "#E2E8F0",
-//     marginBottom: 14,
-//     fontSize: 14,
-//   },
-
-//   textArea: {
-//     height: 100,
-//     textAlignVertical: "top",
-//   },
-
-//   row: {
-//     flexDirection: "row",
-//     gap: 10,
-//   },
-
-//   formatBtn: {
-//     flex: 1,
-//     paddingVertical: 12,
-//     borderRadius: 10,
-//     borderWidth: 1,
-//     borderColor: "#CBD5E1",
-//     alignItems: "center",
-//   },
-
-//   formatBtnActive: {
-//     backgroundColor: "#2563EB",
-//     borderColor: "#2563EB",
-//   },
-
-//   formatText: {
-//     fontWeight: "600",
-//     color: "#334155",
-//   },
-
-//   formatTextActive: {
-//     color: "#FFFFFF",
-//   },
-
-//  dateBtn: {
-//   backgroundColor: "#F8FAFC",
-//   borderWidth: 1,
-//   borderColor: "#CBD5E1",
-//   padding: 14,
-//   borderRadius: 12,
-//   marginBottom: 14,
-//   justifyContent: "center",
-// },
-
-
-// dateText: {
-//   color: "#0F172A",
-//   fontSize: 14,
-// },
-
-
-//   btn: {
-//     backgroundColor: "#2563EB",
-//     marginHorizontal: 16,
-//     marginTop: 24,
-//     paddingVertical: 16,
-//     borderRadius: 14,
-//   },
-
-//   btnText: {
-//     color: "#FFFFFF",
-//     fontWeight: "700",
-//     textAlign: "center",
-//     fontSize: 16,
-//   },
-// });
-
 
 const styles = StyleSheet.create({
   container: { paddingBottom: vs(40) },
@@ -442,7 +340,7 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     marginBottom: vs(14),
     fontSize: rf(14),
-     color: "#0F172A",  
+    color: "#0F172A",  
   },
 
   textArea: {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -13,9 +13,9 @@ import {
 } from 'react-native';
 import API from '../../../api/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuth } from '../../../context/AuthContext';
+import {useAuth} from '../../../context/AuthContext';
 
-export default function LoginPage({ navigation }) {
+export default function LoginPage({navigation}) {
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,12 +25,12 @@ export default function LoginPage({ navigation }) {
   const [toast, setToast] = useState(null);
   const [toastAnim] = useState(new Animated.Value(0));
 
-  const { login } = useAuth();
+  const {login} = useAuth();
 
   // Toast notification function
   const showToast = (message, type = 'error') => {
-    setToast({ message, type });
-    
+    setToast({message, type});
+
     Animated.sequence([
       Animated.timing(toastAnim, {
         toValue: 1,
@@ -47,17 +47,17 @@ export default function LoginPage({ navigation }) {
   };
 
   // Validation functions
-  const validateMobile = (text) => {
+  const validateMobile = text => {
     setMobile(text);
     if (errors.mobile) {
-      setErrors({ ...errors, mobile: null });
+      setErrors({...errors, mobile: null});
     }
   };
 
-  const validatePassword = (text) => {
+  const validatePassword = text => {
     setPassword(text);
     if (errors.password) {
-      setErrors({ ...errors, password: null });
+      setErrors({...errors, password: null});
     }
   };
 
@@ -103,17 +103,8 @@ export default function LoginPage({ navigation }) {
       await AsyncStorage.setItem('token', res.data.token);
       await AsyncStorage.setItem('user', JSON.stringify(res.data.user));
 
-      // Show success toast
-      showToast(
-        `Welcome back, ${res.data.user.name || 'User'}! 🎉`,
-        'success'
-      );
-
-      // Update auth context after toast starts
-      setTimeout(() => {
-        login(res.data.token, res.data.user);
-      }, 500);
-
+      login(res.data.token, res.data.user);
+      showToast(`Welcome back, ${res.data.user.name || 'User'}! 🎉`, 'success');
     } catch (err) {
       console.error('Login error:', err.response?.data || err.message);
 
@@ -126,7 +117,10 @@ export default function LoginPage({ navigation }) {
           setErrors({
             mobile: 'Mobile number not registered',
           });
-          showToast('Mobile number not registered. Please sign up first.', 'error');
+          showToast(
+            'Mobile number not registered. Please sign up first.',
+            'error',
+          );
         } else if (status === 401) {
           setErrors({
             password: 'Incorrect password',
@@ -141,7 +135,10 @@ export default function LoginPage({ navigation }) {
         }
       } else if (err.request) {
         // Network error
-        showToast('No internet connection. Please check and try again.', 'error');
+        showToast(
+          'No internet connection. Please check and try again.',
+          'error',
+        );
       } else {
         showToast('An unexpected error occurred. Please try again.', 'error');
       }
@@ -153,12 +150,10 @@ export default function LoginPage({ navigation }) {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps="handled"
-      >
+        keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
           {/* Header */}
           <View style={styles.header}>
@@ -174,8 +169,7 @@ export default function LoginPage({ navigation }) {
                 styles.inputWrapper,
                 focusedField === 'mobile' && styles.inputFocused,
                 errors.mobile && styles.inputError,
-              ]}
-            >
+              ]}>
               <Text style={styles.prefix}>+91</Text>
               <TextInput
                 placeholder="Enter mobile number"
@@ -203,8 +197,7 @@ export default function LoginPage({ navigation }) {
                 styles.passwordWrapper,
                 focusedField === 'password' && styles.inputFocused,
                 errors.password && styles.inputError,
-              ]}
-            >
+              ]}>
               <TextInput
                 placeholder="Enter password"
                 placeholderTextColor="#94A3B8"
@@ -219,11 +212,8 @@ export default function LoginPage({ navigation }) {
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeButton}
-                disabled={loading}
-              >
-                <Text style={styles.eyeIcon}>
-                  {showPassword ? '🙈' : '👁️'}
-                </Text>
+                disabled={loading}>
+                <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
               </TouchableOpacity>
             </View>
             {errors.password && (
@@ -234,9 +224,10 @@ export default function LoginPage({ navigation }) {
           {/* Forgot Password Link */}
           <TouchableOpacity
             style={styles.forgotPassword}
-            onPress={() => showToast('Contact support to reset your password', 'info')}
-            disabled={loading}
-          >
+            onPress={() =>
+              showToast('Contact support to reset your password', 'info')
+            }
+            disabled={loading}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
 
@@ -245,8 +236,7 @@ export default function LoginPage({ navigation }) {
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading}
-            activeOpacity={0.8}
-          >
+            activeOpacity={0.8}>
             {loading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator color="#FFFFFF" size="small" />
@@ -262,8 +252,7 @@ export default function LoginPage({ navigation }) {
             <Text style={styles.footerText}>Don't have an account? </Text>
             <TouchableOpacity
               onPress={() => navigation.navigate('Signup')}
-              disabled={loading}
-            >
+              disabled={loading}>
               <Text style={styles.link}>Sign Up</Text>
             </TouchableOpacity>
           </View>
@@ -296,10 +285,13 @@ export default function LoginPage({ navigation }) {
                 },
               ],
             },
-          ]}
-        >
+          ]}>
           <Text style={styles.toastIcon}>
-            {toast.type === 'success' ? '✅' : toast.type === 'info' ? 'ℹ️' : '❌'}
+            {toast.type === 'success'
+              ? '✅'
+              : toast.type === 'info'
+              ? 'ℹ️'
+              : '❌'}
           </Text>
           <Text style={styles.toastText}>{toast.message}</Text>
         </Animated.View>
@@ -326,7 +318,7 @@ const styles = StyleSheet.create({
     padding: 28,
     elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 8,
   },
@@ -446,7 +438,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     elevation: 2,
     shadowColor: '#1C5CFF',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.3,
     shadowRadius: 8,
   },
@@ -509,7 +501,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.3,
     shadowRadius: 8,
   },

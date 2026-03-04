@@ -22,14 +22,12 @@ export default function MatchSummaryScreen() {
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Stats');
-  const nav = useNavigationHelper(); 
+  const nav = useNavigationHelper();
   const [lineups, setLineups] = useState(null);
   const [selectedLineupTeam, setSelectedLineupTeam] = useState(null);
-  // 'home' | 'away' | null
 
   const lineupMap = useMemo(() => {
     if (!lineups) return null;
-
     const mapSide = side => {
       if (!Array.isArray(lineups?.[side]?.starting)) return {};
       return Object.fromEntries(
@@ -38,111 +36,83 @@ export default function MatchSummaryScreen() {
           .map(s => [s.slotKey, s.player]),
       );
     };
-
-    return {
-      home: mapSide('home'),
-      away: mapSide('away'),
-    };
+    return { home: mapSide('home'), away: mapSide('away') };
   }, [lineups]);
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { 
+  setLoading(true);
+  setMatch(null);
+  load(); 
+}, [params.matchId]); 
 
   const load = async () => {
-    const [summaryRes, lineupRes] = await Promise.all([
-      API.get(`/api/match/${params.matchId}/summary`),
-      API.get(`/api/match/${params.matchId}/lineups`),
-    ]);
+    try {
+      const [summaryRes, lineupRes] = await Promise.all([
+        API.get(`/api/match/${params.matchId}/summary`),
+        API.get(`/api/match/${params.matchId}/lineups`),
+      ]);
 
-const normalizeEvent = e => {
-  return {
-    type: e.type,
-    minute: e.minute,
-    team: String(e.teamId || e.team),
-      teamName: e.teamName || 'Unknown Team', // ✅ ADD THIS
+      const normalizeEvent = e => ({
+        type: e.type,
+        minute: e.minute,
+        team: String(e.teamId || e.team),
+        teamName: e.teamName || 'Unknown Team',
+        player: e.player ? { name: e.player } : null,
+        assistPlayer: e.assist ? { name: e.assist } : null,
+        substitutedPlayer: e.substitutedPlayer ? { name: e.substitutedPlayer } : null,
+      });
 
+      const summary = summaryRes.data;
 
-    // 🔑 Convert string → object
-    player: e.player
-      ? {
-          name: e.player,
-        }
-      : null,
+      setMatch({
+        _id: summary.match.id,
+        status: summary.match.status,
+        venue: summary.match.venue,
+        startedAt: summary.match.startedAt,
+        completedAt: summary.match.completedAt,
+        homeTeam: {
+          _id: summary.teams.home.id,
+          teamName: summary.teams.home.name,
+          teamLogoUrl: summary.teams.home.logo,
+        },
+        awayTeam: {
+          _id: summary.teams.away.id,
+          teamName: summary.teams.away.name,
+          teamLogoUrl: summary.teams.away.logo,
+        },
+        score: {
+          home: summary.teams.home.score,
+          away: summary.teams.away.score,
+        },
+        winner: summary.winner ? { teamName: summary.winner.teamName } : null,
+        events: [
+          ...summary.summary.goals.map(normalizeEvent),
+          ...summary.summary.cards.map(normalizeEvent),
+          ...summary.summary.substitutions.map(normalizeEvent),
+        ],
+      });
 
-    assistPlayer: e.assist
-      ? {
-          name: e.assist,
-        }
-      : null,
-
-    substitutedPlayer: e.substitutedPlayer
-      ? {
-          name: e.substitutedPlayer,
-        }
-      : null,
-  };
-};
- 
-    const summary = summaryRes.data;
-
-    setMatch({
-      _id: summary.match.id,
-      status: summary.match.status,
-      venue: summary.match.venue,
-      startedAt: summary.match.startedAt,
-      completedAt: summary.match.completedAt,
-
-      homeTeam: {
-        _id: summary.teams.home.id,
-        teamName: summary.teams.home.name,
-        teamLogoUrl: summary.teams.home.logo,
-      },
-
-      awayTeam: {
-        _id: summary.teams.away.id,
-        teamName: summary.teams.away.name,
-        teamLogoUrl: summary.teams.away.logo,
-      },
-
-      score: {
-        home: summary.teams.home.score,
-        away: summary.teams.away.score,
-      },
-
-      winner: summary.winner ? { teamName: summary.winner.teamName } : null,
-
-     events: [
-  ...summary.summary.goals.map(normalizeEvent),
-  ...summary.summary.cards.map(normalizeEvent),
-  ...summary.summary.substitutions.map(normalizeEvent),
-],
-
-    });
-
-    setLineups(lineupRes.data);
-    setLoading(false);
+      setLineups(lineupRes.data);
+    } catch (err) {
+      console.error('Load error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const stats = useMemo(() => {
     if (!match) return null;
-
     const base = {
       home: { goals: 0, fouls: 0, yellow: 0, red: 0 },
       away: { goals: 0, fouls: 0, yellow: 0, red: 0 },
     };
-
     match.events.forEach(e => {
-      const side =
-        String(e.team) === String(match.homeTeam._id) ? 'home' : 'away';
-
-      if (['GOAL', 'PENALTY_GOAL', 'OWN_GOAL'].includes(e.type))
-        base[side].goals++;
+      const side = String(e.team) === String(match.homeTeam._id) ? 'home' : 'away';
+      if (['GOAL', 'PENALTY_GOAL', 'OWN_GOAL'].includes(e.type)) base[side].goals++;
       if (e.type === 'YELLOW') base[side].yellow++;
       if (e.type === 'RED') base[side].red++;
       if (e.type === 'FOUL') base[side].fouls++;
     });
-
     return base;
   }, [match]);
 
@@ -150,20 +120,23 @@ const normalizeEvent = e => {
 
   const isDraw = match.score.home === match.score.away;
 
-  return (
-    <ScrollView style={styles.container}>
+  // ✅ Determine what data the FlatList renders
+  // For Timeline tab — render events as list items
+  // For all other tabs — render empty array, content goes in ListHeaderComponent
+  const isTimeline = activeTab === 'Timeline';
+  const timelineData = isTimeline
+    ? [...match.events].sort((a, b) => a.minute - b.minute)
+    : [];
+
+  // ✅ Everything above the scrollable content goes here
+  const ListHeader = () => (
+    <View>
       {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => nav.back()}
-          style={styles.backBtn}
-        >
+        <TouchableOpacity onPress={() => nav.back()} style={styles.backBtn}>
           <Text style={styles.back}>←</Text>
         </TouchableOpacity>
-
         <Text style={styles.title}>Match Summary</Text>
-
-        {/* Spacer to keep title centered */}
         <View style={styles.headerSpacer} />
       </View>
 
@@ -191,89 +164,48 @@ const normalizeEvent = e => {
             style={[styles.tab, activeTab === tab && styles.activeTab]}
             onPress={() => setActiveTab(tab)}
           >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === tab && styles.activeTabText,
-              ]}
-            >
+            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
               {tab}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* TAB CONTENT */}
+      {/* STATS TAB */}
       {activeTab === 'Stats' && (
         <View style={styles.statsCard}>
-          <BigStat
-            label="Goals"
-            left={stats.home.goals}
-            right={stats.away.goals}
-          />
-          <BigStat
-            label="Yellow Cards"
-            left={stats.home.yellow}
-            right={stats.away.yellow}
-          />
-          <BigStat
-            label="Red Cards"
-            left={stats.home.red}
-            right={stats.away.red}
-          />
-          <BigStat
-            label="Fouls"
-            left={stats.home.fouls}
-            right={stats.away.fouls}
-          />
+          <BigStat label="Goals" left={stats.home.goals} right={stats.away.goals} />
+          <BigStat label="Yellow Cards" left={stats.home.yellow} right={stats.away.yellow} />
+          <BigStat label="Red Cards" left={stats.home.red} right={stats.away.red} />
+          <BigStat label="Fouls" left={stats.home.fouls} right={stats.away.fouls} />
         </View>
       )}
 
-      {/* LINEUPS TAB */}
-
+      {/* LINEUPS TAB — ✅ bench rendered as plain map(), not FlatList */}
       {activeTab === 'Lineups' && lineups && (
         <View style={styles.lineupsCard}>
-          {/* TEAM SELECTOR */}
           <View style={styles.teamSelector}>
             <TouchableOpacity
-              style={[
-                styles.teamSelectBtn,
-                selectedLineupTeam === 'home' && styles.teamSelectActive,
-              ]}
+              style={[styles.teamSelectBtn, selectedLineupTeam === 'home' && styles.teamSelectActive]}
               onPress={() => setSelectedLineupTeam('home')}
             >
-              <Text
-                style={[
-                  styles.teamSelectText,
-                  selectedLineupTeam === 'home' && styles.teamSelectTextActive,
-                ]}
-              >
+              <Text style={[styles.teamSelectText, selectedLineupTeam === 'home' && styles.teamSelectTextActive]}>
                 {match.homeTeam.teamName}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.teamSelectBtn,
-                selectedLineupTeam === 'away' && styles.teamSelectActive,
-              ]}
+              style={[styles.teamSelectBtn, selectedLineupTeam === 'away' && styles.teamSelectActive]}
               onPress={() => setSelectedLineupTeam('away')}
             >
-              <Text
-                style={[
-                  styles.teamSelectText,
-                  selectedLineupTeam === 'away' && styles.teamSelectTextActive,
-                ]}
-              >
+              <Text style={[styles.teamSelectText, selectedLineupTeam === 'away' && styles.teamSelectTextActive]}>
                 {match.awayTeam.teamName}
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* LINEUP VIEW */}
           {selectedLineupTeam && (
             <>
-              {/* PITCH */}
               {lineups[selectedLineupTeam]?.formation && (
                 <View style={styles.pitchWrapper}>
                   <Pitch
@@ -284,41 +216,23 @@ const normalizeEvent = e => {
                 </View>
               )}
 
-              {/* BENCH */}
+              {/* ✅ Bench uses .map() instead of FlatList — no nesting issue */}
               <Text style={styles.benchTitle}>Bench</Text>
-              <FlatList
-                data={lineups[selectedLineupTeam]?.bench || []}
-                keyExtractor={p => p._id}
-                renderItem={({ item }) => (
-                  <View style={styles.benchItem}>
-                    <Text style={styles.benchText}>{item.name}</Text>
-                  </View>
-                )}
-              />
+              {(lineups[selectedLineupTeam]?.bench || []).map(player => (
+                <View key={player._id} style={styles.benchItem}>
+                  <Text style={styles.benchText}>{player.name}</Text>
+                </View>
+              ))}
             </>
           )}
 
           {!selectedLineupTeam && (
-            <Text style={styles.lineupHint}>
-              Tap a team name to view lineup
-            </Text>
+            <Text style={styles.lineupHint}>Tap a team name to view lineup</Text>
           )}
         </View>
       )}
 
-      {activeTab === 'Timeline' && (
-        <FlatList
-          data={[...match.events].sort((a, b) => a.minute - b.minute)}
-          keyExtractor={(item, index) =>
-            `${item.type}-${item.minute}-${item.player?._id || 'x'}-${index}`
-          }
-          contentContainerStyle={{ paddingBottom: 30 }}
-          renderItem={({ item }) => (
-            <TimelineCard event={item} homeTeamId={match.homeTeam._id} />
-          )}
-        />
-      )}
-
+      {/* INFO TAB */}
       {activeTab === 'Info' && (
         <View style={styles.infoGrid}>
           <InfoCard label="Venue" value={match.venue || 'TBD'} icon="📍" />
@@ -331,7 +245,28 @@ const normalizeEvent = e => {
           />
         </View>
       )}
-    </ScrollView>
+    </View>
+  );
+
+  return (
+    // ✅ Single FlatList — no ScrollView wrapper
+    <FlatList
+      data={timelineData}
+      keyExtractor={(item, index) =>
+        `${item.type}-${item.minute}-${item.player?.name || 'x'}-${index}`
+      }
+      ListHeaderComponent={ListHeader}
+      renderItem={({ item }) => (
+        <TimelineCard event={item} homeTeamId={match.homeTeam._id} />
+      )}
+      ListEmptyComponent={
+        isTimeline ? (
+          <Text style={{ padding: 16, color: '#475569' }}>No events yet</Text>
+        ) : null
+      }
+      contentContainerStyle={{ paddingBottom: 30 }}
+      style={styles.container}
+    />
   );
 }
 

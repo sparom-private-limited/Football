@@ -4,6 +4,7 @@ import PlayerprofileView from '../screens/PlayerProfileView';
 import PlayerprofileEdit from '../screens/PlayerProfileEdit';
 import TeamProfile from '../screens/TeamScreens/TeamProfileScreen';
 import PlayerStatsScreen from '../screens/PlayerStatsScreen';
+import OrganiserProfileScreen from '../screens/organiser/OrganiserProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +31,11 @@ export default function ProfileNavigator() {
       <Stack.Screen
         name="PlayerStats"
         component={PlayerStatsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="OrganiserProfile"
+        component={OrganiserProfileScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

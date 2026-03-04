@@ -50,7 +50,6 @@
 //        const tournamentRes = await API.get("/api/team/joinedTournaments");
 //         setJoinedTournaments(Array.isArray(tournamentRes.data) ? tournamentRes.data : []);
 
-
 //       } catch (e) {
 //         console.warn('Joined tournaments not available');
 //         setJoinedTournaments([]);
@@ -233,8 +232,6 @@
 //     ))}
 //   </View>
 // )}
-
-
 
 //           <View style={styles.actionsCard}>
 //             <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -589,9 +586,8 @@
 //   },
 // });
 
-
 // TeamHome.jsx - CORRECTED VERSION
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -599,14 +595,14 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
-  ScrollView
+  ScrollView,
 } from 'react-native';
-import { useNavigation, useIsFocused } from '@react-navigation/native'; // ✅ CORRECT IMPORT
+import {useNavigation, useIsFocused} from '@react-navigation/native'; // ✅ CORRECT IMPORT
 import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import AppRefreshView from '../../components/AppRefreshView';
 import useNavigationHelper from '../../navigation/Navigationhelper';
-import { s, vs, ms, rf, wp } from '../../utils/responsive'; // ✅ ADD THIS IMPORT
+import {s, vs, ms, rf, wp} from '../../utils/responsive'; // ✅ ADD THIS IMPORT
 
 export default function TeamHome() {
   const nav = useNavigationHelper();
@@ -661,7 +657,7 @@ export default function TeamHome() {
       const matchRes = await API.get('/api/match/myMatch');
       // const matches = matchRes.data || [];
 
-       const matches = matchRes.data.data || [];
+      const matches = matchRes.data.data || [];
 
       const live = matches.find(m => m.status === 'LIVE');
       setLiveMatch(live || null);
@@ -729,8 +725,7 @@ export default function TeamHome() {
 
           <TouchableOpacity
             style={styles.primaryBtn}
-            onPress={() => nav.to('CreateTeam')}
-          >
+            onPress={() => nav.to('CreateTeam')}>
             <Text style={styles.primaryBtnText}>Create Team</Text>
           </TouchableOpacity>
         </View>
@@ -743,8 +738,7 @@ export default function TeamHome() {
     <AppRefreshView
       refreshing={refreshing}
       onRefresh={onRefresh}
-      style={styles.container}
-    >
+      style={styles.container}>
       <MainLayout title="Team Home">
         <ScrollView style={styles.container}>
           {/* HERO SECTION */}
@@ -764,7 +758,7 @@ export default function TeamHome() {
               <View style={styles.heroLogoWrapper}>
                 {team.teamLogoUrl ? (
                   <Image
-                    source={{ uri: team.teamLogoUrl }}
+                    source={{uri: team.teamLogoUrl}}
                     style={styles.heroLogo}
                   />
                 ) : (
@@ -783,8 +777,7 @@ export default function TeamHome() {
 
               <TouchableOpacity
                 style={styles.outlineBtn}
-                onPress={() => nav.to('TeamProfile')}
-              >
+                onPress={() => nav.to('TeamProfile')}>
                 <Text style={styles.outlineBtnText}>View Team Profile</Text>
               </TouchableOpacity>
             </View>
@@ -795,9 +788,8 @@ export default function TeamHome() {
             <TouchableOpacity
               style={styles.liveCard}
               onPress={() =>
-                nav.toMatch('MatchConsole', { matchId: liveMatch._id })
-              }
-            >
+                nav.toMatch('MatchConsole', {matchId: liveMatch._id})
+              }>
               <View style={styles.liveTop}>
                 <Text style={styles.livePulse}>● LIVE</Text>
                 <Text style={styles.liveCta}>Open Console →</Text>
@@ -819,9 +811,8 @@ export default function TeamHome() {
             <TouchableOpacity
               style={styles.lastMatchCard}
               onPress={() =>
-                nav.toMatch('MatchSummary', { matchId: lastMatch._id })
-              }
-            >
+                nav.toMatch('MatchSummary', {matchId: lastMatch._id})
+              }>
               <Text style={styles.sectionTitle}>Last Match</Text>
 
               <View style={styles.matchRow}>
@@ -853,8 +844,7 @@ export default function TeamHome() {
                     nav.toTournament('TeamTournamentDetail', {
                       tournamentId: t.id,
                     })
-                  }
-                >
+                  }>
                   <View>
                     <Text style={styles.cardTitle}>{t.name}</Text>
 
@@ -875,32 +865,32 @@ export default function TeamHome() {
             <View style={styles.actionsRow}>
               <TouchableOpacity
                 style={styles.actionTileTertiary}
-                onPress={() => nav.toTournament('JoinTournament')}
-              >
+                onPress={() => nav.toTournament('JoinTournament')}>
                 <Text style={styles.actionIcon}>🏆</Text>
                 <Text style={styles.actionText}>Join Tournament</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.actionTilePrimary}
-                onPress={() => nav.toMatch('CreateMatch')}
-              >
+                onPress={() => nav.toMatch('CreateMatch')}>
                 <Text style={styles.actionIcon}>＋</Text>
                 <Text style={styles.actionText}>New Match</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.actionTileSecondary}
-                onPress={() => nav.toMatch('MyMatches')}
-              >
+                onPress={() =>        
+                  nav.to('TeamStats', {
+                    teamId: team?._id, // ✅ pass teamId
+                  })
+                }>
                 <Text style={styles.actionIcon}>📋</Text>
-                <Text style={styles.actionTextDark}>My Matches</Text>
+                <Text style={styles.actionTextDark}>Team Stats</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.actionTileSecondary}
-                onPress={() => nav.to('TeamLineup')}
-              >
+                onPress={() => nav.to('TeamLineup')}>
                 <Text style={styles.actionIcon}>⚽</Text>
                 <Text style={styles.actionTextDark}>Lineup</Text>
               </TouchableOpacity>
@@ -912,18 +902,16 @@ export default function TeamHome() {
   );
 }
 
-function TeamMini({ team }) {
+function TeamMini({team}) {
   if (!team) return null;
-  
+
   return (
-    <View style={{ alignItems: 'center', width: s(80) }}>
+    <View style={{alignItems: 'center', width: s(80)}}>
       {team.teamLogoUrl ? (
-        <Image source={{ uri: team.teamLogoUrl }} style={styles.miniLogo} />
+        <Image source={{uri: team.teamLogoUrl}} style={styles.miniLogo} />
       ) : (
         <View style={styles.miniLogoFallback}>
-          <Text style={{ fontWeight: '800' }}>
-            {team?.teamName?.[0] || 'T'}
-          </Text>
+          <Text style={{fontWeight: '800'}}>{team?.teamName?.[0] || 'T'}</Text>
         </View>
       )}
       <Text style={styles.miniName} numberOfLines={1}>
@@ -936,7 +924,7 @@ function TeamMini({ team }) {
 const styles = StyleSheet.create({
   /* ===== LAYOUT ===== */
   container: {
-    padding: s(5),                          // ✅ s()
+    padding: s(5), // ✅ s()
   },
   center: {
     flex: 1,
@@ -949,64 +937,64 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: s(32),                         // ✅ s()
+    padding: s(32), // ✅ s()
   },
   emptyIcon: {
-    width: s(100),                          // ✅ s()
-    height: s(100),                         // ✅ s()
-    borderRadius: s(50),                    // ✅ s()
+    width: s(100), // ✅ s()
+    height: s(100), // ✅ s()
+    borderRadius: s(50), // ✅ s()
     backgroundColor: '#EEF2FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: vs(24),                   // ✅ vs()
+    marginBottom: vs(24), // ✅ vs()
   },
   emptyIconText: {
-    fontSize: ms(48),                       // ✅ ms()
+    fontSize: ms(48), // ✅ ms()
   },
   emptyTitle: {
-    fontSize: ms(24),                       // ✅ ms()
+    fontSize: ms(24), // ✅ ms()
     fontWeight: '700',
     color: '#111827',
-    marginBottom: vs(12),                   // ✅ vs()
+    marginBottom: vs(12), // ✅ vs()
     textAlign: 'center',
   },
   emptySubtitle: {
-    fontSize: rf(16),                       // ✅ rf()
+    fontSize: rf(16), // ✅ rf()
     color: '#6B7280',
     textAlign: 'center',
-    marginBottom: vs(32),                   // ✅ vs()
-    lineHeight: vs(24),                     // ✅ vs()
+    marginBottom: vs(32), // ✅ vs()
+    lineHeight: vs(24), // ✅ vs()
   },
   primaryBtn: {
     backgroundColor: '#1D4ED8',
-    paddingVertical: vs(16),                // ✅ vs()
-    paddingHorizontal: s(32),              // ✅ s()
-    borderRadius: ms(12),                   // ✅ ms()
-    minWidth: s(200),                       // ✅ s()
+    paddingVertical: vs(16), // ✅ vs()
+    paddingHorizontal: s(32), // ✅ s()
+    borderRadius: ms(12), // ✅ ms()
+    minWidth: s(200), // ✅ s()
   },
   primaryBtnText: {
     color: '#fff',
-    fontSize: rf(16),                       // ✅ rf()
+    fontSize: rf(16), // ✅ rf()
     fontWeight: '600',
     textAlign: 'center',
   },
 
   sectionTitle: {
-    fontSize: rf(16),                       // ✅ rf()
+    fontSize: rf(16), // ✅ rf()
     fontWeight: '700',
-    marginBottom: vs(8),                    // ✅ vs()
+    marginBottom: vs(8), // ✅ vs()
     color: '#0F172A',
   },
 
   /* ===== HERO ===== */
   heroWrapper: {
-    borderRadius: ms(20),                   // ✅ ms()
+    borderRadius: ms(20), // ✅ ms()
     overflow: 'hidden',
-    marginBottom: vs(20),                   // ✅ vs()
+    marginBottom: vs(20), // ✅ vs()
   },
   coverImage: {
     width: '100%',
-    height: vs(215),                        // ✅ vs()
+    height: vs(215), // ✅ vs()
   },
   coverOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -1014,67 +1002,67 @@ const styles = StyleSheet.create({
   },
   heroContent: {
     position: 'absolute',
-    bottom: vs(16),                         // ✅ vs()
-    left: s(16),                            // ✅ s()
-    right: s(16),                           // ✅ s()
+    bottom: vs(16), // ✅ vs()
+    left: s(16), // ✅ s()
+    right: s(16), // ✅ s()
     alignItems: 'center',
   },
   heroLogoWrapper: {
     backgroundColor: 'black',
-    padding: s(4),                          // ✅ s()
-    borderRadius: ms(48),                   // ✅ ms()
-    marginBottom: vs(8),                    // ✅ vs()
+    padding: s(4), // ✅ s()
+    borderRadius: ms(48), // ✅ ms()
+    marginBottom: vs(8), // ✅ vs()
   },
   heroLogo: {
-    width: s(72),                           // ✅ s()
-    height: s(72),                          // ✅ s()
-    borderRadius: s(36),                    // ✅ s()
+    width: s(72), // ✅ s()
+    height: s(72), // ✅ s()
+    borderRadius: s(36), // ✅ s()
   },
   heroLogoFallback: {
-    width: s(72),                           // ✅ s()
-    height: s(72),                          // ✅ s()
-    borderRadius: s(36),                    // ✅ s()
+    width: s(72), // ✅ s()
+    height: s(72), // ✅ s()
+    borderRadius: s(36), // ✅ s()
     backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroLogoText: {
-    fontSize: ms(28),                       // ✅ ms()
+    fontSize: ms(28), // ✅ ms()
     fontWeight: '900',
     color: '#1D4ED8',
   },
   heroTeamName: {
-    fontSize: ms(20),                       // ✅ ms()
+    fontSize: ms(20), // ✅ ms()
     fontWeight: '800',
     color: '#FFFFFF',
     textAlign: 'center',
   },
   heroSub: {
-    marginTop: vs(2),                       // ✅ vs()
-    fontSize: rf(13),                       // ✅ rf()
+    marginTop: vs(2), // ✅ vs()
+    fontSize: rf(13), // ✅ rf()
     fontWeight: '600',
     color: '#E5E7EB',
   },
   outlineBtn: {
-    marginTop: vs(14),                      // ✅ vs()
+    marginTop: vs(14), // ✅ vs()
     borderWidth: 1,
     borderColor: '#FFFFFF',
-    paddingVertical: vs(10),                // ✅ vs()
-    paddingHorizontal: s(20),              // ✅ s()
-    borderRadius: ms(12),                   // ✅ ms()
+    paddingVertical: vs(10), // ✅ vs()
+    paddingHorizontal: s(20), // ✅ s()
+    borderRadius: ms(12), // ✅ ms()
   },
   outlineBtnText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: rf(14),                       // ✅ rf()
+    fontSize: rf(14), // ✅ rf()
   },
 
   /* ===== LIVE MATCH ===== */
   liveCard: {
     backgroundColor: '#ECFEFF',
-    borderRadius: ms(18),                   // ✅ ms()
-    padding: s(16),                         // ✅ s()
-    marginBottom: vs(16),                   // ✅ vs()
+    borderRadius: ms(18), // ✅ ms()
+    padding: s(16), // ✅ s()
+    marginBottom: vs(16), // ✅ vs()
   },
   liveTop: {
     flexDirection: 'row',
@@ -1084,41 +1072,41 @@ const styles = StyleSheet.create({
   livePulse: {
     color: '#DC2626',
     fontWeight: '900',
-    fontSize: rf(13),                       // ✅ rf()
+    fontSize: rf(13), // ✅ rf()
   },
   liveTeams: {
-    fontSize: rf(16),                       // ✅ rf()
+    fontSize: rf(16), // ✅ rf()
     fontWeight: '700',
-    marginTop: vs(8),                       // ✅ vs()
+    marginTop: vs(8), // ✅ vs()
     color: '#0F172A',
   },
   liveScore: {
-    fontSize: ms(24),                       // ✅ ms()
+    fontSize: ms(24), // ✅ ms()
     fontWeight: '900',
-    marginTop: vs(4),                       // ✅ vs()
+    marginTop: vs(4), // ✅ vs()
     color: '#0F172A',
   },
   liveCta: {
     color: '#0284C7',
     fontWeight: '700',
-    fontSize: rf(13),                       // ✅ rf()
+    fontSize: rf(13), // ✅ rf()
   },
 
   /* ===== LAST MATCH ===== */
   lastMatchCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: ms(18),                   // ✅ ms()
-    padding: s(16),                         // ✅ s()
-    marginBottom: vs(16),                   // ✅ vs()
+    borderRadius: ms(18), // ✅ ms()
+    padding: s(16), // ✅ s()
+    marginBottom: vs(16), // ✅ vs()
   },
   matchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginVertical: vs(10),                 // ✅ vs()
+    marginVertical: vs(10), // ✅ vs()
   },
   matchScore: {
-    fontSize: ms(22),                       // ✅ ms()
+    fontSize: ms(22), // ✅ ms()
     fontWeight: '900',
     color: '#0F172A',
   },
@@ -1126,24 +1114,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#64748B',
     fontWeight: '600',
-    fontSize: rf(13),                       // ✅ rf()
+    fontSize: rf(13), // ✅ rf()
   },
   miniLogo: {
-    width: s(40),                           // ✅ s()
-    height: s(40),                          // ✅ s()
-    borderRadius: s(20),                    // ✅ s()
+    width: s(40), // ✅ s()
+    height: s(40), // ✅ s()
+    borderRadius: s(20), // ✅ s()
   },
   miniLogoFallback: {
-    width: s(40),                           // ✅ s()
-    height: s(40),                          // ✅ s()
-    borderRadius: s(20),                    // ✅ s()
+    width: s(40), // ✅ s()
+    height: s(40), // ✅ s()
+    borderRadius: s(20), // ✅ s()
     backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
   miniName: {
-    marginTop: vs(4),                       // ✅ vs()
-    fontSize: rf(11),                       // ✅ rf()
+    marginTop: vs(4), // ✅ vs()
+    fontSize: rf(11), // ✅ rf()
     fontWeight: '700',
     textAlign: 'center',
     color: '#0F172A',
@@ -1152,74 +1140,74 @@ const styles = StyleSheet.create({
   /* ===== TOURNAMENTS ===== */
   sectionCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: ms(18),                   // ✅ ms()
-    padding: s(16),                         // ✅ s()
-    marginBottom: vs(16),                   // ✅ vs()
+    borderRadius: ms(18), // ✅ ms()
+    padding: s(16), // ✅ s()
+    marginBottom: vs(16), // ✅ vs()
   },
   tournamentCard: {
     backgroundColor: '#F8FAFC',
-    borderRadius: ms(14),                   // ✅ ms()
-    padding: s(14),                         // ✅ s()
-    marginBottom: vs(10),                   // ✅ vs()
+    borderRadius: ms(14), // ✅ ms()
+    padding: s(14), // ✅ s()
+    marginBottom: vs(10), // ✅ vs()
   },
   cardTitle: {
-    fontSize: rf(16),                       // ✅ rf()
+    fontSize: rf(16), // ✅ rf()
     fontWeight: '600',
     color: '#111827',
-    marginBottom: vs(4),                    // ✅ vs()
+    marginBottom: vs(4), // ✅ vs()
   },
   metaText: {
-    fontSize: rf(12),                       // ✅ rf()
+    fontSize: rf(12), // ✅ rf()
     color: '#6B7280',
   },
 
   /* ===== QUICK ACTIONS ===== */
   actionsCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: ms(18),                   // ✅ ms()
-    padding: s(16),                         // ✅ s()
-    marginBottom: vs(16),                   // ✅ vs()
+    borderRadius: ms(18), // ✅ ms()
+    padding: s(16), // ✅ s()
+    marginBottom: vs(16), // ✅ vs()
   },
   actionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: s(12),                             // ✅ s()
+    gap: s(12), // ✅ s()
   },
   actionTilePrimary: {
     width: '48%',
     backgroundColor: '#1D4ED8',
-    borderRadius: ms(16),                   // ✅ ms()
-    paddingVertical: vs(18),                // ✅ vs()
+    borderRadius: ms(16), // ✅ ms()
+    paddingVertical: vs(18), // ✅ vs()
     alignItems: 'center',
   },
   actionTileTertiary: {
     width: '48%',
     backgroundColor: '#d8741dff',
-    borderRadius: ms(16),                   // ✅ ms()
-    paddingVertical: vs(18),                // ✅ vs()
+    borderRadius: ms(16), // ✅ ms()
+    paddingVertical: vs(18), // ✅ vs()
     alignItems: 'center',
   },
   actionTileSecondary: {
     width: '48%',
     backgroundColor: '#F1F5F9',
-    borderRadius: ms(16),                   // ✅ ms()
-    paddingVertical: vs(18),                // ✅ vs()
+    borderRadius: ms(16), // ✅ ms()
+    paddingVertical: vs(18), // ✅ vs()
     alignItems: 'center',
   },
   actionIcon: {
-    fontSize: ms(26),                       // ✅ ms()
-    marginBottom: vs(6),                    // ✅ vs()
+    fontSize: ms(26), // ✅ ms()
+    marginBottom: vs(6), // ✅ vs()
     color: '#FFFFFF',
   },
   actionText: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: rf(14),                       // ✅ rf()
+    fontSize: rf(14), // ✅ rf()
   },
   actionTextDark: {
     color: '#0F172A',
     fontWeight: '800',
-    fontSize: rf(14),                       // ✅ rf()
+    fontSize: rf(14), // ✅ rf()
   },
 });

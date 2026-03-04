@@ -35,6 +35,10 @@ export default function MatchConsoleScreen() {
   const navigation = useNavigation(); // ✅ REAL navigation
   const insets = useSafeAreaInsets();
 
+  const [pausedAt, setPausedAt] = useState(null);
+  const [totalPausedSeconds, setTotalPausedSeconds] = useState(0);
+  const [timerKey, setTimerKey] = useState(0);
+
   const EMPTY_TEAM = {
     _id: '',
     teamName: '',
@@ -66,103 +70,141 @@ export default function MatchConsoleScreen() {
   const [isResetDisabled, setIsResetDisabled] = useState(false);
 
   // ==================== SOCKET INTEGRATION ====================
-  const {
-    matchData,
-    isConnected: socketConnected,
-    error: socketError,
-  } = useMatchSocket(matchId, {
-    onJoined: data => {
-      console.log('✅ Joined match room:', data);
-    },
-    onStart: data => {
-      console.log('⚽ Match started via socket:', data);
-      // Reload match data to sync
-      loadMatch();
-    },
-    onEnd: data => {
-      console.log('🏁 Match ended via socket:', data);
-      Alert.alert(
-        'Match Ended',
-        'This match has been completed.',
-        [
-          {
-            text: 'View Summary',
-            onPress: () => {
-              nav.replace('MatchSummary', {matchId});
+  // ✅ No matchData returned from hook anymore
+  const {isConnected: socketConnected, error: socketError} = useMatchSocket(
+    matchId,
+    {
+      onJoined: data => {
+        console.log('✅ Joined match room:', data);
+      },
+
+      onStart: data => {
+        // ✅ Clear paused state on fresh start
+        console.log('🟢 onStart fired:', JSON.stringify(data));
+        setPausedAt(null);
+        setTotalPausedSeconds(0);
+        setTimerKey(prev => prev + 1);
+
+        setMatch(prev => ({
+          ...prev,
+          status: data.status,
+          startedAt: data.startedAt,
+        }));
+      },
+
+      onEnd: data => {
+        Alert.alert(
+          'Match Ended',
+          'This match has been completed.',
+          [
+            {
+              text: 'View Summary',
+              onPress: () => nav.replace('MatchSummary', {matchId}),
             },
-          },
-        ],
-        {cancelable: false},
-      );
-    },
-    onGoal: data => {
-      console.log('⚽ Goal scored via socket:', data);
-      // Update match data with new score and event
-      setMatch(prev => ({
-        ...prev,
-        score: data.score,
-        events: [...prev.events, data.event],
-      }));
-    },
-    onCard: data => {
-      console.log('🟨 Card issued via socket:', data);
-      // Update match events
-      setMatch(prev => ({
-        ...prev,
-        events: [...prev.events, data.event],
-      }));
-    },
-    onSubstitution: data => {
-      console.log('🔄 Substitution via socket:', data);
-      // Update match events
-      setMatch(prev => ({
-        ...prev,
-        events: [...prev.events, data.event],
-      }));
-    },
-    onStatusUpdate: data => {
-      setMatch(prev => ({
-        ...prev,
-        status: data.status,
-        startedAt: data.startedAt || prev.startedAt,
-      }));
-    },
-    onError: error => {
-      console.error('❌ Socket error:', error);
-      Alert.alert('Socket Error', error.message);
-    },
-    onReset: data => {
-      setMatch(prev => ({
-        ...prev,
-        events: [],
-        score: data.score || {home: 0, away: 0},
-        status: data.status,
-        startedAt: data.startedAt || null,
-        completedAt: null,
-        winner: null,
-      }));
+          ],
+          {cancelable: false},
+        );
+      },
 
-      setSecondsElapsed(0);
+      // ✅ Update BOTH score and events
+      onGoal: data => {
+        setMatch(prev => {
+          const exists = prev.events.some(e => e._id === data.event?._id);
+          if (exists) return prev;
+          return {
+            ...prev,
+            score: data.score, // ← score updated
+            events: [...prev.events, data.event],
+          };
+        });
+      },
 
-      Alert.alert('Match Reset', 'Match has been reset successfully');
+      onCard: data => {
+        setMatch(prev => {
+          const exists = prev.events.some(e => e._id === data.event?._id);
+          if (exists) return prev;
+          return {
+            ...prev,
+            events: [...prev.events, data.event],
+          };
+        });
+      },
+
+      onSubstitution: data => {
+        setMatch(prev => {
+          const exists = prev.events.some(e => e._id === data.event?._id);
+          if (exists) return prev;
+          return {
+            ...prev,
+            events: [...prev.events, data.event],
+          };
+        });
+      },
+
+      onStatusUpdate: data => {
+        setMatch(prev => {
+          // ✅ Track when match was paused
+          if (data.status === 'PAUSED') {
+            setPausedAt(Date.now());
+          }
+
+          // ✅ On resume — add paused duration to total
+          if (data.status === 'LIVE' && pausedAt) {
+            const pausedDuration = Math.floor((Date.now() - pausedAt) / 1000);
+            setTotalPausedSeconds(prev => prev + pausedDuration);
+            setPausedAt(null);
+          }
+
+          return {
+            ...prev,
+            status: data.status,
+            startedAt: data.startedAt || prev.startedAt,
+          };
+        });
+      },
+
+      onReset: data => {
+        // ✅ Reset all timer tracking state
+        setSecondsElapsed(0);
+        setPausedAt(null);
+        setTotalPausedSeconds(0);
+        setTimerKey(prev => prev + 1);
+
+        setMatch(prev => ({
+          ...prev,
+          events: [],
+          score: data.score || {home: 0, away: 0},
+          status: data.status,
+          startedAt: null,
+          completedAt: null,
+          winner: null,
+        }));
+
+        Alert.alert('Match Reset', 'Match has been reset successfully');
+      },
+
+      onError: error => {
+        console.error('❌ Socket error:', error);
+        Alert.alert('Socket Error', error.message);
+      },
     },
-  });
+  );
+  // useEffect(() => {
+  //   if (!matchData) return;
 
-  useEffect(() => {
-    if (!matchData) return;
-
-    setMatch(prev => ({
-      ...prev,
-      score: matchData.score || prev.score,
-      events: matchData.events || [],
-      status: matchData.status || prev.status,
-      startedAt: matchData.startedAt || prev.startedAt,
-      completedAt: matchData.completedAt || prev.completedAt,
-      winner: matchData.winner || prev.winner,
-    }));
-  }, [matchData]);
+  //   setMatch(prev => ({
+  //     ...prev,
+  //     score: matchData.score || prev.score,
+  //     events: matchData.events || [],
+  //     status: matchData.status || prev.status,
+  //     startedAt: matchData.startedAt || prev.startedAt,
+  //     completedAt: matchData.completedAt || prev.completedAt,
+  //     winner: matchData.winner || prev.winner,
+  //   }));
+  // }, [matchData]);
 
   // ================= STATS CALCULATION =================
+
   const stats = useMemo(() => {
     if (!match || !Array.isArray(match.events)) {
       return {
@@ -248,35 +290,34 @@ export default function MatchConsoleScreen() {
 
   // ================= TIMER SYNC WITH SERVER =================
   useEffect(() => {
+    console.log('⏱️ Timer useEffect ran:', {
+      startedAt: match?.startedAt,
+      status: match?.status,
+      timerKey,
+    });
+    // ✅ Clear immediately when key changes — kills old interval
+    setSecondsElapsed(0);
+
     if (!match?.startedAt || match.status !== 'LIVE') {
+      console.log(
+        '⏱️ Timer stopped — reason:',
+        !match?.startedAt ? 'no startedAt' : 'not LIVE',
+      );
       return;
     }
 
     const updateTimer = () => {
       const now = Date.now();
       const started = new Date(match.startedAt).getTime();
-      const elapsed = Math.floor((now - started) / 1000);
+      const elapsed = Math.floor((now - started) / 1000) - totalPausedSeconds;
+
       setSecondsElapsed(elapsed > 0 ? elapsed : 0);
     };
 
     updateTimer();
-
     const interval = setInterval(updateTimer, 1000);
-
     return () => clearInterval(interval);
-  }, [match?.startedAt, match?.status]);
-
-  // ================= TIMER INCREMENT =================
-  useEffect(() => {
-    if (!match || match.status !== 'LIVE') return;
-
-    const interval = setInterval(() => {
-      setSecondsElapsed(prev => prev + 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [match?.status, isPaused]);
-
+  }, [match?.startedAt, match?.status, totalPausedSeconds, timerKey]);
   // ================= HARDWARE BACK BUTTON (ANDROID) =================
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -357,6 +398,13 @@ export default function MatchConsoleScreen() {
 
   // ================= EVENT SUBMISSIONS =================
   const submitGoal = async () => {
+    if (!match?.startedAt) {
+      Alert.alert(
+        'Match Not Started',
+        'Please start the match before adding events.',
+      );
+      return;
+    }
     if (!canManageMatch) {
       Alert.alert(
         'Permission Denied',
@@ -667,497 +715,582 @@ export default function MatchConsoleScreen() {
 
   // ================= RENDER =================
   return (
-    <ScrollView style={styles.container}>
-      {!socketConnected && (
-        <View style={styles.socketStatus}>
-          <ActivityIndicator size="small" color="#DC2626" />
-          <Text style={styles.socketStatusText}>
-            {socketError ? 'Socket Error' : 'Connecting to live updates...'}
+    <View style={styles.screenContainer}>
+      <ScrollView style={styles.container}>
+        {!socketConnected && (
+          <View style={styles.socketStatus}>
+            <ActivityIndicator size="small" color="#DC2626" />
+            <Text style={styles.socketStatusText}>
+              {socketError ? 'Socket Error' : 'Connecting to live updates...'}
+            </Text>
+          </View>
+        )}
+
+        {socketConnected && (
+          <View style={[styles.socketStatus, {backgroundColor: '#DCFCE7'}]}>
+            <View style={styles.liveDot} />
+            <Text style={[styles.socketStatusText, {color: '#15803D'}]}>
+              Live updates active
+            </Text>
+          </View>
+        )}
+
+        {/* HEADER */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Match Console</Text>
+          <Text
+            style={[
+              styles.live,
+              match.status === 'PAUSED' && {backgroundColor: '#FACC15'},
+            ]}>
+            {match.status}
           </Text>
         </View>
-      )}
 
-      {socketConnected && (
-        <View style={[styles.socketStatus, {backgroundColor: '#DCFCE7'}]}>
-          <View style={styles.liveDot} />
-          <Text style={[styles.socketStatusText, {color: '#15803D'}]}>
-            Live updates active
-          </Text>
-        </View>
-      )}
+        {/* SCORE CARD */}
+        <View style={styles.scoreCard}>
+          <Text style={styles.timer}>{formatTime(secondsElapsed)}</Text>
 
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Match Console</Text>
-        <Text
-          style={[
-            styles.live,
-            match.status === 'PAUSED' && {backgroundColor: '#FACC15'},
-          ]}>
-          {match.status}
-        </Text>
-      </View>
-
-      {/* SCORE CARD */}
-      <View style={styles.scoreCard}>
-        <Text style={styles.timer}>{formatTime(secondsElapsed)}</Text>
-
-        <View style={styles.scoreRow}>
-          <Text style={styles.team}>{match.homeTeam.teamName}</Text>
-          <Text style={styles.score}>
-            {match.score.home} - {match.score.away}
-          </Text>
-          <Text style={styles.team}>{match.awayTeam.teamName}</Text>
-        </View>
-      </View>
-
-      {/* TIMER CONTROLS */}
-      <View style={styles.timerControls}>
-        <TouchableOpacity
-          style={[
-            styles.pauseBtn,
-            (!canManageMatch || !socketConnected || isPauseResumeDisabled) && {
-              opacity: 0.4,
-            },
-          ]}
-          onPress={handlePauseResumeDebounced}
-          disabled={
-            !canManageMatch || !socketConnected || isPauseResumeDisabled
-          }>
-          <Text style={styles.pauseText}>
-            {isPaused ? '▶️ Resume' : '⏸️ Pause'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.resetBtn,
-            (!canManageMatch || !socketConnected || isResetDisabled) && {
-              opacity: 0.4,
-            },
-          ]}
-          onPress={confirmReset}
-          disabled={!canManageMatch || !socketConnected || isResetDisabled}>
-          <Text style={styles.resetText}>
-            {isResetDisabled ? 'Resetting...' : 'Reset'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* QUICK ACTIONS */}
-      <Text style={styles.section}>Quick Actions</Text>
-
-      <View style={styles.primaryActions}>
-        <PrimaryAction
-          label="Goal"
-          icon="⚽"
-          color="#10B981"
-          disabled={!canManageMatch || isPaused || !socketConnected}
-          onPress={() => setGoalModal(true)}
-        />
-
-        <PrimaryAction
-          label="Card"
-          icon="🟨"
-          color="#FACC15"
-          disabled={!canManageMatch || isPaused || !socketConnected}
-          onPress={() => setCardModal(true)}
-        />
-
-        <PrimaryAction
-          label="Sub"
-          icon="🔁"
-          color="#3B82F6"
-          disabled={!canManageMatch || isPaused || !socketConnected}
-          onPress={() => setSubModal(true)}
-        />
-      </View>
-
-      {/* VIEW TOGGLES */}
-      <View style={styles.viewTabs}>
-        <TabButton
-          label="Stats"
-          active={activeTab === 'stats'}
-          onPress={() => setActiveTab('stats')}
-        />
-        <TabButton
-          label="Lineups"
-          active={activeTab === 'lineups'}
-          onPress={() => setActiveTab('lineups')}
-        />
-      </View>
-
-      {activeTab === 'stats' && <StatsCard match={match} stats={stats} />}
-      {activeTab === 'lineups' && (
-        <TouchableOpacity onPress={() => setShowLineups(true)}>
-          <Text style={{textAlign: 'center', color: '#2563EB', padding: 12}}>
-            View Lineups
-          </Text>
-        </TouchableOpacity>
-      )}
-
-      {/* COMMENTARY */}
-      <Text style={styles.section}>Match Commentary</Text>
-
-      <FlatList
-        data={match?.events || []}
-        keyExtractor={item => item._id}
-        renderItem={renderEvent}
-        ListEmptyComponent={
-          <Text style={{textAlign: 'center', color: '#64748B', padding: 20}}>
-            No events yet
-          </Text>
-        }
-      />
-
-      {/* END MATCH */}
-      <TouchableOpacity
-        style={[
-          styles.endBtn,
-          {marginBottom: insets.bottom + 12},
-          (!canManageMatch || !socketConnected) && {opacity: 0.4},
-        ]}
-        onPress={endMatch}
-        disabled={!canManageMatch || !socketConnected}>
-        <Text style={styles.endText}>End Match</Text>
-      </TouchableOpacity>
-
-      {!canManageMatch && (
-        <Text style={{textAlign: 'center', color: '#64748B', marginTop: 8}}>
-          {isTournamentMatch
-            ? 'Only tournament organiser can manage this match'
-            : 'Only match creator can manage this match'}
-        </Text>
-      )}
-
-      {/* GOAL MODAL */}
-      <Modal visible={goalModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Add Goal</Text>
-
-            <Text style={styles.modalSection}>Team *</Text>
-
-            <TouchableOpacity
-              style={[
-                styles.playerItem,
-                selectedTeam?._id === match.homeTeam._id && styles.selectedItem,
-              ]}
-              onPress={() => {
-                setSelectedTeam(match.homeTeam);
-                loadPlayersForTeam(match.homeTeam);
-              }}>
-              <Text style={styles.playerText}>{match.homeTeam.teamName}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.playerItem,
-                selectedTeam?._id === match.awayTeam._id && styles.selectedItem,
-              ]}
-              onPress={() => {
-                setSelectedTeam(match.awayTeam);
-                loadPlayersForTeam(match.awayTeam);
-              }}>
-              <Text style={styles.playerText}>{match.awayTeam.teamName}</Text>
-            </TouchableOpacity>
-
-            {selectedTeam && (
-              <>
-                <Text style={styles.modalSection}>Goal Scorer *</Text>
-
-                <FlatList
-                  data={players}
-                  keyExtractor={item => item._id}
-                  style={styles.playerList}
-                  renderItem={renderScorer}
-                  ListEmptyComponent={
-                    <Text style={{color: '#64748B', textAlign: 'center'}}>
-                      No players found
-                    </Text>
-                  }
-                />
-
-                <Text style={styles.modalSection}>Assist (optional)</Text>
-
-                <FlatList
-                  data={[
-                    {_id: null, name: 'No Assist'},
-                    ...players.filter(p => p._id !== scorer?._id),
-                  ]}
-                  keyExtractor={(item, i) => item._id ?? `assist-${i}`}
-                  style={styles.playerList}
-                  renderItem={renderAssist}
-                />
-              </>
-            )}
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity onPress={() => setGoalModal(false)}>
-                <Text style={styles.cancel}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.submitBtn, !scorer && {opacity: 0.4}]}
-                disabled={!scorer}
-                onPress={submitGoal}>
-                <Text style={styles.submitText}>Add Goal</Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.scoreRow}>
+            <Text style={styles.team}>{match.homeTeam.teamName}</Text>
+            <Text style={styles.score}>
+              {match.score.home} - {match.score.away}
+            </Text>
+            <Text style={styles.team}>{match.awayTeam.teamName}</Text>
           </View>
         </View>
-      </Modal>
 
-      {/* CARD MODAL */}
-      <Modal visible={cardModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Add Card</Text>
+        {/* TIMER CONTROLS — pause and reset only */}
+        {canManageMatch && match.startedAt && (
+          <View style={styles.timerControls}>
+            <TouchableOpacity
+              style={[
+                styles.pauseBtn,
+                (!canManageMatch ||
+                  !socketConnected ||
+                  isPauseResumeDisabled) && {
+                  opacity: 0.4,
+                },
+              ]}
+              onPress={handlePauseResumeDebounced}
+              disabled={
+                !canManageMatch || !socketConnected || isPauseResumeDisabled
+              }>
+              <Text style={styles.pauseText}>
+                {isPaused ? '▶️ Resume' : '⏸️ Pause'}
+              </Text>
+            </TouchableOpacity>
 
-            <Text style={styles.modalSection}>Team *</Text>
+            <TouchableOpacity
+              style={[
+                styles.resetBtn,
+                (!canManageMatch || !socketConnected || isResetDisabled) && {
+                  opacity: 0.4,
+                },
+              ]}
+              onPress={confirmReset}
+              disabled={!canManageMatch || !socketConnected || isResetDisabled}>
+              <Text style={styles.resetText}>
+                {isResetDisabled ? 'Resetting...' : 'Reset'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-            {[match.homeTeam, match.awayTeam].map(team => (
-              <TouchableOpacity
-                key={team._id}
-                style={[
-                  styles.playerItem,
-                  selectedTeam?._id === team._id && styles.selectedItem,
-                ]}
-                onPress={() => {
-                  setSelectedTeam(team);
-                  setCardPlayer(null);
-                  loadPlayersForTeam(team);
-                }}>
-                <Text style={styles.playerText}>{team.teamName}</Text>
-              </TouchableOpacity>
-            ))}
-
-            {selectedTeam && (
-              <>
-                <Text style={styles.modalSection}>Card Type *</Text>
-
-                <View style={styles.cardTypeRow}>
-                  <TouchableOpacity
-                    style={[
-                      styles.cardChip,
-                      cardType === 'YELLOW' && styles.yellowActive,
-                    ]}
-                    onPress={() => setCardType('YELLOW')}
-                    activeOpacity={0.85}>
-                    <Text style={styles.cardChipText}>🟨 Yellow</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.cardChip,
-                      cardType === 'RED' && styles.redActive,
-                    ]}
-                    onPress={() => setCardType('RED')}
-                    activeOpacity={0.85}>
-                    <Text style={styles.cardChipText}>🟥 Red</Text>
-                  </TouchableOpacity>
+        {/* RESTART BANNER — shown after reset, full width, outside timerControls */}
+        {canManageMatch &&
+          match.status === 'LIVE' &&
+          !match.startedAt &&
+          canManageMatch && (
+            <TouchableOpacity
+              style={[styles.restartBtn, !socketConnected && {opacity: 0.4}]}
+              disabled={!socketConnected}
+              onPress={() => {
+                Alert.alert(
+                  'Start Match?',
+                  'Kick off the match and start the timer.',
+                  [
+                    {text: 'Cancel', style: 'cancel'},
+                    {
+                      text: '▶️ Start',
+                      onPress: () => SocketManager.startMatch(matchId),
+                    },
+                  ],
+                );
+              }}>
+              <View style={styles.restartInner}>
+                <Text style={styles.restartIcon}>▶️</Text>
+                <View>
+                  <Text style={styles.restartTitle}>Match Ready</Text>
+                  <Text style={styles.restartSub}>Tap to kick off</Text>
                 </View>
-              </>
-            )}
+              </View>
+            </TouchableOpacity>
+          )}
 
-            {cardType && (
-              <>
-                <Text style={styles.modalSection}>Player *</Text>
+        {/* QUICK ACTIONS */}
+        {canManageMatch && (
+          <>
+            <Text style={styles.section}>Quick Actions</Text>
 
-                <FlatList
-                  data={players}
-                  keyExtractor={item => item._id}
-                  style={styles.playerList}
-                  renderItem={({item}) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.playerItem,
-                        cardPlayer?._id === item._id && styles.selectedItem,
-                      ]}
-                      onPress={() => setCardPlayer(item)}>
-                      <Text style={styles.playerText}>{item.name}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </>
-            )}
+            <View style={styles.primaryActions}>
+              <PrimaryAction
+                label="Goal"
+                icon="⚽"
+                color="#10B981"
+                disabled={!canManageMatch || isPaused || !socketConnected}
+                onPress={() => setGoalModal(true)}
+              />
 
-            <View style={styles.modalActions}>
-              <TouchableOpacity onPress={() => setCardModal(false)}>
-                <Text style={styles.cancel}>Cancel</Text>
-              </TouchableOpacity>
+              <PrimaryAction
+                label="Card"
+                icon="🟨"
+                color="#FACC15"
+                disabled={!canManageMatch || isPaused || !socketConnected}
+                onPress={() => setCardModal(true)}
+              />
 
-              <TouchableOpacity
-                style={[
-                  styles.submitBtn,
-                  (!cardPlayer || !cardType) && {opacity: 0.4},
-                ]}
-                disabled={!cardPlayer || !cardType}
-                onPress={submitCard}>
-                <Text style={styles.submitText}>Add Card</Text>
-              </TouchableOpacity>
+              <PrimaryAction
+                label="Sub"
+                icon="🔁"
+                color="#3B82F6"
+                disabled={!canManageMatch || isPaused || !socketConnected}
+                onPress={() => setSubModal(true)}
+              />
             </View>
-          </View>
+          </>
+        )}
+
+        {/* VIEW TOGGLES */}
+        <View style={styles.viewTabs}>
+          <TabButton
+            label="Stats"
+            active={activeTab === 'stats'}
+            onPress={() => setActiveTab('stats')}
+          />
+          <TabButton
+            label="Commentary"
+            active={activeTab === 'commentary'}
+            onPress={() => setActiveTab('commentary')}
+          />
+          <TabButton
+            label="Lineups"
+            active={activeTab === 'lineups'}
+            onPress={() => setActiveTab('lineups')}
+          />
         </View>
-      </Modal>
 
-      {/* SUBSTITUTION MODAL */}
-      <Modal visible={subModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Substitution</Text>
+        {activeTab === 'stats' && <StatsCard match={match} stats={stats} />}
+        {activeTab === 'commentary' && (
+          <FlatList
+            data={match?.events || []}
+            keyExtractor={(item, index) => item._id || `event-${index}`}
+            renderItem={renderEvent}
+            scrollEnabled={false}
+            ListEmptyComponent={
+              <Text
+                style={{textAlign: 'center', color: '#64748B', padding: 20}}>
+                No events yet
+              </Text>
+            }
+          />
+        )}
+        {activeTab === 'lineups' && (
+          <View style={styles.lineupTeamRow}>
+            <TouchableOpacity
+              style={styles.lineupTeamBtn}
+              onPress={() => {
+                setLineupSide('home');
+                setShowLineups(true);
+              }}>
+              <Text style={styles.lineupTeamIcon}>🏠</Text>
+              <Text style={styles.lineupTeamName} numberOfLines={1}>
+                {match.homeTeam.teamName}
+              </Text>
+              <Text style={styles.lineupTeamArrow}>›</Text>
+            </TouchableOpacity>
 
-            <Text style={styles.modalSection}>Team *</Text>
+            <TouchableOpacity
+              style={styles.lineupTeamBtn}
+              onPress={() => {
+                setLineupSide('away');
+                setShowLineups(true);
+              }}>
+              <Text style={styles.lineupTeamIcon}>✈️</Text>
+              <Text style={styles.lineupTeamName} numberOfLines={1}>
+                {match.awayTeam.teamName}
+              </Text>
+              <Text style={styles.lineupTeamArrow}>›</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-            {[match.homeTeam, match.awayTeam].map(team => (
+        {/* GOAL MODAL */}
+        <Modal visible={goalModal} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>Add Goal</Text>
+
+              <Text style={styles.modalSection}>Team *</Text>
+
               <TouchableOpacity
-                key={team._id}
                 style={[
                   styles.playerItem,
-                  selectedTeam?._id === team._id && styles.selectedItem,
+                  selectedTeam?._id === match.homeTeam._id &&
+                    styles.selectedItem,
                 ]}
                 onPress={() => {
-                  setSelectedTeam(team);
-                  setSubOut(null);
-                  setSubIn(null);
-                  loadPlayersForTeam(team);
+                  setSelectedTeam(match.homeTeam);
+                  loadPlayersForTeam(match.homeTeam);
                 }}>
-                <Text style={styles.playerText}>{team.teamName}</Text>
-              </TouchableOpacity>
-            ))}
-
-            {selectedTeam && (
-              <>
-                <Text style={styles.modalSection}>Player OUT *</Text>
-                <FlatList
-                  data={players}
-                  keyExtractor={item => item._id}
-                  style={styles.playerList}
-                  renderItem={({item}) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.playerItem,
-                        subOut?._id === item._id && styles.selectedItem,
-                      ]}
-                      onPress={() => setSubOut(item)}>
-                      <Text style={styles.playerText}>{item.name}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </>
-            )}
-
-            {subOut && (
-              <>
-                <Text style={styles.modalSection}>Player IN *</Text>
-                <FlatList
-                  data={players.filter(p => p._id !== subOut._id)}
-                  keyExtractor={item => item._id}
-                  style={styles.playerList}
-                  renderItem={({item}) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.playerItem,
-                        subIn?._id === item._id && styles.selectedItem,
-                      ]}
-                      onPress={() => setSubIn(item)}>
-                      <Text style={styles.playerText}>{item.name}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </>
-            )}
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity onPress={() => setSubModal(false)}>
-                <Text style={styles.cancel}>Cancel</Text>
+                <Text style={styles.playerText}>{match.homeTeam.teamName}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[
-                  styles.submitBtn,
-                  (!subOut || !subIn) && {opacity: 0.4},
+                  styles.playerItem,
+                  selectedTeam?._id === match.awayTeam._id &&
+                    styles.selectedItem,
                 ]}
-                disabled={!subOut || !subIn}
-                onPress={submitSubstitution}>
-                <Text style={styles.submitText}>Confirm Sub</Text>
+                onPress={() => {
+                  setSelectedTeam(match.awayTeam);
+                  loadPlayersForTeam(match.awayTeam);
+                }}>
+                <Text style={styles.playerText}>{match.awayTeam.teamName}</Text>
               </TouchableOpacity>
+
+              {selectedTeam && (
+                <>
+                  <Text style={styles.modalSection}>Goal Scorer *</Text>
+
+                  <FlatList
+                    data={players}
+                    keyExtractor={item => item._id}
+                    style={styles.playerList}
+                    renderItem={renderScorer}
+                    ListEmptyComponent={
+                      <Text style={{color: '#64748B', textAlign: 'center'}}>
+                        No players found
+                      </Text>
+                    }
+                  />
+
+                  <Text style={styles.modalSection}>Assist (optional)</Text>
+
+                  <FlatList
+                    data={[
+                      {_id: null, name: 'No Assist'},
+                      ...players.filter(p => p._id !== scorer?._id),
+                    ]}
+                    keyExtractor={(item, i) => item._id ?? `assist-${i}`}
+                    style={styles.playerList}
+                    renderItem={renderAssist}
+                  />
+                </>
+              )}
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity onPress={() => setGoalModal(false)}>
+                  <Text style={styles.cancel}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.submitBtn, !scorer && {opacity: 0.4}]}
+                  disabled={!scorer}
+                  onPress={submitGoal}>
+                  <Text style={styles.submitText}>Add Goal</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      {/* LINEUPS MODAL */}
-      <Modal visible={showLineups} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.lineupModal, {height: '90%'}]}>
-            <View style={styles.lineupHeader}>
-              <Text style={styles.lineupTitle}>Match Lineups</Text>
-            </View>
+        {/* CARD MODAL */}
+        <Modal visible={cardModal} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>Add Card</Text>
 
-            <View style={styles.lineupToggle}>
-              <TouchableOpacity
-                onPress={() => setLineupSide('home')}
-                style={[
-                  styles.lineupTab,
-                  lineupSide === 'home' && styles.lineupTabActive,
-                ]}>
-                <Text
+              <Text style={styles.modalSection}>Team *</Text>
+
+              {[match.homeTeam, match.awayTeam].map(team => (
+                <TouchableOpacity
+                  key={team._id}
                   style={[
-                    styles.lineupTabText,
-                    lineupSide === 'home' && styles.lineupTabTextActive,
-                  ]}>
-                  {match.homeTeam.teamName}
-                </Text>
-              </TouchableOpacity>
+                    styles.playerItem,
+                    selectedTeam?._id === team._id && styles.selectedItem,
+                  ]}
+                  onPress={() => {
+                    setSelectedTeam(team);
+                    setCardPlayer(null);
+                    loadPlayersForTeam(team);
+                  }}>
+                  <Text style={styles.playerText}>{team.teamName}</Text>
+                </TouchableOpacity>
+              ))}
 
-              <TouchableOpacity
-                onPress={() => setLineupSide('away')}
-                style={[
-                  styles.lineupTab,
-                  lineupSide === 'away' && styles.lineupTabActive,
-                ]}>
-                <Text
+              {selectedTeam && (
+                <>
+                  <Text style={styles.modalSection}>Card Type *</Text>
+
+                  <View style={styles.cardTypeRow}>
+                    <TouchableOpacity
+                      style={[
+                        styles.cardChip,
+                        cardType === 'YELLOW' && styles.yellowActive,
+                      ]}
+                      onPress={() => setCardType('YELLOW')}
+                      activeOpacity={0.85}>
+                      <Text style={styles.cardChipText}>🟨 Yellow</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.cardChip,
+                        cardType === 'RED' && styles.redActive,
+                      ]}
+                      onPress={() => setCardType('RED')}
+                      activeOpacity={0.85}>
+                      <Text style={styles.cardChipText}>🟥 Red</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+
+              {cardType && (
+                <>
+                  <Text style={styles.modalSection}>Player *</Text>
+
+                  <FlatList
+                    data={players}
+                    keyExtractor={item => item._id}
+                    style={styles.playerList}
+                    renderItem={({item}) => (
+                      <TouchableOpacity
+                        style={[
+                          styles.playerItem,
+                          cardPlayer?._id === item._id && styles.selectedItem,
+                        ]}
+                        onPress={() => setCardPlayer(item)}>
+                        <Text style={styles.playerText}>{item.name}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </>
+              )}
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity onPress={() => setCardModal(false)}>
+                  <Text style={styles.cancel}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
                   style={[
-                    styles.lineupTabText,
-                    lineupSide === 'away' && styles.lineupTabTextActive,
-                  ]}>
-                  {match.awayTeam.teamName}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {lineups && lineupMap && (
-              <View style={styles.pitchWrapper}>
-                <Pitch
-                  formation={lineups[lineupSide]?.formation}
-                  lineup={lineupMap}
-                  readOnly
-                />
+                    styles.submitBtn,
+                    (!cardPlayer || !cardType) && {opacity: 0.4},
+                  ]}
+                  disabled={!cardPlayer || !cardType}
+                  onPress={submitCard}>
+                  <Text style={styles.submitText}>Add Card</Text>
+                </TouchableOpacity>
               </View>
-            )}
+            </View>
+          </View>
+        </Modal>
 
-            <Text style={styles.benchTitle}>Bench</Text>
+        {/* SUBSTITUTION MODAL */}
+        <Modal visible={subModal} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>Substitution</Text>
 
-            <FlatList
-              data={lineups?.[lineupSide]?.bench || []}
-              keyExtractor={p => p._id}
-              renderItem={({item}) => (
-                <View style={styles.benchItem}>
-                  <Text style={styles.benchText}>{item.name}</Text>
+              <Text style={styles.modalSection}>Team *</Text>
+
+              {[match.homeTeam, match.awayTeam].map(team => (
+                <TouchableOpacity
+                  key={team._id}
+                  style={[
+                    styles.playerItem,
+                    selectedTeam?._id === team._id && styles.selectedItem,
+                  ]}
+                  onPress={() => {
+                    setSelectedTeam(team);
+                    setSubOut(null);
+                    setSubIn(null);
+                    loadPlayersForTeam(team);
+                  }}>
+                  <Text style={styles.playerText}>{team.teamName}</Text>
+                </TouchableOpacity>
+              ))}
+
+              {selectedTeam && (
+                <>
+                  <Text style={styles.modalSection}>Player OUT *</Text>
+                  <FlatList
+                    data={players}
+                    keyExtractor={item => item._id}
+                    style={styles.playerList}
+                    renderItem={({item}) => (
+                      <TouchableOpacity
+                        style={[
+                          styles.playerItem,
+                          subOut?._id === item._id && styles.selectedItem,
+                        ]}
+                        onPress={() => setSubOut(item)}>
+                        <Text style={styles.playerText}>{item.name}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </>
+              )}
+
+              {subOut && (
+                <>
+                  <Text style={styles.modalSection}>Player IN *</Text>
+                  <FlatList
+                    data={players.filter(p => p._id !== subOut._id)}
+                    keyExtractor={item => item._id}
+                    style={styles.playerList}
+                    renderItem={({item}) => (
+                      <TouchableOpacity
+                        style={[
+                          styles.playerItem,
+                          subIn?._id === item._id && styles.selectedItem,
+                        ]}
+                        onPress={() => setSubIn(item)}>
+                        <Text style={styles.playerText}>{item.name}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </>
+              )}
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity onPress={() => setSubModal(false)}>
+                  <Text style={styles.cancel}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.submitBtn,
+                    (!subOut || !subIn) && {opacity: 0.4},
+                  ]}
+                  disabled={!subOut || !subIn}
+                  onPress={submitSubstitution}>
+                  <Text style={styles.submitText}>Confirm Sub</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* LINEUPS MODAL */}
+        <Modal visible={showLineups} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={[styles.lineupModal, {height: '90%'}]}>
+              <View style={styles.lineupHeader}>
+                <Text style={styles.lineupTitle}>Match Lineups</Text>
+              </View>
+
+              <View style={styles.lineupToggle}>
+                <TouchableOpacity
+                  onPress={() => setLineupSide('home')}
+                  style={[
+                    styles.lineupTab,
+                    lineupSide === 'home' && styles.lineupTabActive,
+                  ]}>
+                  <Text
+                    style={[
+                      styles.lineupTabText,
+                      lineupSide === 'home' && styles.lineupTabTextActive,
+                    ]}>
+                    {match.homeTeam.teamName}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setLineupSide('away')}
+                  style={[
+                    styles.lineupTab,
+                    lineupSide === 'away' && styles.lineupTabActive,
+                  ]}>
+                  <Text
+                    style={[
+                      styles.lineupTabText,
+                      lineupSide === 'away' && styles.lineupTabTextActive,
+                    ]}>
+                    {match.awayTeam.teamName}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {lineups && lineupMap && (
+                <View style={styles.pitchWrapper}>
+                  <Pitch
+                    formation={lineups[lineupSide]?.formation}
+                    lineup={lineupMap}
+                    readOnly
+                  />
                 </View>
               )}
-            />
 
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => setShowLineups(false)}>
-              <Text style={styles.closeText}>Close</Text>
-            </TouchableOpacity>
+              <Text style={styles.benchTitle}>Bench</Text>
+
+              <FlatList
+                data={lineups?.[lineupSide]?.bench || []}
+                keyExtractor={p => p._id}
+                renderItem={({item}) => (
+                  <View style={styles.benchItem}>
+                    <Text style={styles.benchText}>{item.name}</Text>
+                  </View>
+                )}
+              />
+
+              <TouchableOpacity
+                style={styles.closeBtn}
+                onPress={() => setShowLineups(false)}>
+                <Text style={styles.closeText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
-    </ScrollView>
+        </Modal>
+      </ScrollView>
+      {/* STICKY END MATCH BUTTON */}
+      {/* STICKY BOTTOM — owner sees end button, viewer sees banner */}
+      <View
+        style={[styles.stickyBottom, {paddingBottom: insets.bottom + vs(8)}]}>
+        {canManageMatch ? (
+          <TouchableOpacity
+            style={[
+              styles.endBtn,
+              (!canManageMatch || !socketConnected) && {opacity: 0.4},
+            ]}
+            onPress={endMatch}
+            disabled={!canManageMatch || !socketConnected}>
+            <Text style={styles.endText}>🏁 End Match</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={viewerStyles.banner}>
+            <View style={viewerStyles.bannerLeft}>
+              <View style={viewerStyles.livePulse}>
+                <View style={viewerStyles.liveDotInner} />
+              </View>
+              <View>
+                <Text style={viewerStyles.bannerTitle}>Watching Live</Text>
+                <Text style={viewerStyles.bannerSub}>
+                  {isTournamentMatch
+                    ? 'Managed by tournament organiser'
+                    : 'Managed by match creator'}
+                </Text>
+              </View>
+            </View>
+            <View style={viewerStyles.eyeIcon}>
+              <Text style={viewerStyles.eyeEmoji}>👁</Text>
+            </View>
+          </View>
+        )}
+      </View>
+    </View>
   );
 }
 
@@ -1202,32 +1335,73 @@ function EventItem({item, isLatest, isHomeTeam}) {
 function StatsCard({match, stats}) {
   if (!match || !stats) return null;
 
-  const Row = ({label, home, away}) => (
-    <View style={styles.statsRow}>
-      <Text style={styles.statsValue}>{home}</Text>
-      <Text style={styles.statsLabel}>{label}</Text>
-      <Text style={styles.statsValue}>{away}</Text>
-    </View>
-  );
+  const StatRow = ({label, home, away, icon}) => {
+    const total = home + away || 1;
+    const homeWidth = `${Math.round((home / total) * 100)}%`;
+    const awayWidth = `${Math.round((away / total) * 100)}%`;
+
+    return (
+      <View style={statStyles.row}>
+        <Text style={statStyles.value}>{home}</Text>
+        <View style={statStyles.barSection}>
+          <Text style={statStyles.label}>
+            {icon} {label}
+          </Text>
+          <View style={statStyles.barTrack}>
+            <View style={[statStyles.barHome, {flex: home || 0.01}]} />
+            <View style={[statStyles.barAway, {flex: away || 0.01}]} />
+          </View>
+        </View>
+        <Text style={statStyles.value}>{away}</Text>
+      </View>
+    );
+  };
 
   return (
-    <View style={styles.statsCard}>
-      <Text style={styles.statsTitle}>Match Stats</Text>
-
-      <View style={styles.statsHeader}>
-        <Text style={styles.statsHeaderTeam}>{match.homeTeam.teamName}</Text>
-        <Text style={styles.statsHeaderTeam}>{match.awayTeam.teamName}</Text>
+    <View style={statStyles.card}>
+      {/* Header */}
+      <View style={statStyles.header}>
+        <Text style={statStyles.teamName} numberOfLines={1}>
+          {match.homeTeam.teamName}
+        </Text>
+        <View style={statStyles.badge}>
+          <Text style={statStyles.badgeText}>STATS</Text>
+        </View>
+        <Text style={statStyles.teamName} numberOfLines={1}>
+          {match.awayTeam.teamName}
+        </Text>
       </View>
 
-      <Row label="Goals" home={stats.home.goals} away={stats.away.goals} />
-      <Row
+      {/* Score highlight */}
+      {/* <View style={statStyles.scoreHighlight}>
+        <Text style={statStyles.bigScore}>{match.score?.home ?? 0}</Text>
+        <Text style={statStyles.scoreSep}>—</Text>
+        <Text style={statStyles.bigScore}>{match.score?.away ?? 0}</Text>
+      </View> */}
+
+      <View style={statStyles.divider} />
+
+      <StatRow
+        label="Goals"
+        icon="⚽"
+        home={stats.home.goals}
+        away={stats.away.goals}
+      />
+      <StatRow
         label="Yellow Cards"
+        icon="🟨"
         home={stats.home.yellow}
         away={stats.away.yellow}
       />
-      <Row label="Red Cards" home={stats.home.red} away={stats.away.red} />
-      <Row
+      <StatRow
+        label="Red Cards"
+        icon="🟥"
+        home={stats.home.red}
+        away={stats.away.red}
+      />
+      <StatRow
         label="Substitutions"
+        icon="🔁"
         home={stats.home.subs}
         away={stats.away.subs}
       />
@@ -1265,530 +1439,110 @@ function TabButton({label, active, onPress}) {
 
 // ================= STYLES =================
 
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#F8FAFC',
-//     paddingHorizontal: 16,
-//     paddingTop: 16,
-//   },
-
-//   header: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//     marginBottom: 14,
-//   },
-
-//   title: {
-//     fontSize: 18,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//   },
-
-//   live: {
-//     backgroundColor: '#FEE2E2',
-//     color: '#DC2626',
-//     fontWeight: '700',
-//     paddingHorizontal: 10,
-//     paddingVertical: 4,
-//     borderRadius: 12,
-//     fontSize: 12,
-//   },
-
-//   scoreCard: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 18,
-//     paddingVertical: 20,
-//     paddingHorizontal: 16,
-//     alignItems: 'center',
-//     marginBottom: 20,
-//     shadowColor: '#000',
-//     shadowOffset: {width: 0, height: 2},
-//     shadowOpacity: 0.1,
-//     shadowRadius: 4,
-//     elevation: 3,
-//   },
-
-//   timer: {
-//     backgroundColor: '#DCFCE7',
-//     color: '#15803D',
-//     paddingHorizontal: 12,
-//     paddingVertical: 4,
-//     borderRadius: 20,
-//     fontWeight: '700',
-//     marginBottom: 12,
-//   },
-
-//   scoreRow: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//     width: '100%',
-//     paddingHorizontal: 10,
-//   },
-
-//   team: {
-//     fontSize: 14,
-//     fontWeight: '700',
-//     color: '#334155',
-//     width: '30%',
-//     textAlign: 'center',
-//   },
-
-//   score: {
-//     fontSize: 30,
-//     fontWeight: '900',
-//     color: '#0F172A',
-//     width: '40%',
-//     textAlign: 'center',
-//   },
-
-//   section: {
-//     fontSize: 13,
-//     fontWeight: '700',
-//     color: '#64748B',
-//     marginBottom: 10,
-//     marginTop: 4,
-//   },
-
-//   timerControls: {
-//     flexDirection: 'row',
-//     justifyContent: 'center',
-//     gap: 12,
-//     marginBottom: 16,
-//   },
-
-//   pauseBtn: {
-//     backgroundColor: '#FACC15',
-//     paddingHorizontal: 20,
-//     paddingVertical: 8,
-//     borderRadius: 10,
-//   },
-
-//   pauseText: {
-//     fontWeight: '800',
-//     color: '#0F172A',
-//   },
-
-//   resetBtn: {
-//     backgroundColor: '#EF4444',
-//     paddingHorizontal: 20,
-//     paddingVertical: 8,
-//     borderRadius: 10,
-//   },
-
-//   resetText: {
-//     color: '#FFFFFF',
-//     fontWeight: '800',
-//   },
-
-//   primaryActions: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     marginBottom: 16,
-//   },
-
-//   primaryBtn: {
-//     flex: 1,
-//     marginHorizontal: 6,
-//     borderRadius: 18,
-//     paddingVertical: 14,
-//     alignItems: 'center',
-//   },
-
-//   primaryIcon: {
-//     fontSize: 22,
-//     marginBottom: 4,
-//   },
-
-//   primaryLabel: {
-//     fontSize: 13,
-//     fontWeight: '800',
-//     color: '#FFFFFF',
-//   },
-
-//   viewTabs: {
-//     flexDirection: 'row',
-//     backgroundColor: '#F1F5F9',
-//     borderRadius: 14,
-//     padding: 4,
-//     marginBottom: 16,
-//   },
-
-//   tabBtn: {
-//     flex: 1,
-//     paddingVertical: 10,
-//     borderRadius: 12,
-//     alignItems: 'center',
-//   },
-
-//   tabBtnActive: {
-//     backgroundColor: '#FFFFFF',
-//   },
-
-//   tabLabel: {
-//     fontSize: 13,
-//     fontWeight: '700',
-//     color: '#64748B',
-//   },
-
-//   tabLabelActive: {
-//     color: '#0F172A',
-//   },
-
-//   event: {
-//     flexDirection: 'row',
-//     alignItems: 'flex-start',
-//     borderRadius: 14,
-//     padding: 10,
-//     marginBottom: 8,
-//   },
-
-//   eventMinute: {
-//     width: 32,
-//     fontWeight: '800',
-//     color: '#64748B',
-//   },
-
-//   eventTitle: {
-//     fontSize: 14,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//   },
-
-//   eventPlayer: {
-//     fontSize: 13,
-//     fontWeight: '700',
-//     color: '#1D4ED8',
-//     marginTop: 2,
-//   },
-
-//   eventAssist: {
-//     fontSize: 12,
-//     color: '#64748B',
-//   },
-
-//   homeEvent: {
-//     borderLeftWidth: 4,
-//     borderLeftColor: '#22C55E',
-//     backgroundColor: '#F0FDF4',
-//   },
-
-//   awayEvent: {
-//     borderLeftWidth: 4,
-//     borderLeftColor: '#3B82F6',
-//     backgroundColor: '#EFF6FF',
-//   },
-
-//   latestEvent: {
-//     shadowColor: '#000',
-//     shadowOffset: {width: 0, height: 3},
-//     shadowOpacity: 0.18,
-//     shadowRadius: 8,
-//     elevation: 4,
-//   },
-
-//   endBtn: {
-//     backgroundColor: '#DC2626',
-//     paddingVertical: 12,
-//     borderRadius: 14,
-//     alignItems: 'center',
-//     marginTop: 12,
-//   },
-
-//   endText: {
-//     color: '#FFFFFF',
-//     fontWeight: '800',
-//     fontSize: 15,
-//   },
-
-//   modalOverlay: {
-//     flex: 1,
-//     backgroundColor: 'rgba(0,0,0,0.45)',
-//     justifyContent: 'flex-end',
-//   },
-
-//   modal: {
-//     backgroundColor: '#FFFFFF',
-//     borderTopLeftRadius: 20,
-//     borderTopRightRadius: 20,
-//     padding: 20,
-//     maxHeight: '80%',
-//   },
-
-//   modalTitle: {
-//     fontSize: 16,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//     marginBottom: 16,
-//     textAlign: 'center',
-//   },
-
-//   modalSection: {
-//     fontSize: 13,
-//     fontWeight: '700',
-//     color: '#334155',
-//     marginTop: 12,
-//     marginBottom: 6,
-//   },
-
-//   playerList: {
-//     maxHeight: 180,
-//     marginBottom: 10,
-//   },
-
-//   playerItem: {
-//     paddingVertical: 12,
-//     paddingHorizontal: 14,
-//     borderRadius: 12,
-//     backgroundColor: '#F8FAFC',
-//     borderWidth: 1,
-//     borderColor: '#E2E8F0',
-//     marginBottom: 8,
-//   },
-
-//   selectedItem: {
-//     backgroundColor: '#DBEAFE',
-//     borderColor: '#2563EB',
-//   },
-
-//   playerText: {
-//     fontSize: 14,
-//     fontWeight: '600',
-//     color: '#0F172A',
-//   },
-
-//   modalActions: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     marginTop: 12,
-//   },
-
-//   cancel: {
-//     textAlign: 'center',
-//     color: '#64748B',
-//     fontWeight: '600',
-//   },
-
-//   submitBtn: {
-//     backgroundColor: '#1D4ED8',
-//     paddingVertical: 12,
-//     paddingHorizontal: 24,
-//     borderRadius: 12,
-//   },
-
-//   submitText: {
-//     color: '#FFFFFF',
-//     fontSize: 14,
-//     fontWeight: '800',
-//   },
-
-//   cardTypeRow: {
-//     flexDirection: 'row',
-//     gap: 12,
-//     marginTop: 6,
-//   },
-
-//   cardChip: {
-//     flex: 1,
-//     paddingVertical: 14,
-//     borderRadius: 16,
-//     alignItems: 'center',
-//     backgroundColor: '#F1F5F9',
-//     borderWidth: 1,
-//     borderColor: '#E2E8F0',
-//   },
-
-//   cardChipText: {
-//     fontSize: 14,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//   },
-
-//   yellowActive: {
-//     backgroundColor: '#FEF9C3',
-//     borderColor: '#FACC15',
-//   },
-
-//   redActive: {
-//     backgroundColor: '#FEE2E2',
-//     borderColor: '#EF4444',
-//   },
-
-//   statsCard: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 18,
-//     padding: 16,
-//     marginBottom: 20,
-//   },
-
-//   statsTitle: {
-//     fontSize: 15,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//     marginBottom: 12,
-//     textAlign: 'center',
-//   },
-
-//   statsHeader: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     marginBottom: 10,
-//   },
-
-//   statsHeaderTeam: {
-//     fontSize: 12,
-//     fontWeight: '700',
-//     color: '#64748B',
-//     width: '40%',
-//     textAlign: 'center',
-//   },
-
-//   statsRow: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     paddingVertical: 6,
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#F1F5F9',
-//   },
-
-//   statsLabel: {
-//     width: '40%',
-//     fontSize: 13,
-//     fontWeight: '600',
-//     color: '#334155',
-//     textAlign: 'center',
-//   },
-
-//   statsValue: {
-//     width: '30%',
-//     fontSize: 14,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//     textAlign: 'center',
-//   },
-
-//   lineupModal: {
-//     backgroundColor: '#FFFFFF',
-//     borderTopLeftRadius: 24,
-//     borderTopRightRadius: 24,
-//     paddingHorizontal: 16,
-//     paddingTop: 12,
-//     paddingBottom: 20,
-//   },
-
-//   lineupHeader: {
-//     alignItems: 'center',
-//     marginBottom: 12,
-//   },
-
-//   lineupTitle: {
-//     fontSize: 16,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//   },
-
-//   lineupToggle: {
-//     flexDirection: 'row',
-//     backgroundColor: '#F1F5F9',
-//     borderRadius: 16,
-//     padding: 4,
-//     marginBottom: 14,
-//   },
-
-//   lineupTab: {
-//     flex: 1,
-//     paddingVertical: 8,
-//     borderRadius: 12,
-//     alignItems: 'center',
-//   },
-
-//   lineupTabActive: {
-//     backgroundColor: '#FFFFFF',
-//   },
-
-//   lineupTabText: {
-//     fontSize: 13,
-//     fontWeight: '700',
-//     color: '#64748B',
-//   },
-
-//   lineupTabTextActive: {
-//     color: '#0F172A',
-//   },
-
-//   pitchWrapper: {
-//     borderRadius: 18,
-//     overflow: 'hidden',
-//     backgroundColor: '#0F5132',
-//     marginBottom: 14,
-//     padding: 6,
-//   },
-
-//   benchTitle: {
-//     fontSize: 13,
-//     fontWeight: '800',
-//     color: '#64748B',
-//     marginBottom: 8,
-//     marginTop: 6,
-//   },
-
-//   benchItem: {
-//     backgroundColor: '#F8FAFC',
-//     borderRadius: 12,
-//     paddingVertical: 10,
-//     paddingHorizontal: 14,
-//     marginBottom: 8,
-//     borderWidth: 1,
-//     borderColor: '#E2E8F0',
-//   },
-
-//   benchText: {
-//     fontSize: 14,
-//     fontWeight: '700',
-//     color: '#0F172A',
-//   },
-
-//   closeBtn: {
-//     marginTop: 14,
-//     backgroundColor: '#F1F5F9',
-//     paddingVertical: 12,
-//     borderRadius: 14,
-//     alignItems: 'center',
-//   },
-
-//   closeText: {
-//     fontSize: 14,
-//     fontWeight: '800',
-//     color: '#0F172A',
-//   },
-//   socketStatus: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     backgroundColor: '#FEE2E2',
-//     paddingVertical: 8,
-//     paddingHorizontal: 12,
-//     borderRadius: 8,
-//     marginBottom: 12,
-//     gap: 8,
-//   },
-
-//   socketStatusText: {
-//     fontSize: 12,
-//     fontWeight: '600',
-//     color: '#DC2626',
-//   },
-
-//   liveDot: {
-//     width: 8,
-//     height: 8,
-//     borderRadius: 4,
-//     backgroundColor: '#15803D',
-//   },
-// });
+const statStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: ms(20),
+    padding: s(20),
+    marginBottom: vs(16),
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    elevation: 3,
+    shadowColor: '#2563EB',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: {width: 0, height: 4},
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: vs(12),
+  },
+  teamName: {
+    flex: 1,
+    fontSize: rf(15), // ↑ was 13
+    fontWeight: '800',
+    color: '#334155',
+    textAlign: 'center',
+  },
+  badge: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: s(12),
+    paddingVertical: vs(4),
+    borderRadius: ms(8),
+    marginHorizontal: s(8),
+  },
+  badgeText: {
+    fontSize: rf(11), // ↑ was 10
+    fontWeight: '900',
+    color: '#2563EB',
+    letterSpacing: 1.5,
+  },
+  scoreHighlight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: vs(14), // ↑ was 10
+    gap: s(16),
+    backgroundColor: '#F8FAFC',
+    borderRadius: ms(14),
+    marginBottom: vs(16), // ↑ was 14
+  },
+  bigScore: {
+    fontSize: ms(52), // ↑ was 44
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  scoreSep: {
+    fontSize: ms(32), // ↑ was 28
+    fontWeight: '300',
+    color: '#CBD5E1',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginBottom: vs(16), // ↑ was 14
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: vs(16), // ↑ was 14
+    gap: s(8),
+  },
+  value: {
+    width: s(28), // ↑ was 24
+    fontSize: rf(18), // ↑ was 15
+    fontWeight: '900',
+    color: '#0F172A',
+    textAlign: 'center',
+  },
+  barSection: {
+    flex: 1,
+  },
+  label: {
+    fontSize: rf(13), // ↑ was 11
+    fontWeight: '600',
+    color: '#64748B', // slightly darker than #94A3B8 — more readable
+    textAlign: 'center',
+    marginBottom: vs(6), // ↑ was 4
+  },
+  barTrack: {
+    flexDirection: 'row',
+    height: vs(8), // ↑ was 6 — more visible
+    borderRadius: ms(4),
+    overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+  },
+  barHome: {
+    backgroundColor: '#22C55E',
+    borderRadius: ms(4),
+  },
+  barAway: {
+    backgroundColor: '#2563EB',
+    borderRadius: ms(4),
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -2318,5 +2072,176 @@ const styles = StyleSheet.create({
     height: s(8),
     borderRadius: s(4),
     backgroundColor: '#15803D',
+  },
+  // ADD these to your existing styles object
+  screenContainer: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  stickyBottom: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: s(16),
+    paddingTop: vs(10),
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+  },
+  endBtn: {
+    backgroundColor: '#DC2626',
+    paddingVertical: vs(14),
+    borderRadius: ms(14),
+    alignItems: 'center',
+  },
+  endText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: rf(15),
+    letterSpacing: 0.5,
+  },
+  noPermissionText: {
+    textAlign: 'center',
+    color: '#94A3B8',
+    fontSize: rf(12),
+    paddingVertical: vs(10),
+  },
+  lineupTeamRow: {
+    gap: vs(10),
+    marginBottom: vs(16),
+  },
+  lineupTeamBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: ms(14),
+    paddingVertical: vs(14),
+    paddingHorizontal: s(16),
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  lineupTeamIcon: {
+    fontSize: ms(20),
+    marginRight: s(10),
+  },
+  lineupTeamName: {
+    flex: 1,
+    fontSize: rf(15),
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  lineupTeamArrow: {
+    fontSize: ms(22),
+    color: '#94A3B8',
+    fontWeight: '300',
+  },
+  emptyCommentary: {
+    alignItems: 'center',
+    paddingVertical: vs(30),
+  },
+  emptyCommentaryIcon: {
+    fontSize: ms(32),
+    marginBottom: vs(8),
+  },
+  emptyCommentaryText: {
+    color: '#94A3B8',
+    fontSize: rf(14),
+    fontWeight: '600',
+  },
+  restartBtn: {
+    backgroundColor: '#22C55E',
+    borderRadius: ms(14),
+    paddingVertical: vs(14),
+    paddingHorizontal: s(20),
+    marginBottom: vs(16),
+    elevation: 4,
+    shadowColor: '#22C55E',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: {width: 0, height: 4},
+  },
+  restartInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(12),
+  },
+  restartIcon: {
+    fontSize: ms(28),
+  },
+  restartTitle: {
+    fontSize: rf(15),
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  restartSub: {
+    fontSize: rf(12),
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.75)',
+    marginTop: vs(1),
+  },
+});
+
+const viewerStyles = StyleSheet.create({
+  banner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderRadius: ms(16),
+    paddingVertical: vs(14),
+    paddingHorizontal: s(16),
+    marginBottom: vs(16),
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+  },
+  bannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(12),
+  },
+  livePulse: {
+    width: s(36),
+    height: s(36),
+    borderRadius: ms(18),
+    backgroundColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  liveDotInner: {
+    width: s(12),
+    height: s(12),
+    borderRadius: ms(6),
+    backgroundColor: '#22C55E',
+  },
+  bannerTitle: {
+    fontSize: rf(14),
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  bannerSub: {
+    fontSize: rf(11),
+    fontWeight: '500',
+    color: '#94A3B8',
+    marginTop: vs(1),
+  },
+  eyeIcon: {
+    width: s(36),
+    height: s(36),
+    borderRadius: ms(18),
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eyeEmoji: {
+    fontSize: ms(16),
   },
 });

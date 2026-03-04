@@ -167,6 +167,7 @@ import MatchNavigator from './MatchNavigator';
 import TournamentNavigator from './TournamentNavigator';
 import ProfileNavigator from './ProfileNavigator';
 import OrganiserDashboardScreen from '../screens/organiser/OrganiserDashboardScreen';
+import {CommonActions} from '@react-navigation/native';
 
 import {s, vs, ms, rf} from '../utils/responsive';
 
@@ -275,18 +276,30 @@ export default function BottomTabs() {
           key={tab.name}
           name={tab.name}
           component={tab.component}
-          listeners={
-            tab.name === 'ProfileNavigator'
-              ? ({navigation}) => ({
-                  tabPress: e => {
-                    e.preventDefault();
-                    navigation.navigate('ProfileNavigator', {
-                      screen: 'PlayerProfileView', // ✅ always reset to first screen
-                    });
-                  },
-                })
-              : undefined
-          }
+          listeners={({navigation, route}) => ({
+            tabPress: e => {
+              // ✅ Special case for ProfileNavigator
+              if (tab.name === 'ProfileNavigator') {
+                e.preventDefault();
+                navigation.navigate('ProfileNavigator', {
+                  screen: 'PlayerProfileView',
+                });
+                return;
+              }
+
+              // ✅ Reset stack to root when re-tapping active tab
+              const state = navigation.getState();
+              const currentTab = state.routes[state.index];
+              if (currentTab.name === tab.name) {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{name: tab.name}],
+                  }),
+                );
+              }
+            },
+          })}
           options={{
             tabBarShowLabel: false,
             tabBarIcon: ({focused}) => (

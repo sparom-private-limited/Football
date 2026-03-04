@@ -263,8 +263,6 @@ function MatchCard({match, onPress}) {
 
     return `${day} ${month} ${year} • ${time}`;
   };
-  console.log('MATCH DATA:', match);
-  console.log('SCHEDULED AT:', match?.scheduledAt);
 
   const renderLogo = team => {
     if (team?.teamLogoUrl) {

@@ -11,19 +11,27 @@ import {
 import API from '../api/api';
 import MainLayout from '../components/MainLayout';
 import useNavigationHelper from '../navigation/Navigationhelper';
+import AppRefreshView from '../components/AppRefreshView';
+import {useIsFocused} from '@react-navigation/native';
 import {s, vs, ms, rf} from '../utils/responsive';
+
 
 export default function PlayerHome() {
   const nav = useNavigationHelper();
+    const isFocused = useIsFocused(); // ✅ ADD THIS
   const [loading, setLoading] = useState(true);
   const [isProfileCompleted, setIsProfileCompleted] = useState(false);
   const [player, setPlayer] = useState(null);
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('Overview');
+    const [refreshing, setRefreshing] = useState(false); // ✅ ADD THIS
+
 
   useEffect(() => {
-    fetchPlayerDetails();
-  }, []);
+    if (isFocused) { // ✅ CHANGED: reload when screen is focused
+      fetchPlayerDetails();
+    }
+  }, [isFocused]); // ✅ CHANGED
 
   const fetchPlayerDetails = async () => {
     try {
@@ -38,6 +46,17 @@ export default function PlayerHome() {
     }
   };
 
+    const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchPlayerDetails();
+    } catch (e) {
+      console.log('Refresh error', e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   if (loading) {
     return (
       <MainLayout title="Player Profile">
@@ -48,13 +67,15 @@ export default function PlayerHome() {
     );
   }
 
-
   return (
+     <AppRefreshView
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      style={styles.container}>
     <MainLayout title="Player Profile">
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}>
-
         {/* ── HERO HEADER CARD ── */}
         <View style={styles.heroCard}>
           {/* Avatar + Name Row */}
@@ -147,19 +168,22 @@ export default function PlayerHome() {
               <View>
                 <Text style={styles.seasonTitle}>This season</Text>
                 <Text style={styles.seasonMeta}>
-                  {player?.matchesPlayed || 0} matches •{' '}
-                  {player?.goals || 0} goals •{' '}
-                  {player?.assists || 0} assists
+                  {player?.matchesPlayed || 0} matches • {player?.goals || 0}{' '}
+                  goals • {player?.assists || 0} assists
                 </Text>
               </View>
             </View>
             <TouchableOpacity
               style={styles.viewStatsBtn}
-              onPress={() => nav.toProfile('PlayerStats')}>
+              onPress={() =>
+                nav.toProfile('PlayerStats', {
+                  playerId: player?._id,
+                })
+              }>
               <Text style={styles.viewStatsBtnText}>View full stats</Text>
             </TouchableOpacity>
           </View>
-        </View>       
+        </View>
 
         {/* ── KEY NUMBERS CARD ── */}
         <View style={styles.card}>
@@ -178,7 +202,10 @@ export default function PlayerHome() {
             <StatCell label="Goals" value={player?.goals ?? 0} />
             <StatCell label="Assists" value={player?.assists ?? 0} />
             <StatCell label="Matches" value={player?.matchesPlayed ?? 0} />
-            <StatCell label="Shots on target" value={player?.shotsOnTarget ?? 0} />
+            <StatCell
+              label="Shots on target"
+              value={player?.shotsOnTarget ?? 0}
+            />
             <StatCell label="Clean sheets" value={player?.cleanSheets ?? 0} />
             <StatCell label="Yellow cards" value={player?.yellowCards ?? 0} />
           </View>
@@ -217,7 +244,11 @@ export default function PlayerHome() {
             <ActionCard
               emoji="📊"
               label="My Stats"
-              onPress={() => nav.toProfile('PlayerStats')}
+              onPress={() =>
+                nav.toProfile('PlayerStats', {
+                  playerId: player?._id,
+                })
+              }
             />
             <ActionCard
               emoji="✏️"
@@ -231,9 +262,9 @@ export default function PlayerHome() {
             /> */}
           </View>
         </View>
-
       </ScrollView>
     </MainLayout>
+    </AppRefreshView>
   );
 }
 
@@ -497,7 +528,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#2563EB',
   },
-
 
   /* ── PER90 BADGE ── */
   per90Badge: {

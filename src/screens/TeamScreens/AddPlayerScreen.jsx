@@ -25,10 +25,8 @@ export default function AddPlayerScreen() {
   const [loading, setLoading] = useState(false);
   const [addingId, setAddingId] = useState(null);
   const nav = useNavigationHelper();
-  const route = useRoute();
 
   useEffect(() => {
-    // initial load: show popular free agents or empty
     search('');
   }, []);
 
@@ -36,11 +34,12 @@ export default function AddPlayerScreen() {
     setLoading(true);
     try {
       const res = await API.get('/api/player/search', {
-        params: {q, position: positionFilter},
+        params: { q, position: positionFilter },
       });
-      // filter free agents just in case
-      const freeAgents = res.data.filter(p => p.isFreeAgent !== false);
-      setResults(freeAgents);
+
+      // ✅ Handle paginated response
+      const players = res.data.data || [];
+      setResults(players.filter(p => p.isFreeAgent !== false));
     } catch (err) {
       setResults([]);
     } finally {
@@ -51,31 +50,31 @@ export default function AddPlayerScreen() {
   const addPlayer = async playerId => {
     setAddingId(playerId);
     try {
-      await API.post('/api/team/add-player', {playerId});
+      await API.post('/api/team/add-player', { playerId });
       Alert.alert('Success', 'Player added to team');
-      nav.to('MainTabs', {
-        screen: 'TeamHome',
-      });
+      nav.to('MainTabs', { screen: 'TeamHome' });
     } catch (err) {
-      Alert.alert(
-        'Error',
-        err.response?.data?.message || 'Failed to add player',
-      );
+      Alert.alert('Error', err.response?.data?.message || 'Failed to add player');
     } finally {
       setAddingId(null);
     }
   };
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <View style={styles.playerCard}>
-      <Image source={{uri: item.profileImageUrl}} style={styles.playerImg} />
-      <View style={{flex: 1, marginLeft: 12}}>
-        <Text style={styles.playerName}>{item.name}</Text>
+      <Image
+        source={{ uri: item.profileImageUrl }}
+        style={styles.playerImg}
+      />
+      <View style={{ flex: 1, marginLeft: 12 }}>
+        {/* ✅ safe fallback — works whether name is on player or userId */}
+        <Text style={styles.playerName}>
+          {item.userId?.name || item.name || '—'}
+        </Text>
         <Text style={styles.playerMeta}>
           {item.position} • {item.age || '—'} yrs • {item.footed || '—'}
         </Text>
       </View>
-
       <TouchableOpacity
         style={styles.addBtn}
         onPress={() => addPlayer(item._id)}
@@ -87,42 +86,47 @@ export default function AddPlayerScreen() {
     </View>
   );
 
+  // ✅ Header replaces ScrollView — no nesting conflict
+  const ListHeader = () => (
+    <View>
+      <Text style={styles.title}>Add Player</Text>
+      <View style={styles.row}>
+        <TextInput
+          placeholder="Search by name"
+          style={styles.searchInput}
+          value={query}
+          onChangeText={setQuery}
+          onSubmitEditing={() => search()}
+          returnKeyType="search"
+        />
+        <TouchableOpacity style={styles.searchBtn} onPress={() => search()}>
+          <Text style={{ color: '#fff', fontWeight: '700' }}>Search</Text>
+        </TouchableOpacity>
+      </View>
+      {loading && (
+        <ActivityIndicator style={{ marginTop: 20 }} color="#1D4ED8" />
+      )}
+    </View>
+  );
+
   return (
-    <MainLayout title="Add Player">
-      <ScrollView style={styles.container}>
-        <Text style={styles.title}>Add Player</Text>
-
-        <View style={styles.row}>
-          <TextInput
-            placeholder="Search by name"
-            style={styles.searchInput}
-            value={query}
-            onChangeText={setQuery}
-            onSubmitEditing={() => search()}
-            returnKeyType="search"
-          />
-          <TouchableOpacity style={styles.searchBtn} onPress={() => search()}>
-            <Text style={{color: '#fff', fontWeight: '700'}}>Search</Text>
-          </TouchableOpacity>
-        </View>
-
-        {loading ? (
-          <ActivityIndicator style={{marginTop: 20}} color="#1D4ED8" />
-        ) : (
-          <FlatList
-            data={results}
-            keyExtractor={i => i._id}
-            renderItem={renderItem}
-            ListEmptyComponent={
-              <Text style={{marginTop: 20, color: '#475569'}}>
-                No free agents found
-              </Text>
-            }
-            style={{marginTop: 12}}
-            nestedScrollEnabled={true} // ✅ FIX
-          />
-        )}
-      </ScrollView>
+    // ✅ scroll={false} — FlatList handles all scrolling
+    <MainLayout title="Add Player" scroll={false}>
+      <FlatList
+        data={loading ? [] : results}
+        keyExtractor={i => i._id}
+        ListHeaderComponent={ListHeader}
+        renderItem={renderItem}
+        ListEmptyComponent={
+          !loading ? (
+            <Text style={{ marginTop: 20, color: '#475569', paddingHorizontal: 16 }}>
+              No free agents found
+            </Text>
+          ) : null
+        }
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      />
     </MainLayout>
   );
 }
