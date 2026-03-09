@@ -6,4 +6,4 @@ export const API_BASE_URL = `http://${BASE_IP}:8000`;
 export const SOCKET_BASE_URL = `http://${BASE_IP}:8000`;
 
 // export const API_BASE_URL = "https://scores-backend-y4pt.onrender.com";
-// export const SOCKET_BASE_URL = "https://scores-backend-y4pt.onrender.com";
+// export const SOCKET_BASE_URL = "https://scores-backend-y4pt.onrender.com"; 
