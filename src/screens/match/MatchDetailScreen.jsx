@@ -9,7 +9,7 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import {useRoute, useNavigation} from '@react-navigation/native';
+import {useRoute, useNavigation, useIsFocused} from '@react-navigation/native';
 
 import {getMatchById, respondToMatch, cancelMatch} from '../../api/match.api';
 import API from '../../api/api';
@@ -20,6 +20,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {s, vs, ms, rf} from '../../utils/responsive';
 
 export default function MatchDetailScreen() {
+  const isFocused = useIsFocused();
   const route = useRoute();
   const nav = useNavigationHelper();
   const {user} = useAuth();
@@ -30,6 +31,12 @@ export default function MatchDetailScreen() {
   const [myTeam, setMyTeam] = useState(null);
 
   const matchId = route.params?.matchId;
+
+  useEffect(() => {
+    if (isFocused && matchId) {
+      loadInitial(); // reload match data every time screen is focused
+    }
+  }, [isFocused]);
 
   /* -------------------- PARAM GUARD -------------------- */
   useEffect(() => {

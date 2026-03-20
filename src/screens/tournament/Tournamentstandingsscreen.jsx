@@ -78,6 +78,8 @@ export default function TournamentStandingsScreen() {
           <Text style={[styles.headerCell, styles.statCell]}>W</Text>
           <Text style={[styles.headerCell, styles.statCell]}>D</Text>
           <Text style={[styles.headerCell, styles.statCell]}>L</Text>
+          <Text style={[styles.headerCell, styles.statCell]}>GF</Text>  {/* 👈 added */}
+  <Text style={[styles.headerCell, styles.statCell]}>GA</Text>  
           <Text style={[styles.headerCell, styles.statCell]}>GD</Text>
           <Text style={[styles.headerCell, styles.ptsCell]}>Pts</Text>
         </View>
@@ -106,6 +108,8 @@ export default function TournamentStandingsScreen() {
           <Text style={styles.legendItem}>W = Won</Text>
           <Text style={styles.legendItem}>D = Drawn</Text>
           <Text style={styles.legendItem}>L = Lost</Text>
+           <Text style={styles.legendItem}>GF = Goals For</Text>     {/* 👈 added */}
+  <Text style={styles.legendItem}>GA = Goals Against</Text> {/* 👈 added */}
           <Text style={styles.legendItem}>GD = Goal Difference</Text>
           <Text style={styles.legendItem}>Pts = Points</Text>
         </View>
@@ -120,20 +124,13 @@ export default function TournamentStandingsScreen() {
 
 function StandingRow({ position, entry, isChampion }) {
   return (
-    <View
-      style={[
-        styles.standingRow,
-        isChampion && styles.championRow,
-        position <= 3 && styles.topThree,
-      ]}
-    >
+    <View style={[
+      styles.standingRow,
+      isChampion && styles.championRow,
+      position <= 3 && !isChampion && styles.topThree,
+    ]}>
       <View style={styles.posWrapper}>
-        <Text
-          style={[
-            styles.posText,
-            isChampion && styles.championText,
-          ]}
-        >
+        <Text style={[styles.posText, isChampion && styles.championText]}>
           {position}
         </Text>
         {isChampion && <Text style={styles.trophy}>🏆</Text>}
@@ -141,35 +138,27 @@ function StandingRow({ position, entry, isChampion }) {
 
       <View style={styles.teamInfo}>
         {entry.team.teamLogoUrl ? (
-          <Image
-            source={{ uri: entry.team.teamLogoUrl }}
-            style={styles.teamLogo}
-          />
+          <Image source={{uri: entry.team.teamLogoUrl}} style={styles.teamLogo} />
         ) : (
           <View style={styles.logoFallback}>
-            <Text style={styles.logoText}>
-              {entry.team.teamName?.[0] || "T"}
-            </Text>
+            <Text style={styles.logoText}>{entry.team.teamName?.[0] || "T"}</Text>
           </View>
         )}
-        <Text style={styles.teamName} numberOfLines={1}>
-          {entry.team.teamName}
-        </Text>
+        <Text style={styles.teamName} numberOfLines={1}>{entry.team.teamName}</Text>
       </View>
 
       <Text style={styles.statText}>{entry.played}</Text>
       <Text style={styles.statText}>{entry.won}</Text>
       <Text style={styles.statText}>{entry.drawn}</Text>
       <Text style={styles.statText}>{entry.lost}</Text>
-      <Text
-        style={[
-          styles.statText,
-          entry.goalDifference > 0 && styles.positiveGD,
-          entry.goalDifference < 0 && styles.negativeGD,
-        ]}
-      >
-        {entry.goalDifference > 0 ? "+" : ""}
-        {entry.goalDifference}
+      <Text style={styles.statText}>{entry.goalsFor}</Text>   {/* 👈 added */}
+      <Text style={styles.statText}>{entry.goalsAgainst}</Text> {/* 👈 added */}
+      <Text style={[
+        styles.statText,
+        entry.goalDifference > 0 && styles.positiveGD,
+        entry.goalDifference < 0 && styles.negativeGD,
+      ]}>
+        {entry.goalDifference > 0 ? "+" : ""}{entry.goalDifference}
       </Text>
       <Text style={styles.ptsText}>{entry.points}</Text>
     </View>

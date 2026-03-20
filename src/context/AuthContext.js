@@ -1,13 +1,10 @@
-
-
-
-import React, { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import SocketManager from "../services/SocketManager";
+import React, {createContext, useContext, useEffect, useState} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import SocketManager from '../services/SocketManager';
 
 const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export function AuthProvider({children}) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,8 +12,8 @@ export function AuthProvider({ children }) {
   // 🔁 Bootstrap (restore only)
   useEffect(() => {
     const bootstrap = async () => {
-      const storedUser = await AsyncStorage.getItem("user");
-      const storedToken = await AsyncStorage.getItem("token");
+      const storedUser = await AsyncStorage.getItem('user');
+      const storedToken = await AsyncStorage.getItem('token');
 
       if (storedUser && storedToken) {
         setUser(JSON.parse(storedUser));
@@ -37,24 +34,54 @@ export function AuthProvider({ children }) {
     }
   }, [user, token]);
 
+  const bootstrap = async () => {
+  const storedUser = await AsyncStorage.getItem("user");
+  const storedToken = await AsyncStorage.getItem("token");
+
+  if (storedUser && storedToken) {
+    const parsed = JSON.parse(storedUser);
+
+    // ✅ If old cache has no profileImage field, force re-fetch
+    if (parsed.profileImage === undefined) {
+      await AsyncStorage.multiRemove(["token", "user"]);
+      setLoading(false);
+      return; // kicks user to login screen
+    }
+
+    setUser(parsed);
+    setToken(storedToken);
+  }
+  setLoading(false);
+};
+
   // ✅ Login
   const login = async (tokenFromApi, userData) => {
-    await AsyncStorage.setItem("token", tokenFromApi);
-    await AsyncStorage.setItem("user", JSON.stringify(userData));
+    const enrichedUser = {
+      ...userData,
+      profileImage: userData?.profileImage || userData?.profileImageUrl || null,
+    };
 
-    setToken(tokenFromApi); // 🔑 in-memory source of truth
-    setUser(userData);
+    await AsyncStorage.setItem('token', tokenFromApi);
+    await AsyncStorage.setItem('user', JSON.stringify(enrichedUser));
+    setToken(tokenFromApi);
+    setUser(enrichedUser);
   };
 
   // ✅ Logout
   const logout = async () => {
-    await AsyncStorage.multiRemove(["token", "user"]);
+    await AsyncStorage.multiRemove(['token', 'user']);
     setToken(null);
     setUser(null);
   };
 
+  const updateUser = async (updatedFields) => {
+  const updatedUser = { ...user, ...updatedFields };
+  await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+  setUser(updatedUser);
+};
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{user, token, login, logout, loading, updateUser}}>
       {children}
     </AuthContext.Provider>
   );

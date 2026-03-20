@@ -13,11 +13,13 @@ import API from '../api/api';
 import {launchImageLibrary} from 'react-native-image-picker';
 import useNavigationHelper from '../navigation/Navigationhelper';
 import {s, vs, ms, rf} from '../utils/responsive';
+import {useAuth} from '../context/AuthContext';
 
 export default function PlayerProfileEdit() {
   const [player, setPlayer] = useState(null);
   const [isExistingProfile, setIsExistingProfile] = useState(false);
   const MAX_IMAGE_SIZE_MB = 2;
+  const {updateUser} = useAuth();
 
   const [form, setForm] = useState({
     age: '',
@@ -139,11 +141,14 @@ export default function PlayerProfileEdit() {
         ? '/api/player/update-profile'
         : '/api/player/create-profile';
 
-      // ✅ WAIT FULL RESPONSE
       const res = await API.post(endpoint, formData, {
         headers: {'Content-Type': 'multipart/form-data'},
         timeout: 30000,
       });
+
+      if (res.data?.player?.profileImageUrl) {
+        await updateUser({profileImage: res.data.player.profileImageUrl});
+      }
 
       // ✅ ONLY AFTER CONFIRMED SUCCESS
       Alert.alert(

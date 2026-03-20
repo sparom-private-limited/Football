@@ -9,7 +9,7 @@ export const connectSocket = async () => {
   const token = await AsyncStorage.getItem("token");
   if (!token) return null;
 
-  socket = io("http://192.168.0.140:5000", {
+  socket = io("https://ftbl-xi.sparom.in", {
     transports: ["websocket"],
     auth: {
       token,

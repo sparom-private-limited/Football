@@ -1,593 +1,4 @@
-// import React, { useEffect, useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   TouchableOpacity,
-//   Image,
-//   ActivityIndicator,
-// } from 'react-native';
-// import { useNavigation } from '@react-navigation/native';
-// import API from '../../api/api';
-// import MainLayout from '../../components/MainLayout';
-// import AppRefreshView from '../../components/AppRefreshView';
-
-// export default function TeamHome() {
-//   const navigation = useNavigation();
-//   const [team, setTeam] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [liveMatch, setLiveMatch] = useState(null);
-//   const [lastMatch, setLastMatch] = useState(null);
-//   const [refreshing, setRefreshing] = useState(false);
-//   const [joinedTournaments, setJoinedTournaments] = useState([]);
-
-//   useEffect(() => {
-//     loadTeam();
-//   }, []);
-
-//   const loadTeam = async () => {
-//     try {
-//       const [teamRes, matchRes] = await Promise.all([
-//         API.get('/api/team/my-team'),
-//         API.get('/api/match/myMatch'),
-//       ]);
-
-//       setTeam(teamRes.data);
-
-//       const matches = matchRes.data || [];
-
-//       const live = matches.find(m => m.status === 'LIVE');
-//       setLiveMatch(live || null);
-
-//       const completed = matches
-//         .filter(m => m.status === 'COMPLETED')
-//         .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
-
-//       setLastMatch(completed[0] || null);
-
-//       // 🔹 Load tournaments separately (safe)
-//       try {
-//        const tournamentRes = await API.get("/api/team/joinedTournaments");
-//         setJoinedTournaments(Array.isArray(tournamentRes.data) ? tournamentRes.data : []);
-
-//       } catch (e) {
-//         console.warn('Joined tournaments not available');
-//         setJoinedTournaments([]);
-//       }
-//     } catch (err) {
-//       console.error('Failed to load team:', err);
-//       setTeam(null);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   if (loading) {
-//     return (
-//       <MainLayout title="Team Home">
-//         <View style={styles.center}>
-//           <ActivityIndicator size="large" color="#1D4ED8" />
-//         </View>
-//       </MainLayout>
-//     );
-//   }
-
-//   if (!team) {
-//     return (
-//       <MainLayout title="Team Home">
-//         <View style={styles.center}>
-//           <Text>No team created yet</Text>
-//           <TouchableOpacity
-//             style={styles.primaryBtn}
-//             onPress={() => navigation.navigate('CreateTeam')}
-//           >
-//             <Text style={styles.primaryBtnText}>Create Team</Text>
-//           </TouchableOpacity>
-//         </View>
-//       </MainLayout>
-//     );
-//   }
-
-//   const onRefresh = async () => {
-//     setRefreshing(true);
-//     try {
-//       await loadTeam(); // or whatever API this screen uses
-//     } catch (e) {
-//       console.log('Refresh error', e);
-//     } finally {
-//       setRefreshing(false);
-//     }
-//   };
-
-//   return (
-//     <AppRefreshView
-//       refreshing={refreshing}
-//       onRefresh={onRefresh}
-//       style={styles.container}
-//     >
-//       <MainLayout title="Team Home">
-//         <View style={styles.container}>
-//           <View style={styles.heroWrapper}>
-//             {/* COVER IMAGE */}
-//             <Image
-//               source={{
-//                 uri:
-//                   team.coverImageUrl ||
-//                   'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a',
-//               }}
-//               style={styles.coverImage}
-//             />
-
-//             {/* OVERLAY */}
-//             <View style={styles.coverOverlay} />
-
-//             {/* CONTENT */}
-//             <View style={styles.heroContent}>
-//               <View style={styles.heroLogoWrapper}>
-//                 {team.teamLogoUrl ? (
-//                   <Image
-//                     source={{ uri: team.teamLogoUrl }}
-//                     style={styles.heroLogo}
-//                   />
-//                 ) : (
-//                   <View style={styles.heroLogoFallback}>
-//                     <Text style={styles.heroLogoText}>
-//                       {team.teamName?.[0] || 'T'}
-//                     </Text>
-//                   </View>
-//                 )}
-//               </View>
-
-//               <Text style={styles.heroTeamName}>{team.teamName}</Text>
-//               <Text style={styles.heroSub}>
-//                 {team.players?.length || 0} Players
-//               </Text>
-
-//               <TouchableOpacity
-//                 style={styles.outlineBtn}
-//                 onPress={() => navigation.navigate('TeamProfile')}
-//               >
-//                 <Text style={styles.outlineBtnText}>View Team Profile</Text>
-//               </TouchableOpacity>
-//             </View>
-//           </View>
-
-//           {liveMatch && (
-//             <TouchableOpacity
-//               style={styles.liveCard}
-//               onPress={() =>
-//                 navigation.navigate('MatchNavigator', {
-//                   screen: 'MatchConsole',
-//                   params: { matchId: liveMatch._id },
-//                 })
-//               }
-//             >
-//               <View style={styles.liveTop}>
-//                 <Text style={styles.livePulse}>● LIVE</Text>
-//                 <Text style={styles.liveCta}>Open Console →</Text>
-//               </View>
-
-//               <Text style={styles.liveTeams}>
-//                 {liveMatch.homeTeam?.teamName || 'Home'} vs{' '}
-//                 {liveMatch.awayTeam?.teamName || 'Away'}
-//               </Text>
-
-//               <Text style={styles.liveScore}>
-//                 {liveMatch.score.home} : {liveMatch.score.away}
-//               </Text>
-//             </TouchableOpacity>
-//           )}
-
-//           {lastMatch && (
-//             <TouchableOpacity
-//               style={styles.lastMatchCard}
-//               onPress={() =>
-//                 navigation.navigate('MatchNavigator', {
-//                   screen: 'MatchSummary',
-//                   params: { matchId: lastMatch._id },
-//                 })
-//               }
-//             >
-//               <Text style={styles.sectionTitle}>Last Match</Text>
-
-//               <View style={styles.matchRow}>
-//                 <TeamMini team={lastMatch.homeTeam} />
-
-//                 <Text style={styles.matchScore}>
-//                   {lastMatch.score.home} : {lastMatch.score.away}
-//                 </Text>
-
-//                 <TeamMini team={lastMatch.awayTeam} />
-//               </View>
-
-//               <Text style={styles.matchMeta}>
-//                 {new Date(lastMatch.completedAt).toLocaleDateString()}
-//               </Text>
-//             </TouchableOpacity>
-//           )}
-
-//        {Array.isArray(joinedTournaments) && joinedTournaments.length > 0 && (
-//   <View style={styles.sectionCard}>
-//     <Text style={styles.sectionTitle}>My Tournaments</Text>
-
-//     {joinedTournaments.map(t => (
-//       <TouchableOpacity
-//         key={t.id}
-//         style={styles.tournamentCard}
-//         onPress={() =>
-//           navigation.navigate("TournamentNavigator", {
-//             screen: "TeamTournamentDetail",
-//             params: { tournamentId: t.id },
-//           })
-//         }
-//       >
-//         <View>
-//           <Text style={styles.cardTitle}>{t.name}</Text>
-
-//           <Text style={styles.metaText}>
-//             {t.upcomingMatches} upcoming • {t.status.replace(/_/g, " ")}
-//           </Text>
-//         </View>
-//       </TouchableOpacity>
-//     ))}
-//   </View>
-// )}
-
-//           <View style={styles.actionsCard}>
-//             <Text style={styles.sectionTitle}>Quick Actions</Text>
-
-//             <View style={styles.actionsRow}>
-//               <TouchableOpacity
-//                 style={styles.actionTileTertiary}
-//                 onPress={() =>
-//                   navigation.navigate('TournamentNavigator', {
-//                     screen: 'JoinTournament',
-//                   })
-//                 }
-//               >
-//                 <Text style={styles.actionIcon}>🏆</Text>
-//                 <Text style={styles.actionText}>Join Tournament</Text>
-//               </TouchableOpacity>
-//               <TouchableOpacity
-//                 style={styles.actionTilePrimary}
-//                 onPress={() =>
-//                   navigation.navigate('MatchNavigator', {
-//                     screen: 'CreateMatch',
-//                   })
-//                 }
-//               >
-//                 <Text style={styles.actionIcon}>＋</Text>
-//                 <Text style={styles.actionText}>New Match</Text>
-//               </TouchableOpacity>
-
-//               <TouchableOpacity
-//                 style={styles.actionTileSecondary}
-//                 onPress={() =>
-//                   navigation.navigate('MatchNavigator', { screen: 'MyMatches' })
-//                 }
-//               >
-//                 <Text style={styles.actionIcon}>📋</Text>
-//                 <Text style={styles.actionTextDark}>My Matches</Text>
-//               </TouchableOpacity>
-
-//               <TouchableOpacity
-//                 style={styles.actionTileSecondary}
-//                 onPress={() => navigation.navigate('TeamLineup')}
-//               >
-//                 <Text style={styles.actionIcon}>⚽</Text>
-//                 <Text style={styles.actionTextDark}>Lineup</Text>
-//               </TouchableOpacity>
-//             </View>
-//           </View>
-
-//           {/* <TouchableOpacity
-//   style={styles.actionBtn}
-//   onPress={() => navigation.navigate("MatchNavigator", {
-//   screen: "MyMatches",
-// })
-// }
-// >
-//   <Text style={styles.actionText}>My Matches</Text>
-// </TouchableOpacity>
-
-// <TouchableOpacity
-//   style={styles.primaryBtn}
-//   onPress={() =>
-//     navigation.navigate("MatchNavigator", {
-//       screen: "CreateMatch",
-//     })
-//   }
-// >
-//   <Text style={styles.primaryBtnText}>Create Match</Text>
-// </TouchableOpacity> */}
-//         </View>
-//       </MainLayout>
-//     </AppRefreshView>
-//   );
-// }
-
-// function TeamMini({ team }) {
-//   return (
-//     <View style={{ alignItems: 'center', width: 80 }}>
-//       {team.teamLogoUrl ? (
-//         <Image source={{ uri: team.teamLogoUrl }} style={styles.miniLogo} />
-//       ) : (
-//         <View style={styles.miniLogoFallback}>
-//           <Text style={{ fontWeight: '800' }}>
-//             {team?.teamName?.[0] || 'T'}
-//           </Text>
-//         </View>
-//       )}
-//       <Text style={styles.miniName} numberOfLines={1}>
-//         {team.teamName}
-//       </Text>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   /* ===== LAYOUT ===== */
-
-//   container: {
-//     padding: 5,
-//   },
-
-//   center: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-
-//   sectionTitle: {
-//     fontSize: 16,
-//     fontWeight: '700',
-//     marginBottom: 8,
-//     color: '#0F172A',
-//   },
-
-//   /* ===== HERO (COVER + LOGO) ===== */
-
-//   heroWrapper: {
-//     borderRadius: 20,
-//     overflow: 'hidden',
-//     marginBottom: 20,
-//   },
-
-//   coverImage: {
-//     width: '100%',
-//     height: 215,
-//   },
-
-//   coverOverlay: {
-//     ...StyleSheet.absoluteFillObject,
-//     backgroundColor: 'rgba(0,0,0,0.35)',
-//   },
-
-//   heroContent: {
-//     position: 'absolute',
-//     bottom: 16,
-//     left: 16,
-//     right: 16,
-//     alignItems: 'center',
-//   },
-
-//   heroLogoWrapper: {
-//     backgroundColor: 'black',
-//     padding: 4,
-//     borderRadius: 48,
-//     marginBottom: 8,
-//   },
-
-//   heroLogo: {
-//     width: 72,
-//     height: 72,
-//     borderRadius: 36,
-//   },
-
-//   heroLogoFallback: {
-//     width: 72,
-//     height: 72,
-//     borderRadius: 36,
-//     backgroundColor: '#E5E7EB',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-
-//   heroLogoText: {
-//     fontSize: 28,
-//     fontWeight: '900',
-//     color: '#1D4ED8',
-//   },
-
-//   heroTeamName: {
-//     fontSize: 20,
-//     fontWeight: '800',
-//     color: '#FFFFFF',
-//     textAlign: 'center',
-//   },
-
-//   heroSub: {
-//     marginTop: 2,
-//     fontSize: 13,
-//     fontWeight: '600',
-//     color: '#E5E7EB',
-//   },
-
-//   outlineBtn: {
-//     marginTop: 14,
-//     borderWidth: 1,
-//     borderColor: '#FFFFFF',
-//     paddingVertical: 10,
-//     paddingHorizontal: 20,
-//     borderRadius: 12,
-//   },
-
-//   outlineBtnText: {
-//     color: '#FFFFFF',
-//     fontWeight: '700',
-//   },
-
-//   /* ===== LIVE MATCH ===== */
-
-//   liveCard: {
-//     backgroundColor: '#ECFEFF',
-//     borderRadius: 18,
-//     padding: 16,
-//     marginBottom: 16,
-//   },
-
-//   liveTop: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//   },
-
-//   livePulse: {
-//     color: '#DC2626',
-//     fontWeight: '900',
-//   },
-
-//   liveTeams: {
-//     fontSize: 16,
-//     fontWeight: '700',
-//     marginTop: 8,
-//     color: '#0F172A',
-//   },
-
-//   liveScore: {
-//     fontSize: 24,
-//     fontWeight: '900',
-//     marginTop: 4,
-//     color: '#0F172A',
-//   },
-
-//   liveCta: {
-//     color: '#0284C7',
-//     fontWeight: '700',
-//   },
-
-//   /* ===== LAST MATCH ===== */
-
-//   lastMatchCard: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 18,
-//     padding: 16,
-//     marginBottom: 16,
-//   },
-
-//   matchRow: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//     marginVertical: 10,
-//   },
-
-//   matchScore: {
-//     fontSize: 22,
-//     fontWeight: '900',
-//     color: '#0F172A',
-//   },
-
-//   matchMeta: {
-//     textAlign: 'center',
-//     color: '#64748B',
-//     fontWeight: '600',
-//   },
-
-//   miniLogo: {
-//     width: 40,
-//     height: 40,
-//     borderRadius: 20,
-//   },
-
-//   miniLogoFallback: {
-//     width: 40,
-//     height: 40,
-//     borderRadius: 20,
-//     backgroundColor: '#E5E7EB',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-
-//   miniName: {
-//     marginTop: 4,
-//     fontSize: 11,
-//     fontWeight: '700',
-//     textAlign: 'center',
-//     color: '#0F172A',
-//   },
-
-//   /* ===== QUICK ACTIONS ===== */
-
-//   actionsCard: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 18,
-//     padding: 16,
-//     marginBottom: 16,
-//   },
-//   actionsRow: {
-//     flexDirection: 'row',
-//     flexWrap: 'wrap',
-//     justifyContent: 'space-between',
-//     gap: 12,
-//   },
-
-//   actionTilePrimary: {
-//     width: '48%',
-//     backgroundColor: '#1D4ED8',
-//     borderRadius: 16,
-//     paddingVertical: 18,
-//     alignItems: 'center',
-//   },
-//   actionTileTertiary: {
-//     width: '48%',
-//     backgroundColor: '#d8741dff',
-//     borderRadius: 16,
-//     paddingVertical: 18,
-//     alignItems: 'center',
-//   },
-
-//   actionTileSecondary: {
-//     width: '48%',
-//     backgroundColor: '#F1F5F9',
-//     borderRadius: 16,
-//     paddingVertical: 18,
-//     alignItems: 'center',
-//   },
-
-//   actionIcon: {
-//     fontSize: 26,
-//     marginBottom: 6,
-//     color: '#FFFFFF',
-//   },
-
-//   actionText: {
-//     color: '#FFFFFF',
-//     fontWeight: '800',
-//     fontSize: 14,
-//   },
-
-//   actionTextDark: {
-//     color: '#0F172A',
-//     fontWeight: '800',
-//     fontSize: 14,
-//   },
-//   tournamentCard: {
-//     backgroundColor: '#F8FAFC',
-//     borderRadius: 14,
-//     padding: 14,
-//     marginBottom: 10,
-//   },
-//   sectionCard: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 18,
-//     padding: 16,
-//     marginBottom: 16,
-//   },
-// });
-
-// TeamHome.jsx - CORRECTED VERSION
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   View,
   Text,
@@ -596,17 +7,942 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  Animated,
 } from 'react-native';
-import {useNavigation, useIsFocused} from '@react-navigation/native'; // ✅ CORRECT IMPORT
+import {useIsFocused} from '@react-navigation/native';
 import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
 import AppRefreshView from '../../components/AppRefreshView';
 import useNavigationHelper from '../../navigation/Navigationhelper';
-import {s, vs, ms, rf, wp} from '../../utils/responsive'; // ✅ ADD THIS IMPORT
+import {s, vs, ms, rf} from '../../utils/responsive';
 
+// ─── DESIGN TOKENS ───────────────────────────
+const C = {
+  blue: '#1D4ED8',
+  blueDark: '#1348D4',
+  blueSoft: '#EFF6FF',
+  blueMid: '#BFDBFE',
+  blueText: '#1E3A8A',
+  orange: '#D8741D',
+  orangeSoft: '#FFF7ED',
+  pageBg: '#F1F5F9',
+  cardBg: '#FFFFFF',
+  cardAlt: '#F8FAFC',
+  textPrimary: '#0F172A',
+  textSecond: '#475569',
+  textMuted: '#94A3B8',
+  textWhite: '#FFFFFF',
+  border: '#E2E8F0',
+  borderBlue: '#DBEAFE',
+  red: '#DC2626',
+  redSoft: '#FEF2F2',
+  cyan: '#0284C7',
+  cyanSoft: '#ECFEFF',
+  green: '#10B981',
+  greenSoft: '#ECFDF5',
+};
+
+const R = {
+  sm: ms(8),
+  md: ms(12),
+  lg: ms(16),
+  xl: ms(20),
+  pill: ms(50),
+};
+
+// ─────────────────────────────────────────────
+// HERO SECTION
+// ─────────────────────────────────────────────
+function HeroSection({team, nav}) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(10)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        damping: 15,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        heroStyles.wrapper,
+        {opacity: fadeAnim, transform: [{translateY: slideAnim}]},
+      ]}>
+      <Image
+        source={{
+          uri:
+            team.coverImageUrl ||
+            'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a',
+        }}
+        style={heroStyles.cover}
+      />
+      {/* Gradient overlay */}
+      <View style={heroStyles.overlay} />
+      <View style={heroStyles.overlayTop} />
+
+      <View style={heroStyles.content}>
+        {/* Logo */}
+        <View style={heroStyles.logoRing}>
+          {team.teamLogoUrl ? (
+            <Image source={{uri: team.teamLogoUrl}} style={heroStyles.logo} />
+          ) : (
+            <View style={heroStyles.logoFallback}>
+              <Text style={heroStyles.logoLetter}>
+                {team.teamName?.[0] || 'T'}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <Text style={heroStyles.teamName}>{team.teamName}</Text>
+
+        <View style={heroStyles.metaRow}>
+          <View style={heroStyles.metaPill}>
+            <Text style={heroStyles.metaPillTxt}>
+              ⚽ {team.players?.length || 0} Players
+            </Text>
+          </View>
+          {team.location && (
+            <View style={heroStyles.metaPill}>
+              <Text style={heroStyles.metaPillTxt}>📍 {team.location}</Text>
+            </View>
+          )}
+          {team.teamType && (
+            <View style={heroStyles.metaPill}>
+              <Text style={heroStyles.metaPillTxt}>{team.teamType}</Text>
+            </View>
+          )}
+        </View>
+
+        <TouchableOpacity
+          style={heroStyles.profileBtn}
+          onPress={() => nav.to('TeamProfile')}
+          activeOpacity={0.85}>
+          <Text style={heroStyles.profileBtnTxt}>View Team Profile →</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+}
+
+const heroStyles = StyleSheet.create({
+  wrapper: {
+    borderRadius: R.xl,
+    overflow: 'hidden',
+    marginBottom: vs(14),
+    height: vs(240),
+  },
+  cover: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
+  overlayTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: vs(80),
+    backgroundColor: 'rgba(0,0,0,0.1)',
+  },
+  content: {
+    position: 'absolute',
+    bottom: vs(16),
+    left: s(16),
+    right: s(16),
+    alignItems: 'center',
+  },
+  logoRing: {
+    width: s(70),
+    height: s(70),
+    borderRadius: s(35),
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.7)',
+    overflow: 'hidden',
+    marginBottom: vs(8),
+    backgroundColor: '#000',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  logo: {width: '100%', height: '100%'},
+  logoFallback: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoLetter: {fontSize: ms(26), fontWeight: '900', color: C.blue},
+  teamName: {
+    fontSize: ms(22),
+    fontWeight: '900',
+    color: C.textWhite,
+    textAlign: 'center',
+    letterSpacing: -0.3,
+    marginBottom: vs(8),
+  },
+  metaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: s(6),
+    marginBottom: vs(12),
+  },
+  metaPill: {
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: R.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+  },
+  metaPillTxt: {fontSize: rf(11), color: C.textWhite, fontWeight: '700'},
+  profileBtn: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.7)',
+    paddingVertical: vs(9),
+    paddingHorizontal: s(22),
+    borderRadius: R.md,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  profileBtnTxt: {color: C.textWhite, fontWeight: '700', fontSize: rf(13)},
+});
+
+// ─────────────────────────────────────────────
+// STAT STRIP  (wins / draws / losses)
+// ─────────────────────────────────────────────
+function StatStrip({team}) {
+  const stats = [
+    {label: 'Matches', value: team.matchesPlayed ?? 0},
+    {label: 'Wins', value: team.wins ?? 0, accent: true},
+    {label: 'Draws', value: team.draws ?? 0},
+    {label: 'Losses', value: team.losses ?? 0},
+    {label: 'Goals', value: team.goalsScored ?? 0, accent: true},
+  ];
+
+  return (
+    <View style={stripStyles.container}>
+      {stats.map((s, i) => (
+        <View
+          key={i}
+          style={[
+            stripStyles.cell,
+            i < stats.length - 1 && stripStyles.cellBorder,
+          ]}>
+          <Text style={[stripStyles.val, s.accent && stripStyles.valAccent]}>
+            {s.value}
+          </Text>
+          <Text style={stripStyles.lbl}>{s.label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const stripStyles = StyleSheet.create({
+  container: {
+    backgroundColor: C.cardBg,
+    borderRadius: R.lg,
+    flexDirection: 'row',
+    marginBottom: vs(12),
+    borderWidth: 1,
+    borderColor: C.border,
+    overflow: 'hidden',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  cell: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: vs(14),
+  },
+  cellBorder: {
+    borderRightWidth: 1,
+    borderRightColor: C.border,
+  },
+  val: {
+    fontSize: ms(20),
+    fontWeight: '900',
+    color: C.textPrimary,
+    letterSpacing: -0.3,
+  },
+  valAccent: {color: C.blue},
+  lbl: {
+    fontSize: rf(10),
+    color: C.textMuted,
+    fontWeight: '600',
+    marginTop: vs(2),
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+});
+
+// ─────────────────────────────────────────────
+// LIVE MATCH CARD
+// ─────────────────────────────────────────────
+function LiveMatchCard({match, onPress}) {
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 0.4,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, []);
+
+  return (
+    <TouchableOpacity
+      style={liveStyles.card}
+      onPress={onPress}
+      activeOpacity={0.9}>
+      {/* Top bar */}
+      <View style={liveStyles.topBar}>
+        <View style={liveStyles.liveTag}>
+          <Animated.View style={[liveStyles.liveDot, {opacity: pulseAnim}]} />
+          <Text style={liveStyles.liveTxt}>LIVE</Text>
+        </View>
+        <Text style={liveStyles.cta}>Open Console →</Text>
+      </View>
+
+      {/* Score row */}
+      <View style={liveStyles.scoreRow}>
+        <View style={liveStyles.teamCol}>
+          {match.homeTeam?.teamLogoUrl ? (
+            <Image
+              source={{uri: match.homeTeam.teamLogoUrl}}
+              style={liveStyles.miniLogo}
+            />
+          ) : (
+            <View style={liveStyles.miniLogoFallback}>
+              <Text style={liveStyles.miniLogoLetter}>
+                {match.homeTeam?.teamName?.[0] || 'H'}
+              </Text>
+            </View>
+          )}
+          <Text style={liveStyles.teamName} numberOfLines={1}>
+            {match.homeTeam?.teamName || 'Home'}
+          </Text>
+        </View>
+
+        <View style={liveStyles.scoreWrap}>
+          <Text style={liveStyles.score}>{match.score.home}</Text>
+          <Text style={liveStyles.scoreSep}>:</Text>
+          <Text style={liveStyles.score}>{match.score.away}</Text>
+        </View>
+
+        <View style={liveStyles.teamCol}>
+          {match.awayTeam?.teamLogoUrl ? (
+            <Image
+              source={{uri: match.awayTeam.teamLogoUrl}}
+              style={liveStyles.miniLogo}
+            />
+          ) : (
+            <View style={liveStyles.miniLogoFallback}>
+              <Text style={liveStyles.miniLogoLetter}>
+                {match.awayTeam?.teamName?.[0] || 'A'}
+              </Text>
+            </View>
+          )}
+          <Text style={liveStyles.teamName} numberOfLines={1}>
+            {match.awayTeam?.teamName || 'Away'}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+const liveStyles = StyleSheet.create({
+  card: {
+    backgroundColor: C.cyanSoft,
+    borderRadius: R.lg,
+    padding: s(16),
+    marginBottom: vs(12),
+    borderWidth: 1.5,
+    borderColor: '#A5F3FC',
+    elevation: 2,
+    shadowColor: C.cyan,
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: vs(14),
+  },
+  liveTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: C.red,
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: R.pill,
+    gap: s(5),
+  },
+  liveDot: {
+    width: s(7),
+    height: s(7),
+    borderRadius: s(4),
+    backgroundColor: C.textWhite,
+  },
+  liveTxt: {
+    color: C.textWhite,
+    fontWeight: '900',
+    fontSize: rf(11),
+    letterSpacing: 1,
+  },
+  cta: {color: C.cyan, fontWeight: '700', fontSize: rf(13)},
+  scoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  teamCol: {alignItems: 'center', flex: 1},
+  miniLogo: {
+    width: s(42),
+    height: s(42),
+    borderRadius: s(21),
+    marginBottom: vs(6),
+  },
+  miniLogoFallback: {
+    width: s(42),
+    height: s(42),
+    borderRadius: s(21),
+    backgroundColor: C.blueSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: vs(6),
+    borderWidth: 1,
+    borderColor: C.borderBlue,
+  },
+  miniLogoLetter: {fontWeight: '800', color: C.blue, fontSize: rf(14)},
+  teamName: {
+    fontSize: rf(12),
+    fontWeight: '700',
+    color: C.textPrimary,
+    textAlign: 'center',
+  },
+  scoreWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: C.cardBg,
+    paddingHorizontal: s(16),
+    paddingVertical: vs(8),
+    borderRadius: R.md,
+    gap: s(8),
+    borderWidth: 1,
+    borderColor: C.border,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  score: {
+    fontSize: ms(28),
+    fontWeight: '900',
+    color: C.textPrimary,
+    letterSpacing: -0.5,
+  },
+  scoreSep: {fontSize: ms(20), color: C.textMuted, fontWeight: '300'},
+});
+
+// ─────────────────────────────────────────────
+// LAST MATCH CARD
+// ─────────────────────────────────────────────
+function LastMatchCard({match, onPress}) {
+  const home = match.score.home;
+  const away = match.score.away;
+  const result = home > away ? 'W' : home < away ? 'L' : 'D';
+  const resultColor =
+    result === 'W' ? C.green : result === 'L' ? C.red : C.textMuted;
+  const resultBg =
+    result === 'W' ? C.greenSoft : result === 'L' ? C.redSoft : C.cardAlt;
+
+  return (
+    <TouchableOpacity
+      style={lastStyles.card}
+      onPress={onPress}
+      activeOpacity={0.9}>
+      <View style={lastStyles.header}>
+        <Text style={lastStyles.title}>Last Match</Text>
+        <View style={[lastStyles.resultBadge, {backgroundColor: resultBg}]}>
+          <Text style={[lastStyles.resultTxt, {color: resultColor}]}>
+            {result === 'W' ? 'Win' : result === 'L' ? 'Loss' : 'Draw'}
+          </Text>
+        </View>
+      </View>
+
+      <View style={lastStyles.scoreRow}>
+        <View style={lastStyles.teamCol}>
+          {match.homeTeam?.teamLogoUrl ? (
+            <Image
+              source={{uri: match.homeTeam.teamLogoUrl}}
+              style={lastStyles.miniLogo}
+            />
+          ) : (
+            <View style={lastStyles.miniLogoFallback}>
+              <Text style={lastStyles.miniLetter}>
+                {match.homeTeam?.teamName?.[0] || 'H'}
+              </Text>
+            </View>
+          )}
+          <Text style={lastStyles.teamName} numberOfLines={1}>
+            {match.homeTeam?.teamName}
+          </Text>
+        </View>
+
+        <View style={lastStyles.scoreWrap}>
+          <Text style={lastStyles.score}>
+            {home} : {away}
+          </Text>
+          <Text style={lastStyles.date}>
+            {new Date(match.completedAt).toLocaleDateString()}
+          </Text>
+        </View>
+
+        <View style={lastStyles.teamCol}>
+          {match.awayTeam?.teamLogoUrl ? (
+            <Image
+              source={{uri: match.awayTeam.teamLogoUrl}}
+              style={lastStyles.miniLogo}
+            />
+          ) : (
+            <View style={lastStyles.miniLogoFallback}>
+              <Text style={lastStyles.miniLetter}>
+                {match.awayTeam?.teamName?.[0] || 'A'}
+              </Text>
+            </View>
+          )}
+          <Text style={lastStyles.teamName} numberOfLines={1}>
+            {match.awayTeam?.teamName}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+const lastStyles = StyleSheet.create({
+  card: {
+    backgroundColor: C.cardBg,
+    borderRadius: R.lg,
+    padding: s(16),
+    marginBottom: vs(12),
+    borderWidth: 1,
+    borderColor: C.border,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: vs(14),
+  },
+  title: {fontSize: rf(15), fontWeight: '800', color: C.textPrimary},
+  resultBadge: {
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: R.pill,
+  },
+  resultTxt: {fontSize: rf(12), fontWeight: '800'},
+  scoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  teamCol: {alignItems: 'center', flex: 1},
+  miniLogo: {
+    width: s(40),
+    height: s(40),
+    borderRadius: s(20),
+    marginBottom: vs(6),
+  },
+  miniLogoFallback: {
+    width: s(40),
+    height: s(40),
+    borderRadius: s(20),
+    backgroundColor: C.blueSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: vs(6),
+    borderWidth: 1,
+    borderColor: C.borderBlue,
+  },
+  miniLetter: {fontWeight: '800', color: C.blue, fontSize: rf(13)},
+  teamName: {
+    fontSize: rf(11),
+    fontWeight: '700',
+    color: C.textPrimary,
+    textAlign: 'center',
+  },
+  scoreWrap: {alignItems: 'center'},
+  score: {
+    fontSize: ms(24),
+    fontWeight: '900',
+    color: C.textPrimary,
+    letterSpacing: -0.5,
+  },
+  date: {
+    fontSize: rf(11),
+    color: C.textMuted,
+    marginTop: vs(3),
+    fontWeight: '500',
+  },
+});
+
+// ─────────────────────────────────────────────
+// TOURNAMENTS CARD
+// ─────────────────────────────────────────────
+function TournamentsCard({tournaments, nav}) {
+  return (
+    <View style={tourStyles.container}>
+      <View style={tourStyles.header}>
+        <Text style={tourStyles.title}>My Tournaments</Text>
+        <Text style={tourStyles.count}>{tournaments.length}</Text>
+      </View>
+      {tournaments.map(t => (
+        <TouchableOpacity
+          key={t.id}
+          style={tourStyles.row}
+          onPress={() =>
+            nav.toTournament('TeamTournamentDetail', {tournamentId: t.id})
+          }
+          activeOpacity={0.85}>
+          <View style={tourStyles.iconWrap}>
+            <Text style={tourStyles.icon}>🏆</Text>
+          </View>
+          <View style={tourStyles.textCol}>
+            <Text style={tourStyles.name}>{t.name}</Text>
+            <Text style={tourStyles.meta}>
+              {t.upcomingMatches} upcoming · {t.status.replace(/_/g, ' ')}
+            </Text>
+          </View>
+          <Text style={tourStyles.arrow}>›</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+}
+
+const tourStyles = StyleSheet.create({
+  container: {
+    backgroundColor: C.cardBg,
+    borderRadius: R.lg,
+    padding: s(16),
+    marginBottom: vs(12),
+    borderWidth: 1,
+    borderColor: C.border,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: vs(12),
+  },
+  title: {fontSize: rf(15), fontWeight: '800', color: C.textPrimary},
+  count: {
+    backgroundColor: C.blueSoft,
+    paddingHorizontal: s(10),
+    paddingVertical: vs(3),
+    borderRadius: R.pill,
+    fontSize: rf(12),
+    fontWeight: '800',
+    color: C.blue,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: C.cardAlt,
+    borderRadius: R.md,
+    padding: s(12),
+    marginBottom: vs(8),
+    gap: s(12),
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  iconWrap: {
+    width: s(38),
+    height: s(38),
+    borderRadius: R.md,
+    backgroundColor: C.orangeSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  icon: {fontSize: ms(16)},
+  textCol: {flex: 1},
+  name: {fontSize: rf(14), fontWeight: '700', color: C.textPrimary},
+  meta: {
+    fontSize: rf(11),
+    color: C.textMuted,
+    marginTop: vs(2),
+    fontWeight: '500',
+  },
+  arrow: {fontSize: ms(20), color: C.textMuted},
+});
+
+// ─────────────────────────────────────────────
+// QUICK ACTIONS CARD
+// ─────────────────────────────────────────────
+function QuickActionsCard({team, nav}) {
+  const actions = [
+    {
+      emoji: '🏆',
+      label: 'Join Tournament',
+      onPress: () => nav.toTournament('JoinTournament'),
+      style: 'orange',
+    },
+    {
+      emoji: '＋',
+      label: 'New Match',
+      onPress: () => nav.toMatch('CreateMatch'),
+      style: 'blue',
+    },
+    {
+      emoji: '📋',
+      label: 'Team Stats',
+      onPress: () => nav.to('TeamStats', {teamId: team?._id}),
+      style: 'light',
+    },
+    {
+      emoji: '⚽',
+      label: 'Lineup',
+      onPress: () => nav.to('TeamLineup'),
+      style: 'light',
+    },
+  ];
+
+  return (
+    <View style={qaStyles.container}>
+      <Text style={qaStyles.title}>Quick actions</Text>
+      <Text style={qaStyles.subtitle}>Jump to a section</Text>
+      <View style={qaStyles.grid}>
+        {actions.map((a, i) => (
+          <ActionTile key={i} {...a} />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function ActionTile({emoji, label, onPress, style}) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const onIn = () =>
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+      damping: 10,
+    }).start();
+  const onOut = () =>
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      damping: 12,
+    }).start();
+
+  const bgColor =
+    style === 'blue' ? C.blue : style === 'orange' ? C.orange : C.cardAlt;
+  const textColor = style === 'light' ? C.textPrimary : C.textWhite;
+  const iconBg =
+    style === 'blue'
+      ? 'rgba(255,255,255,0.2)'
+      : style === 'orange'
+      ? 'rgba(255,255,255,0.2)'
+      : C.blueSoft;
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      onPressIn={onIn}
+      onPressOut={onOut}
+      activeOpacity={1}
+      style={{width: '47%'}}>
+      <Animated.View
+        style={[
+          qaStyles.tile,
+          {backgroundColor: bgColor, transform: [{scale: scaleAnim}]},
+        ]}>
+        <View style={[qaStyles.iconWrap, {backgroundColor: iconBg}]}>
+          <Text style={qaStyles.emoji}>{emoji}</Text>
+        </View>
+        <Text style={[qaStyles.label, {color: textColor}]}>{label}</Text>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
+
+const qaStyles = StyleSheet.create({
+  container: {
+    backgroundColor: C.cardBg,
+    borderRadius: R.lg,
+    padding: s(16),
+    marginBottom: vs(12),
+    borderWidth: 1,
+    borderColor: C.border,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  title: {fontSize: rf(15), fontWeight: '800', color: C.textPrimary},
+  subtitle: {
+    fontSize: rf(11),
+    color: C.textMuted,
+    marginTop: vs(2),
+    marginBottom: vs(14),
+  },
+  grid: {flexDirection: 'row', flexWrap: 'wrap', gap: s(10)},
+  tile: {
+    borderRadius: R.lg,
+    paddingVertical: vs(16),
+    paddingHorizontal: s(14),
+    alignItems: 'center',
+    gap: vs(8),
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  iconWrap: {
+    width: s(42),
+    height: s(42),
+    borderRadius: R.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emoji: {fontSize: ms(20)},
+  label: {fontWeight: '700', fontSize: rf(13), textAlign: 'center'},
+});
+
+// ─────────────────────────────────────────────
+// EMPTY STATE
+// ─────────────────────────────────────────────
+function EmptyState({nav}) {
+  return (
+    <View style={emptyStyles.container}>
+      <View style={emptyStyles.iconWrap}>
+        <Text style={emptyStyles.icon}>⚽</Text>
+      </View>
+      <Text style={emptyStyles.title}>Create Your Team</Text>
+      <Text style={emptyStyles.subtitle}>
+        Get started by creating your team profile to join tournaments and track
+        matches.
+      </Text>
+      <TouchableOpacity
+        style={emptyStyles.btn}
+        onPress={() => nav.to('CreateTeam')}
+        activeOpacity={0.85}>
+        <Text style={emptyStyles.btnTxt}>Create Team →</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const emptyStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: s(32),
+  },
+  iconWrap: {
+    width: s(100),
+    height: s(100),
+    borderRadius: s(50),
+    backgroundColor: C.blueSoft,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: vs(24),
+    borderWidth: 2,
+    borderColor: C.borderBlue,
+    shadowColor: C.blue,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  icon: {fontSize: ms(44)},
+  title: {
+    fontSize: ms(22),
+    fontWeight: '900',
+    color: C.textPrimary,
+    marginBottom: vs(12),
+    textAlign: 'center',
+    letterSpacing: -0.3,
+  },
+  subtitle: {
+    fontSize: rf(14),
+    color: C.textSecond,
+    textAlign: 'center',
+    marginBottom: vs(32),
+    lineHeight: vs(22),
+  },
+  btn: {
+    backgroundColor: C.blue,
+    paddingVertical: vs(14),
+    paddingHorizontal: s(32),
+    borderRadius: R.md,
+    minWidth: s(200),
+    shadowColor: C.blue,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  btnTxt: {
+    color: C.textWhite,
+    fontSize: rf(15),
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+});
+
+// ─────────────────────────────────────────────
+// MAIN SCREEN
+// ─────────────────────────────────────────────
 export default function TeamHome() {
   const nav = useNavigationHelper();
-  const isFocused = useIsFocused(); // ✅ Now this will work
+  const isFocused = useIsFocused();
   const [team, setTeam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liveMatch, setLiveMatch] = useState(null);
@@ -615,35 +951,22 @@ export default function TeamHome() {
   const [joinedTournaments, setJoinedTournaments] = useState([]);
 
   useEffect(() => {
-    if (isFocused) {
-      loadTeam();
-    }
+    if (isFocused) loadTeam();
   }, [isFocused]);
 
   const loadTeam = async () => {
     try {
-      // Fetch team data
       const teamRes = await API.get('/api/team/my-team');
-
-      // ✅ Check if team exists in response
       if (!teamRes.data) {
         setTeam(null);
         setLoading(false);
         return;
       }
-
       setTeam(teamRes.data);
-
-      // Only fetch matches and tournaments if team exists
       await Promise.all([loadMatches(), loadTournaments()]);
     } catch (err) {
-      console.log('Team load error:', err.response?.status);
-
-      // ✅ 404 means no team created yet - this is normal!
-      if (err.response?.status === 404) {
-        setTeam(null);
-      } else {
-        // Other errors - show them
+      if (err.response?.status === 404) setTeam(null);
+      else {
         console.error('Failed to load team:', err);
         setTeam(null);
       }
@@ -655,20 +978,14 @@ export default function TeamHome() {
   const loadMatches = async () => {
     try {
       const matchRes = await API.get('/api/match/myMatch');
-      // const matches = matchRes.data || [];
-
       const matches = matchRes.data.data || [];
-
       const live = matches.find(m => m.status === 'LIVE');
       setLiveMatch(live || null);
-
       const completed = matches
         .filter(m => m.status === 'COMPLETED')
         .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
-
       setLastMatch(completed[0] || null);
-    } catch (err) {
-      console.warn('Failed to load matches:', err.response?.status);
+    } catch {
       setLiveMatch(null);
       setLastMatch(null);
     }
@@ -676,12 +993,9 @@ export default function TeamHome() {
 
   const loadTournaments = async () => {
     try {
-      const tournamentRes = await API.get('/api/team/joinedTournaments');
-      setJoinedTournaments(
-        Array.isArray(tournamentRes.data) ? tournamentRes.data : [],
-      );
-    } catch (err) {
-      console.warn('Failed to load tournaments:', err.response?.status);
+      const res = await API.get('/api/team/joinedTournaments');
+      setJoinedTournaments(Array.isArray(res.data) ? res.data : []);
+    } catch {
       setJoinedTournaments([]);
     }
   };
@@ -697,517 +1011,76 @@ export default function TeamHome() {
     }
   };
 
-  // Loading state
   if (loading) {
     return (
       <MainLayout title="Team Home">
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#1D4ED8" />
+        <View style={screenStyles.center}>
+          <ActivityIndicator size="large" color={C.blue} />
+          <Text style={screenStyles.loadingTxt}>Loading team...</Text>
         </View>
       </MainLayout>
     );
   }
 
-  // No team - show create team prompt
   if (!team) {
     return (
       <MainLayout title="Team Home">
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptyIcon}>
-            <Text style={styles.emptyIconText}>⚽</Text>
-          </View>
-
-          <Text style={styles.emptyTitle}>Create Your Team</Text>
-          <Text style={styles.emptySubtitle}>
-            Get started by creating your team profile to join tournaments and
-            track matches
-          </Text>
-
-          <TouchableOpacity
-            style={styles.primaryBtn}
-            onPress={() => nav.to('CreateTeam')}>
-            <Text style={styles.primaryBtnText}>Create Team</Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyState nav={nav} />
       </MainLayout>
     );
   }
 
-  // Team exists - show dashboard
   return (
     <AppRefreshView
       refreshing={refreshing}
       onRefresh={onRefresh}
-      style={styles.container}>
+      style={screenStyles.root}>
       <MainLayout title="Team Home">
-        <ScrollView style={styles.container}>
-          {/* HERO SECTION */}
-          <View style={styles.heroWrapper}>
-            <Image
-              source={{
-                uri:
-                  team.coverImageUrl ||
-                  'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a',
-              }}
-              style={styles.coverImage}
-            />
+        <ScrollView
+          contentContainerStyle={screenStyles.scroll}
+          showsVerticalScrollIndicator={false}>
+          <HeroSection team={team} nav={nav} />
+          <StatStrip team={team} />
 
-            <View style={styles.coverOverlay} />
-
-            <View style={styles.heroContent}>
-              <View style={styles.heroLogoWrapper}>
-                {team.teamLogoUrl ? (
-                  <Image
-                    source={{uri: team.teamLogoUrl}}
-                    style={styles.heroLogo}
-                  />
-                ) : (
-                  <View style={styles.heroLogoFallback}>
-                    <Text style={styles.heroLogoText}>
-                      {team.teamName?.[0] || 'T'}
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              <Text style={styles.heroTeamName}>{team.teamName}</Text>
-              <Text style={styles.heroSub}>
-                {team.players?.length || 0} Players
-              </Text>
-
-              <TouchableOpacity
-                style={styles.outlineBtn}
-                onPress={() => nav.to('TeamProfile')}>
-                <Text style={styles.outlineBtnText}>View Team Profile</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* LIVE MATCH */}
           {liveMatch && (
-            <TouchableOpacity
-              style={styles.liveCard}
+            <LiveMatchCard
+              match={liveMatch}
               onPress={() =>
                 nav.toMatch('MatchConsole', {matchId: liveMatch._id})
-              }>
-              <View style={styles.liveTop}>
-                <Text style={styles.livePulse}>● LIVE</Text>
-                <Text style={styles.liveCta}>Open Console →</Text>
-              </View>
-
-              <Text style={styles.liveTeams}>
-                {liveMatch.homeTeam?.teamName || 'Home'} vs{' '}
-                {liveMatch.awayTeam?.teamName || 'Away'}
-              </Text>
-
-              <Text style={styles.liveScore}>
-                {liveMatch.score.home} : {liveMatch.score.away}
-              </Text>
-            </TouchableOpacity>
+              }
+            />
           )}
 
-          {/* LAST MATCH */}
           {lastMatch && (
-            <TouchableOpacity
-              style={styles.lastMatchCard}
+            <LastMatchCard
+              match={lastMatch}
               onPress={() =>
                 nav.toMatch('MatchSummary', {matchId: lastMatch._id})
-              }>
-              <Text style={styles.sectionTitle}>Last Match</Text>
-
-              <View style={styles.matchRow}>
-                <TeamMini team={lastMatch.homeTeam} />
-
-                <Text style={styles.matchScore}>
-                  {lastMatch.score.home} : {lastMatch.score.away}
-                </Text>
-
-                <TeamMini team={lastMatch.awayTeam} />
-              </View>
-
-              <Text style={styles.matchMeta}>
-                {new Date(lastMatch.completedAt).toLocaleDateString()}
-              </Text>
-            </TouchableOpacity>
+              }
+            />
           )}
 
-          {/* TOURNAMENTS */}
-          {Array.isArray(joinedTournaments) && joinedTournaments.length > 0 && (
-            <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>My Tournaments</Text>
-
-              {joinedTournaments.map(t => (
-                <TouchableOpacity
-                  key={t.id}
-                  style={styles.tournamentCard}
-                  onPress={() =>
-                    nav.toTournament('TeamTournamentDetail', {
-                      tournamentId: t.id,
-                    })
-                  }>
-                  <View>
-                    <Text style={styles.cardTitle}>{t.name}</Text>
-
-                    <Text style={styles.metaText}>
-                      {t.upcomingMatches} upcoming •{' '}
-                      {t.status.replace(/_/g, ' ')}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+          {joinedTournaments.length > 0 && (
+            <TournamentsCard tournaments={joinedTournaments} nav={nav} />
           )}
 
-          {/* QUICK ACTIONS */}
-          <View style={styles.actionsCard}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <QuickActionsCard team={team} nav={nav} />
 
-            <View style={styles.actionsRow}>
-              <TouchableOpacity
-                style={styles.actionTileTertiary}
-                onPress={() => nav.toTournament('JoinTournament')}>
-                <Text style={styles.actionIcon}>🏆</Text>
-                <Text style={styles.actionText}>Join Tournament</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionTilePrimary}
-                onPress={() => nav.toMatch('CreateMatch')}>
-                <Text style={styles.actionIcon}>＋</Text>
-                <Text style={styles.actionText}>New Match</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionTileSecondary}
-                onPress={() =>        
-                  nav.to('TeamStats', {
-                    teamId: team?._id, // ✅ pass teamId
-                  })
-                }>
-                <Text style={styles.actionIcon}>📋</Text>
-                <Text style={styles.actionTextDark}>Team Stats</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionTileSecondary}
-                onPress={() => nav.to('TeamLineup')}>
-                <Text style={styles.actionIcon}>⚽</Text>
-                <Text style={styles.actionTextDark}>Lineup</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <View style={{height: vs(24)}} />
         </ScrollView>
       </MainLayout>
     </AppRefreshView>
   );
 }
 
-function TeamMini({team}) {
-  if (!team) return null;
-
-  return (
-    <View style={{alignItems: 'center', width: s(80)}}>
-      {team.teamLogoUrl ? (
-        <Image source={{uri: team.teamLogoUrl}} style={styles.miniLogo} />
-      ) : (
-        <View style={styles.miniLogoFallback}>
-          <Text style={{fontWeight: '800'}}>{team?.teamName?.[0] || 'T'}</Text>
-        </View>
-      )}
-      <Text style={styles.miniName} numberOfLines={1}>
-        {team.teamName}
-      </Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  /* ===== LAYOUT ===== */
-  container: {
-    padding: s(5), // ✅ s()
-  },
+const screenStyles = StyleSheet.create({
+  root: {flex: 1, backgroundColor: C.pageBg},
+  scroll: {padding: s(14), backgroundColor: C.pageBg, paddingBottom: vs(40)},
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: vs(10),
   },
-
-  /* ===== EMPTY STATE ===== */
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: s(32), // ✅ s()
-  },
-  emptyIcon: {
-    width: s(100), // ✅ s()
-    height: s(100), // ✅ s()
-    borderRadius: s(50), // ✅ s()
-    backgroundColor: '#EEF2FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: vs(24), // ✅ vs()
-  },
-  emptyIconText: {
-    fontSize: ms(48), // ✅ ms()
-  },
-  emptyTitle: {
-    fontSize: ms(24), // ✅ ms()
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: vs(12), // ✅ vs()
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: rf(16), // ✅ rf()
-    color: '#6B7280',
-    textAlign: 'center',
-    marginBottom: vs(32), // ✅ vs()
-    lineHeight: vs(24), // ✅ vs()
-  },
-  primaryBtn: {
-    backgroundColor: '#1D4ED8',
-    paddingVertical: vs(16), // ✅ vs()
-    paddingHorizontal: s(32), // ✅ s()
-    borderRadius: ms(12), // ✅ ms()
-    minWidth: s(200), // ✅ s()
-  },
-  primaryBtnText: {
-    color: '#fff',
-    fontSize: rf(16), // ✅ rf()
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-
-  sectionTitle: {
-    fontSize: rf(16), // ✅ rf()
-    fontWeight: '700',
-    marginBottom: vs(8), // ✅ vs()
-    color: '#0F172A',
-  },
-
-  /* ===== HERO ===== */
-  heroWrapper: {
-    borderRadius: ms(20), // ✅ ms()
-    overflow: 'hidden',
-    marginBottom: vs(20), // ✅ vs()
-  },
-  coverImage: {
-    width: '100%',
-    height: vs(215), // ✅ vs()
-  },
-  coverOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-  },
-  heroContent: {
-    position: 'absolute',
-    bottom: vs(16), // ✅ vs()
-    left: s(16), // ✅ s()
-    right: s(16), // ✅ s()
-    alignItems: 'center',
-  },
-  heroLogoWrapper: {
-    backgroundColor: 'black',
-    padding: s(4), // ✅ s()
-    borderRadius: ms(48), // ✅ ms()
-    marginBottom: vs(8), // ✅ vs()
-  },
-  heroLogo: {
-    width: s(72), // ✅ s()
-    height: s(72), // ✅ s()
-    borderRadius: s(36), // ✅ s()
-  },
-  heroLogoFallback: {
-    width: s(72), // ✅ s()
-    height: s(72), // ✅ s()
-    borderRadius: s(36), // ✅ s()
-    backgroundColor: '#E5E7EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroLogoText: {
-    fontSize: ms(28), // ✅ ms()
-    fontWeight: '900',
-    color: '#1D4ED8',
-  },
-  heroTeamName: {
-    fontSize: ms(20), // ✅ ms()
-    fontWeight: '800',
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
-  heroSub: {
-    marginTop: vs(2), // ✅ vs()
-    fontSize: rf(13), // ✅ rf()
-    fontWeight: '600',
-    color: '#E5E7EB',
-  },
-  outlineBtn: {
-    marginTop: vs(14), // ✅ vs()
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
-    paddingVertical: vs(10), // ✅ vs()
-    paddingHorizontal: s(20), // ✅ s()
-    borderRadius: ms(12), // ✅ ms()
-  },
-  outlineBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: rf(14), // ✅ rf()
-  },
-
-  /* ===== LIVE MATCH ===== */
-  liveCard: {
-    backgroundColor: '#ECFEFF',
-    borderRadius: ms(18), // ✅ ms()
-    padding: s(16), // ✅ s()
-    marginBottom: vs(16), // ✅ vs()
-  },
-  liveTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  livePulse: {
-    color: '#DC2626',
-    fontWeight: '900',
-    fontSize: rf(13), // ✅ rf()
-  },
-  liveTeams: {
-    fontSize: rf(16), // ✅ rf()
-    fontWeight: '700',
-    marginTop: vs(8), // ✅ vs()
-    color: '#0F172A',
-  },
-  liveScore: {
-    fontSize: ms(24), // ✅ ms()
-    fontWeight: '900',
-    marginTop: vs(4), // ✅ vs()
-    color: '#0F172A',
-  },
-  liveCta: {
-    color: '#0284C7',
-    fontWeight: '700',
-    fontSize: rf(13), // ✅ rf()
-  },
-
-  /* ===== LAST MATCH ===== */
-  lastMatchCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: ms(18), // ✅ ms()
-    padding: s(16), // ✅ s()
-    marginBottom: vs(16), // ✅ vs()
-  },
-  matchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginVertical: vs(10), // ✅ vs()
-  },
-  matchScore: {
-    fontSize: ms(22), // ✅ ms()
-    fontWeight: '900',
-    color: '#0F172A',
-  },
-  matchMeta: {
-    textAlign: 'center',
-    color: '#64748B',
-    fontWeight: '600',
-    fontSize: rf(13), // ✅ rf()
-  },
-  miniLogo: {
-    width: s(40), // ✅ s()
-    height: s(40), // ✅ s()
-    borderRadius: s(20), // ✅ s()
-  },
-  miniLogoFallback: {
-    width: s(40), // ✅ s()
-    height: s(40), // ✅ s()
-    borderRadius: s(20), // ✅ s()
-    backgroundColor: '#E5E7EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  miniName: {
-    marginTop: vs(4), // ✅ vs()
-    fontSize: rf(11), // ✅ rf()
-    fontWeight: '700',
-    textAlign: 'center',
-    color: '#0F172A',
-  },
-
-  /* ===== TOURNAMENTS ===== */
-  sectionCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: ms(18), // ✅ ms()
-    padding: s(16), // ✅ s()
-    marginBottom: vs(16), // ✅ vs()
-  },
-  tournamentCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: ms(14), // ✅ ms()
-    padding: s(14), // ✅ s()
-    marginBottom: vs(10), // ✅ vs()
-  },
-  cardTitle: {
-    fontSize: rf(16), // ✅ rf()
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: vs(4), // ✅ vs()
-  },
-  metaText: {
-    fontSize: rf(12), // ✅ rf()
-    color: '#6B7280',
-  },
-
-  /* ===== QUICK ACTIONS ===== */
-  actionsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: ms(18), // ✅ ms()
-    padding: s(16), // ✅ s()
-    marginBottom: vs(16), // ✅ vs()
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: s(12), // ✅ s()
-  },
-  actionTilePrimary: {
-    width: '48%',
-    backgroundColor: '#1D4ED8',
-    borderRadius: ms(16), // ✅ ms()
-    paddingVertical: vs(18), // ✅ vs()
-    alignItems: 'center',
-  },
-  actionTileTertiary: {
-    width: '48%',
-    backgroundColor: '#d8741dff',
-    borderRadius: ms(16), // ✅ ms()
-    paddingVertical: vs(18), // ✅ vs()
-    alignItems: 'center',
-  },
-  actionTileSecondary: {
-    width: '48%',
-    backgroundColor: '#F1F5F9',
-    borderRadius: ms(16), // ✅ ms()
-    paddingVertical: vs(18), // ✅ vs()
-    alignItems: 'center',
-  },
-  actionIcon: {
-    fontSize: ms(26), // ✅ ms()
-    marginBottom: vs(6), // ✅ vs()
-    color: '#FFFFFF',
-  },
-  actionText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-    fontSize: rf(14), // ✅ rf()
-  },
-  actionTextDark: {
-    color: '#0F172A',
-    fontWeight: '800',
-    fontSize: rf(14), // ✅ rf()
-  },
+  loadingTxt: {fontSize: rf(13), color: C.textSecond, fontWeight: '500'},
 });

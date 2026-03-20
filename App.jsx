@@ -1,42 +1,12 @@
-// import React from "react";
-// import { StatusBar } from "react-native";
-// import { SafeAreaProvider } from "react-native-safe-area-context";
-// import RootNavigator from "./src/navigation/RootNavigator";
-// import { AuthProvider } from "./src/context/AuthContext";
-// import { GestureHandlerRootView } from "react-native-gesture-handler";
-// import Ionicons from 'react-native-vector-icons/Ionicons';
-// import Feather from 'react-native-vector-icons/Feather';
-// import Entypo from 'react-native-vector-icons/Entypo';
-
-// // ✅ LOAD FONTS ONCE
-// Feather.loadFont();
-// Entypo.loadFont();
-// Ionicons.loadFont(); 
-// console.log("DEBUG:", __DEV__);
 
 
-// export default function App() {
-//   return (
-//     <GestureHandlerRootView style={{ flex: 1 }}>
-//       <SafeAreaProvider>
-//         <StatusBar translucent backgroundColor="transparent" />
-//         <AuthProvider>
-//           <RootNavigator />
-//         </AuthProvider>
-//       </SafeAreaProvider>
-//     </GestureHandlerRootView>
-//   );
-// }
-
-
-
-import React, { useEffect } from "react";
-import { StatusBar } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import RootNavigator from "./src/navigation/RootNavigator";
-import { AuthProvider } from "./src/context/AuthContext";
-import { useAuth } from "./src/context/AuthContext";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import React, {useEffect} from 'react';
+import {StatusBar} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import RootNavigator from './src/navigation/RootNavigator';
+import {AuthProvider} from './src/context/AuthContext';
+import {useAuth} from './src/context/AuthContext';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -44,16 +14,18 @@ import {
   requestNotificationPermission,
   getFCMToken,
   saveTokenToBackend,
-  setupNotificationListeners
+  setupNotificationListeners,
 } from './src/utils/notificationService';
 
 Feather.loadFont();
 Entypo.loadFont();
 Ionicons.loadFont();
-console.log("DEBUG:", __DEV__);
+console.log('DEBUG:', __DEV__);
+
+export const navigationRef = React.createRef();
 
 function NotificationBootstrap() {
-  const { user, loading, token } = useAuth();
+  const {user, loading, token} = useAuth();
 
   useEffect(() => {
     if (loading) return;
@@ -68,11 +40,9 @@ function NotificationBootstrap() {
       const fcmToken = await getFCMToken();
       if (!fcmToken) return;
 
-await saveTokenToBackend(fcmToken, user._id, user.role, token); // 👈 pass token
+      await saveTokenToBackend(fcmToken, user._id, user.role, token); // 👈 pass token
 
-      unsubscribe = setupNotificationListeners((notification) => {
-        console.log('Notification received:', notification);
-      });
+      unsubscribe = setupNotificationListeners(navigationRef);
     }
 
     initNotifications();
@@ -86,13 +56,14 @@ await saveTokenToBackend(fcmToken, user._id, user.role, token); // 👈 pass tok
 }
 
 export default function App() {
+  
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{flex: 1}}>
       <SafeAreaProvider>
         <StatusBar translucent backgroundColor="transparent" />
         <AuthProvider>
           <NotificationBootstrap />
-          <RootNavigator />
+          <RootNavigator navigationRef={navigationRef} /> 
         </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

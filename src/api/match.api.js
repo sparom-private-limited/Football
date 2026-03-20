@@ -14,7 +14,7 @@ export const cancelMatch = (payload) =>
 
 // Get my matches
 export const getMyMatches = () =>
-  API.get("/api/match/myMatch");
+  API.get("/api/match/myMatch?limit=50");
 
 export const addMatchEvent = (matchId, payload) => {
   return API.post(`/api/match/${matchId}/event`, payload);

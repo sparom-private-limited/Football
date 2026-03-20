@@ -17,7 +17,7 @@ import {useAuth} from '../../context/AuthContext';
 import useNavigationHelper from '../../navigation/Navigationhelper';
 import {s, vs, ms, rf} from '../../utils/responsive';
 
-const TABS = ['Summary', 'Fixtures', 'Standings'];
+const TABS = ['Summary', 'Fixtures', 'Standings', 'Stats'];
 
 export default function TournamentDetailScreen() {
   const {params} = useRoute();
@@ -32,6 +32,7 @@ export default function TournamentDetailScreen() {
   const {user} = useAuth();
   const [fixtures, setFixtures] = useState([]);
   const [standings, setStandings] = useState([]);
+  const [tournamentStats, setTournamentStats] = useState(null);
 
   const load = async () => {
     try {
@@ -41,6 +42,10 @@ export default function TournamentDetailScreen() {
       } else {
         res = await API.get(`/api/tournament/${tournamentId}`);
       }
+      const statsRes = await API.get(
+        `/api/tournament/${tournamentId}/stats`,
+      ).catch(() => ({data: null}));
+      setTournamentStats(statsRes.data);
 
       let tournamentData;
       let teamContext = null;
@@ -652,6 +657,156 @@ export default function TournamentDetailScreen() {
             )}
           </View>
         )}
+
+        {/* ── STATS TAB ── */}
+        {activeTab === 'Stats' && (
+          <View>
+            {!tournamentStats ? (
+              <View style={styles.card}>
+                <View style={styles.noTeamsBox}>
+                  <Text style={styles.noTeamsIcon}>📊</Text>
+                  <Text style={styles.noTeamsText}>
+                    Stats will appear once matches are played
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <>
+                {/* Overview */}
+                <View style={styles.card}>
+                  <Text style={styles.cardTitle}>Tournament Overview</Text>
+                  <View style={styles.statGrid}>
+                    <StatBox
+                      label="Matches Played"
+                      value={tournamentStats.overview.totalMatches}
+                    />
+                    <StatBox
+                      label="Total Goals"
+                      value={tournamentStats.overview.totalGoals}
+                    />
+                    <StatBox
+                      label="Avg Goals/Match"
+                      value={tournamentStats.overview.avgGoalsPerMatch.toFixed(
+                        1,
+                      )}
+                    />
+                    <StatBox
+                      label="Clean Sheets"
+                      value={tournamentStats.overview.cleanSheets}
+                    />
+                    <StatBox
+                      label="Yellow Cards"
+                      value={tournamentStats.overview.totalYellowCards}
+                    />
+                    <StatBox
+                      label="Red Cards"
+                      value={tournamentStats.overview.totalRedCards}
+                    />
+                  </View>
+                </View>
+
+                {/* Top Scorers */}
+                {tournamentStats.topScorers?.length > 0 && (
+                  <View style={styles.card}>
+                    <View style={styles.cardHeaderRow}>
+                      <Text style={styles.cardTitle}>⚽ Top Scorers</Text>
+                    </View>
+                    {tournamentStats.topScorers.slice(0, 5).map((player, i) => (
+                      <PlayerStatRow
+                        key={player.playerId}
+                        position={i + 1}
+                        name={player.playerName}
+                        team={player.teamName}
+                        statValue={player.goals}
+                        statLabel="goals"
+                        isTop={i === 0}
+                      />
+                    ))}
+                  </View>
+                )}
+
+                {/* Top Assists */}
+                {tournamentStats.topAssists?.length > 0 && (
+                  <View style={styles.card}>
+                    <View style={styles.cardHeaderRow}>
+                      <Text style={styles.cardTitle}>🎯 Top Assists</Text>
+                    </View>
+                    {tournamentStats.topAssists.slice(0, 5).map((player, i) => (
+                      <PlayerStatRow
+                        key={player.playerId}
+                        position={i + 1}
+                        name={player.playerName}
+                        team={player.teamName}
+                        statValue={player.assists}
+                        statLabel="assists"
+                        isTop={i === 0}
+                      />
+                    ))}
+                  </View>
+                )}
+
+                {/* Most Bookings */}
+                {tournamentStats.mostYellowCards?.length > 0 && (
+                  <View style={styles.card}>
+                    <View style={styles.cardHeaderRow}>
+                      <Text style={styles.cardTitle}>🟨 Most Bookings</Text>
+                    </View>
+                    {tournamentStats.mostYellowCards
+                      .slice(0, 5)
+                      .map((player, i) => (
+                        <PlayerStatRow
+                          key={player.playerId}
+                          position={i + 1}
+                          name={player.playerName}
+                          team={player.teamName}
+                          statValue={player.yellowCards}
+                          statLabel="yellow cards"
+                          isTop={false}
+                        />
+                      ))}
+                  </View>
+                )}
+
+                {/* Recent Results */}
+                {tournamentStats.recentResults?.length > 0 && (
+                  <View style={styles.card}>
+                    <Text style={styles.cardTitle}>🕐 Recent Results</Text>
+                    {tournamentStats.recentResults.map((match, i) => (
+                      <View
+                        key={match._id}
+                        style={[
+                          styles.fixtureRow,
+                          i === tournamentStats.recentResults.length - 1 && {
+                            borderBottomWidth: 0,
+                          },
+                        ]}>
+                        <View style={styles.fixtureTeamCol}>
+                          <Text
+                            style={styles.fixtureTeamName}
+                            numberOfLines={1}>
+                            {match.homeTeam?.teamName}
+                          </Text>
+                        </View>
+                        <View style={styles.fixtureScoreCol}>
+                          <Text style={styles.fixtureScore}>
+                            {match.score?.home ?? 0} - {match.score?.away ?? 0}
+                          </Text>
+                        </View>
+                        <View style={styles.fixtureTeamCol}>
+                          <Text
+                            style={styles.fixtureTeamName}
+                            numberOfLines={1}>
+                            {match.awayTeam?.teamName}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </>
+            )}
+          </View>
+        )}
       </ScrollView>
     </MainLayout>
   );
@@ -799,6 +954,24 @@ function ActionBtn({label, onPress, warning, loading}) {
         <Text style={styles.btnText}>{label}</Text>
       )}
     </TouchableOpacity>
+  );
+}
+
+function PlayerStatRow({position, name, team, statValue, statLabel, isTop}) {
+  return (
+    <View style={styles.playerStatRow}>
+      <Text style={[styles.playerStatPos, isTop && {color: '#F59E0B'}]}>
+        {isTop ? '🏆' : `#${position}`}
+      </Text>
+      <View style={styles.playerStatInfo}>
+        <Text style={styles.playerStatName}>{name}</Text>
+        <Text style={styles.playerStatTeam}>{team}</Text>
+      </View>
+      <View style={styles.playerStatValue}>
+        <Text style={styles.playerStatNum}>{statValue}</Text>
+        <Text style={styles.playerStatLabel}>{statLabel}</Text>
+      </View>
+    </View>
   );
 }
 
@@ -1432,5 +1605,42 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     marginTop: vs(2),
   },
-  
+
+  playerStatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: vs(10),
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    gap: s(12),
+  },
+  playerStatPos: {
+    width: s(30),
+    fontSize: rf(13),
+    fontWeight: '800',
+    color: '#94A3B8',
+    textAlign: 'center',
+  },
+  playerStatInfo: {flex: 1},
+  playerStatName: {
+    fontSize: rf(14),
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  playerStatTeam: {
+    fontSize: rf(11),
+    color: '#94A3B8',
+    marginTop: vs(2),
+  },
+  playerStatValue: {alignItems: 'center'},
+  playerStatNum: {
+    fontSize: ms(20),
+    fontWeight: '900',
+    color: '#2563EB',
+  },
+  playerStatLabel: {
+    fontSize: rf(10),
+    color: '#94A3B8',
+    fontWeight: '600',
+  },
 });

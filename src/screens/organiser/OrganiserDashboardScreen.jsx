@@ -25,30 +25,36 @@ export default function OrganiserDashboardScreen() {
   const [tournaments, setTournaments] = useState([]);
   const [matches, setMatches] = useState([]);
   const [profileComplete, setProfileComplete] = useState(true);
+  const [stats, setStats] = useState(null); // 👈 add this
 
   useEffect(() => {
     loadDashboard();
-    return () => {isMounted.current = false;};
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const loadDashboard = async () => {
     try {
-     const [tRes, mRes, profileRes] = await Promise.all([
-      API.get('/api/organiser/tournaments').catch(err => {
-        if (err.response?.status === 404) return {data: []}; // ✅ no profile yet = empty
-        throw err;
-      }),
-      API.get('/api/organiser/getMatches').catch(err => {
-        if (err.response?.status === 404) return {data: []};
-        throw err;
-      }),
-      API.get('/api/organiser/profile/status').catch(err => {
-        if (err.response?.status === 404) return {data: {complete: false}}; // ✅ treat as incomplete
-        throw err;
-      }),
-    ]);
+      const [tRes, mRes, profileRes, statsRes] = await Promise.all([
+        API.get('/api/organiser/tournaments').catch(err => {
+          if (err.response?.status === 404) return {data: []}; // ✅ no profile yet = empty
+          throw err;
+        }),
+        API.get('/api/organiser/getMatches').catch(err => {
+          if (err.response?.status === 404) return {data: []};
+          throw err;
+        }),
+        API.get('/api/organiser/profile/status').catch(err => {
+          if (err.response?.status === 404) return {data: {complete: false}}; // ✅ treat as incomplete
+          throw err;
+        }),
+        API.get('/api/organiser/stats').catch(err => {
+          return {data: null};
+        }),
+      ]);
 
-    if (!isMounted.current) return;
+      if (!isMounted.current) return;
 
       // Priority order: LIVE > FIXTURES_GENERATED > REGISTRATION_OPEN > REGISTRATION_CLOSED > DRAFT > COMPLETED
       const PRIORITY = {
@@ -67,11 +73,18 @@ export default function OrganiserDashboardScreen() {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
       setTournaments(sortedTournaments);
-      setMatches((mRes.data || []).filter(m => m.createdByRole === 'organiser'));
+      setMatches(
+        (mRes.data || []).filter(m => m.createdByRole === 'organiser'),
+      );
       setProfileComplete(profileRes.data.complete);
+      setStats(statsRes.data);
+      console.log('Stats data:', JSON.stringify(statsRes.data));
     } catch (err) {
       if (isMounted.current) {
-        Alert.alert('Error', err.response?.data?.message || 'Failed to load dashboard');
+        Alert.alert(
+          'Error',
+          err.response?.data?.message || 'Failed to load dashboard',
+        );
       }
     } finally {
       if (isMounted.current) setLoading(false);
@@ -102,7 +115,10 @@ export default function OrganiserDashboardScreen() {
   const activeTournaments = tournaments.filter(t =>
     ['REGISTRATION_OPEN', 'FIXTURES_GENERATED', 'LIVE'].includes(t.status),
   ).length;
-  const totalTeams = tournaments.reduce((acc, t) => acc + (t.teams?.length || 0), 0);
+  const totalTeams = tournaments.reduce(
+    (acc, t) => acc + (t.teams?.length || 0),
+    0,
+  );
   const matchesToday = matches.filter(m => {
     const d = new Date(m.scheduledAt);
     const today = new Date();
@@ -112,12 +128,19 @@ export default function OrganiserDashboardScreen() {
   const upcomingToday = matches.filter(m => {
     const d = new Date(m.scheduledAt);
     const today = new Date();
-    return d.toDateString() === today.toDateString() && m.status !== 'COMPLETED';
+    return (
+      d.toDateString() === today.toDateString() && m.status !== 'COMPLETED'
+    );
   });
 
   // Organiser initials
   const initials = user?.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    ? user.name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
     : 'OG';
 
   return (
@@ -130,7 +153,6 @@ export default function OrganiserDashboardScreen() {
           style={styles.scroll}
           contentContainerStyle={styles.container}
           showsVerticalScrollIndicator={false}>
-
           {/* ── PROFILE INCOMPLETE BANNER ── */}
           {!profileComplete && (
             <TouchableOpacity
@@ -140,8 +162,12 @@ export default function OrganiserDashboardScreen() {
               <View style={styles.profileBannerLeft}>
                 <Text style={styles.profileBannerIcon}>⚠️</Text>
                 <View>
-                  <Text style={styles.profileBannerTitle}>Complete your profile</Text>
-                  <Text style={styles.profileBannerSub}>Required to create tournaments</Text>
+                  <Text style={styles.profileBannerTitle}>
+                    Complete your profile
+                  </Text>
+                  <Text style={styles.profileBannerSub}>
+                    Required to create tournaments
+                  </Text>
                 </View>
               </View>
               <Text style={styles.profileBannerArrow}>→</Text>
@@ -164,7 +190,9 @@ export default function OrganiserDashboardScreen() {
               style={[styles.statCard, styles.statCardWhite]}
               activeOpacity={0.85}>
               <Text style={styles.statCardLabelDark}>Matches today</Text>
-              <Text style={styles.statCardValueDark}>{matchesToday.length}</Text>
+              <Text style={styles.statCardValueDark}>
+                {matchesToday.length}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -191,11 +219,127 @@ export default function OrganiserDashboardScreen() {
             </View>
           </View>
 
+          {/* ✅ NEW — Full Stats Section */}
+          {/* {stats && (
+            <View style={{marginBottom: vs(16)}}>
+              <Text style={[styles.sectionTitle, {marginBottom: vs(12)}]}>
+                Overall Statistics
+              </Text>
+              <View style={styles.statRow}>
+                <View style={[styles.statCard, styles.statCardWhite]}>
+                  <View style={styles.statCardTopRow}>
+                    <Text style={styles.statCardLabelDark}>Completed</Text>
+                    <Text style={styles.statIcon}>✅</Text>
+                  </View>
+                  <Text style={styles.statCardValueDark}>
+                    {stats.tournaments.completed}
+                  </Text>
+                  <Text style={styles.statCardMeta}>tournaments finished</Text>
+                </View>
+                <View style={[styles.statCard, styles.statCardWhite]}>
+                  <View style={styles.statCardTopRow}>
+                    <Text style={styles.statCardLabelDark}>Total Goals</Text>
+                    <Text style={styles.statIcon}>⚽</Text>
+                  </View>
+                  <Text style={styles.statCardValueDark}>
+                    {stats.goals.total}
+                  </Text>
+                  <Text style={styles.statCardMeta}>
+                    {stats.goals.avgPerMatch} avg/match
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.statRow}>
+                <View style={[styles.statCard, styles.statCardWhite]}>
+                  <View style={styles.statCardTopRow}>
+                    <Text style={styles.statCardLabelDark}>Matches Played</Text>
+                    <Text style={styles.statIcon}>🏟️</Text>
+                  </View>
+                  <Text style={styles.statCardValueDark}>
+                    {stats.matches.total}
+                  </Text>
+                  <Text style={styles.statCardMeta}>
+                    across all tournaments
+                  </Text>
+                </View>
+                <View style={[styles.statCard, styles.statCardWhite]}>
+                  <View style={styles.statCardTopRow}>
+                    <Text style={styles.statCardLabelDark}>Clean Sheets</Text>
+                    <Text style={styles.statIcon}>🧤</Text>
+                  </View>
+                  <Text style={styles.statCardValueDark}>
+                    {stats.cleanSheets}
+                  </Text>
+                  <Text style={styles.statCardMeta}>total shutouts</Text>
+                </View>
+              </View>
+
+              <View style={styles.statRow}>
+                <View style={[styles.statCard, styles.statCardWhite]}>
+                  <View style={styles.statCardTopRow}>
+                    <Text style={styles.statCardLabelDark}>Yellow Cards</Text>
+                    <Text style={styles.statIcon}>🟨</Text>
+                  </View>
+                  <Text style={styles.statCardValueDark}>
+                    {stats.cards.yellow}
+                  </Text>
+                  <Text style={styles.statCardMeta}>total bookings</Text>
+                </View>
+                <View style={[styles.statCard, styles.statCardWhite]}>
+                  <View style={styles.statCardTopRow}>
+                    <Text style={styles.statCardLabelDark}>Red Cards</Text>
+                    <Text style={styles.statIcon}>🟥</Text>
+                  </View>
+                  <Text style={styles.statCardValueDark}>
+                    {stats.cards.red}
+                  </Text>
+                  <Text style={styles.statCardMeta}>total dismissals</Text>
+                </View>
+              </View>
+
+              <View style={styles.formatCard}>
+                <Text style={styles.formatCardTitle}>Format Breakdown</Text>
+                <View style={styles.formatRow}>
+                  <View style={styles.formatBox}>
+                    <Text style={styles.formatIcon}>⚔️</Text>
+                    <Text style={styles.formatValue}>
+                      {stats.tournaments.knockout}
+                    </Text>
+                    <Text style={styles.formatLabel}>Knockout</Text>
+                    <Text style={styles.formatMeta}>
+                      {stats.matches.knockout} matches
+                    </Text>
+                    <Text style={styles.formatMeta}>
+                      {stats.goals.knockout} goals
+                    </Text>
+                  </View>
+                  <View style={styles.formatDivider} />
+                  <View style={styles.formatBox}>
+                    <Text style={styles.formatIcon}>🔄</Text>
+                    <Text style={styles.formatValue}>
+                      {stats.tournaments.league}
+                    </Text>
+                    <Text style={styles.formatLabel}>League</Text>
+                    <Text style={styles.formatMeta}>
+                      {stats.matches.league} matches
+                    </Text>
+                    <Text style={styles.formatMeta}>
+                      {stats.goals.league} goals
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )} */}
+
           {/* ── LIVE MATCH BANNER ── */}
           {liveMatches.length > 0 && (
             <TouchableOpacity
               style={styles.liveBanner}
-              onPress={() => nav.toMatch('MatchConsole', {matchId: liveMatches[0]._id})}
+              onPress={() =>
+                nav.toMatch('MatchConsole', {matchId: liveMatches[0]._id})
+              }
               activeOpacity={0.9}>
               <View style={styles.liveBannerTop}>
                 <View style={styles.livePillSmall}>
@@ -207,14 +351,17 @@ export default function OrganiserDashboardScreen() {
               <View style={styles.liveBannerBody}>
                 <View>
                   <Text style={styles.liveMatchTitle}>
-                    {liveMatches[0].homeTeam?.teamName} vs {liveMatches[0].awayTeam?.teamName}
+                    {liveMatches[0].homeTeam?.teamName} vs{' '}
+                    {liveMatches[0].awayTeam?.teamName}
                   </Text>
                   <Text style={styles.liveMatchMeta}>
-                    {liveMatches[0].tournamentName || 'Friendly'} · {liveMatches[0].venue || 'Venue'}
+                    {liveMatches[0].tournamentName || 'Friendly'} ·{' '}
+                    {liveMatches[0].venue || 'Venue'}
                   </Text>
                 </View>
                 <Text style={styles.liveScore}>
-                  {liveMatches[0].score?.home ?? 0} - {liveMatches[0].score?.away ?? 0}
+                  {liveMatches[0].score?.home ?? 0} -{' '}
+                  {liveMatches[0].score?.away ?? 0}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -225,7 +372,8 @@ export default function OrganiserDashboardScreen() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Today's schedule</Text>
-                <TouchableOpacity onPress={() => nav.toTournament('MyTournaments')}>
+                <TouchableOpacity
+                  onPress={() => nav.toTournament('MyTournaments')}>
                   <Text style={styles.viewAllLink}>View full schedule</Text>
                 </TouchableOpacity>
               </View>
@@ -236,20 +384,24 @@ export default function OrganiserDashboardScreen() {
                     key={m._id}
                     style={[
                       styles.scheduleRow,
-                      i === Math.min(upcomingToday.length, 4) - 1 && {borderBottomWidth: 0},
+                      i === Math.min(upcomingToday.length, 4) - 1 && {
+                        borderBottomWidth: 0,
+                      },
                     ]}
                     onPress={() => nav.toMatch('MatchDetail', {matchId: m._id})}
                     activeOpacity={0.7}>
                     <View style={styles.scheduleLeft}>
                       <Text style={styles.scheduleMatchName} numberOfLines={1}>
-                        {m.tournamentName || 'Match'}{m.round ? ` · ${m.round}` : ''}
+                        {m.tournamentName || 'Match'}
+                        {m.round ? ` · ${m.round}` : ''}
                       </Text>
                       <Text style={styles.scheduleTeams} numberOfLines={1}>
                         {m.homeTeam?.teamName} vs {m.awayTeam?.teamName}
                       </Text>
                     </View>
                     <Text style={styles.scheduleTime}>
-                      Today · {new Date(m.scheduledAt).toLocaleTimeString('en-US', {
+                      Today ·{' '}
+                      {new Date(m.scheduledAt).toLocaleTimeString('en-US', {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
@@ -264,17 +416,24 @@ export default function OrganiserDashboardScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>My tournaments</Text>
-              <TouchableOpacity onPress={() => nav.toTournament('MyTournaments')}>
+              <TouchableOpacity
+                onPress={() => nav.toTournament('MyTournaments')}>
                 <Text style={styles.viewAllLink}>Manage</Text>
               </TouchableOpacity>
             </View>
 
             {/* Create button always visible */}
             <TouchableOpacity
-              style={[styles.createBtn, !profileComplete && styles.createBtnDisabled]}
+              style={[
+                styles.createBtn,
+                !profileComplete && styles.createBtnDisabled,
+              ]}
               onPress={() => {
                 if (!profileComplete) {
-                  Alert.alert('Profile Incomplete', 'Please complete your profile first.');
+                  Alert.alert(
+                    'Profile Incomplete',
+                    'Please complete your profile first.',
+                  );
                   return;
                 }
                 nav.toTournament('CreateTournament');
@@ -288,7 +447,9 @@ export default function OrganiserDashboardScreen() {
               <View style={styles.emptyBox}>
                 <Text style={styles.emptyIcon}>🏟️</Text>
                 <Text style={styles.emptyTitle}>No tournaments yet</Text>
-                <Text style={styles.emptySubtitle}>Create your first to get started</Text>
+                <Text style={styles.emptySubtitle}>
+                  Create your first to get started
+                </Text>
               </View>
             ) : (
               <>
@@ -298,7 +459,9 @@ export default function OrganiserDashboardScreen() {
                     item={item}
                     index={index}
                     onPress={() =>
-                      nav.toTournament('TournamentDetail', {tournamentId: item._id})
+                      nav.toTournament('TournamentDetail', {
+                        tournamentId: item._id,
+                      })
                     }
                   />
                 ))}
@@ -316,7 +479,6 @@ export default function OrganiserDashboardScreen() {
               </>
             )}
           </View>
-
         </ScrollView>
       </MainLayout>
     </AppRefreshView>
@@ -327,12 +489,32 @@ export default function OrganiserDashboardScreen() {
 
 function TournamentCard({item, onPress, index}) {
   const statusConfig = {
-    DRAFT:               {label: 'Draft',               color: '#64748B', bg: '#F1F5F9', accent: '#CBD5E1'},
-    REGISTRATION_OPEN:   {label: 'Registration open',   color: '#1D4ED8', bg: '#EFF6FF', accent: '#2563EB'},
-    REGISTRATION_CLOSED: {label: 'Reg. closed',         color: '#92400E', bg: '#FEF9C3', accent: '#F59E0B'},
-    FIXTURES_GENERATED:  {label: 'Fixtures set',        color: '#1D4ED8', bg: '#DBEAFE', accent: '#3B82F6'},
-    LIVE:                {label: 'Live',                 color: '#DC2626', bg: '#FEF2F2', accent: '#EF4444'},
-    COMPLETED:           {label: 'Completed',            color: '#475569', bg: '#F1F5F9', accent: '#94A3B8'},
+    DRAFT: {label: 'Draft', color: '#64748B', bg: '#F1F5F9', accent: '#CBD5E1'},
+    REGISTRATION_OPEN: {
+      label: 'Registration open',
+      color: '#1D4ED8',
+      bg: '#EFF6FF',
+      accent: '#2563EB',
+    },
+    REGISTRATION_CLOSED: {
+      label: 'Reg. closed',
+      color: '#92400E',
+      bg: '#FEF9C3',
+      accent: '#F59E0B',
+    },
+    FIXTURES_GENERATED: {
+      label: 'Fixtures set',
+      color: '#1D4ED8',
+      bg: '#DBEAFE',
+      accent: '#3B82F6',
+    },
+    LIVE: {label: 'Live', color: '#DC2626', bg: '#FEF2F2', accent: '#EF4444'},
+    COMPLETED: {
+      label: 'Completed',
+      color: '#475569',
+      bg: '#F1F5F9',
+      accent: '#94A3B8',
+    },
   };
   const sc = statusConfig[item.status] || statusConfig.DRAFT;
   const isLive = item.status === 'LIVE';
@@ -348,12 +530,16 @@ function TournamentCard({item, onPress, index}) {
         <View style={styles.tCardTop}>
           <View style={styles.tCardTitleRow}>
             {isLive && <View style={styles.tLiveDot} />}
-            <Text style={[styles.tCardName, isLive && {color: '#DC2626'}]} numberOfLines={1}>
+            <Text
+              style={[styles.tCardName, isLive && {color: '#DC2626'}]}
+              numberOfLines={1}>
               {item.name}
             </Text>
           </View>
           <View style={[styles.tStatusPill, {backgroundColor: sc.bg}]}>
-            <Text style={[styles.tStatusText, {color: sc.color}]}>{sc.label}</Text>
+            <Text style={[styles.tStatusText, {color: sc.color}]}>
+              {sc.label}
+            </Text>
           </View>
         </View>
 
@@ -364,7 +550,9 @@ function TournamentCard({item, onPress, index}) {
           </View>
           <View style={styles.tMetaItem}>
             <Text style={styles.tMetaIcon}>👥</Text>
-            <Text style={styles.tMetaText}>{item.teams?.length || 0} teams</Text>
+            <Text style={styles.tMetaText}>
+              {item.teams?.length || 0} teams
+            </Text>
           </View>
           <View style={styles.tMetaItem}>
             <Text style={styles.tMetaIcon}>📍</Text>
@@ -377,10 +565,17 @@ function TournamentCard({item, onPress, index}) {
         {item.status === 'REGISTRATION_OPEN' && item.maxTeams > 0 && (
           <View style={styles.tCardProgress}>
             <View style={styles.tProgressBg}>
-              <View style={[
-                styles.tProgressFill,
-                {width: `${Math.min(100, ((item.teams?.length || 0) / item.maxTeams) * 100)}%`},
-              ]} />
+              <View
+                style={[
+                  styles.tProgressFill,
+                  {
+                    width: `${Math.min(
+                      100,
+                      ((item.teams?.length || 0) / item.maxTeams) * 100,
+                    )}%`,
+                  },
+                ]}
+              />
             </View>
             <Text style={styles.tProgressLabel}>
               {item.teams?.length || 0}/{item.maxTeams} spots
@@ -820,5 +1015,55 @@ const styles = StyleSheet.create({
     fontSize: rf(13),
     color: '#94A3B8',
     textAlign: 'center',
+  },
+
+  // Add to existing styles
+  formatCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: ms(20),
+    padding: s(16),
+    marginBottom: vs(10),
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: vs(2)},
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  formatCardTitle: {
+    fontSize: rf(15),
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: vs(14),
+  },
+  formatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  formatBox: {
+    flex: 1,
+    alignItems: 'center',
+    gap: vs(4),
+  },
+  formatDivider: {
+    width: 1,
+    height: vs(80),
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: s(10),
+  },
+  formatIcon: {fontSize: ms(28)},
+  formatValue: {
+    fontSize: ms(32),
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  formatLabel: {
+    fontSize: rf(13),
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  formatMeta: {
+    fontSize: rf(11),
+    color: '#94A3B8',
+    fontWeight: '500',
   },
 });

@@ -13,35 +13,35 @@ const useMatchSocket = (matchId, callbacks = {}) => {
     if (!matchId) return;
 
     if (!SocketManager.isConnected()) {
-      console.warn('⚠️ Socket not connected when setting up match listeners');
       setError('Socket not connected');
       return;
     }
 
-    console.log(`🎮 Setting up match socket for: ${matchId}`);
     SocketManager.joinMatch(matchId);
     setIsConnected(true);
     setError(null);
 
     const handleJoined = data => callbacksRef.current.onJoined?.(data);
     const handleStart = data => {
-      console.log('📡 Socket match:start received:', JSON.stringify(data));
       callbacksRef.current.onStart?.(data);
     };
     const handleEnd = data => callbacksRef.current.onEnd?.(data);
     const handleGoal = data => callbacksRef.current.onGoal?.(data);
     const handleCard = data => callbacksRef.current.onCard?.(data);
-    const handleSubstitution = data =>
-      callbacksRef.current.onSubstitution?.(data);
-    const handleStatusUpdate = data =>
-      callbacksRef.current.onStatusUpdate?.(data);
+    const handleSubstitution = data => callbacksRef.current.onSubstitution?.(data);
+    const handleStatusUpdate = data => callbacksRef.current.onStatusUpdate?.(data);
     const handleReset = data => callbacksRef.current.onReset?.(data);
     const handleError = err => {
       setError(err?.message || 'Socket error');
       callbacksRef.current.onError?.(err);
     };
 
-    // ✅ Register all events once
+    // ✅ NEW — Penalty handlers
+    const handlePenalty = data => callbacksRef.current.onPenalty?.(data);
+    const handleShootoutStarted = data => callbacksRef.current.onShootoutStarted?.(data);
+    const handleShootoutUpdated = data => callbacksRef.current.onShootoutUpdated?.(data);
+
+    // Register all events
     SocketManager.on('match:joined', handleJoined);
     SocketManager.on('match:start', handleStart);
     SocketManager.on('match:end', handleEnd);
@@ -52,9 +52,13 @@ const useMatchSocket = (matchId, callbacks = {}) => {
     SocketManager.on('match:reset', handleReset);
     SocketManager.on('error', handleError);
 
-    // ✅ Clean up all events on unmount or matchId change
+    // ✅ NEW — Register penalty events
+    SocketManager.on('match:penalty_update', handlePenalty);
+    SocketManager.on('match:shootout_started', handleShootoutStarted);
+    SocketManager.on('match:shootout_updated', handleShootoutUpdated);
+
+    // Cleanup
     return () => {
-      console.log('🧹 Cleaning up match socket listeners');
       SocketManager.leaveMatch(matchId);
       SocketManager.off('match:joined', handleJoined);
       SocketManager.off('match:start', handleStart);
@@ -65,9 +69,15 @@ const useMatchSocket = (matchId, callbacks = {}) => {
       SocketManager.off('match:status', handleStatusUpdate);
       SocketManager.off('match:reset', handleReset);
       SocketManager.off('error', handleError);
+
+      // ✅ NEW — Cleanup penalty events
+      SocketManager.off('match:penalty_update', handlePenalty);
+      SocketManager.off('match:shootout_started', handleShootoutStarted);
+      SocketManager.off('match:shootout_updated', handleShootoutUpdated);
+
       setIsConnected(false);
     };
-  }, [matchId]); // ✅ only matchId — never re-runs on callback changes
+  }, [matchId]);
 
   return {isConnected, error};
 };

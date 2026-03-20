@@ -95,12 +95,6 @@ export default function TeamLineupScreen() {
     try {
       const payload = mapFrontendLineupToPayload(formation, lineup, bench);
 
-      // console.log('💾 Saving lineup:', {
-      //   formation: payload.formation,
-      //   starting: payload.starting.length,
-      //   bench: payload.bench.length,
-      // });
-
       await API.post('/api/team/lineup', payload);
 
       Alert.alert('Success', 'Lineup saved successfully');

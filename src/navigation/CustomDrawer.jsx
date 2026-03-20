@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import {DrawerContentScrollView} from '@react-navigation/drawer';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -17,11 +11,11 @@ import Fontisto from 'react-native-vector-icons/Fontisto';
 import {useAuth} from '../context/AuthContext';
 import useNavigationHelper from '../navigation/Navigationhelper';
 
-import {s,ms,vs,rf} from '../utils/responsive';
+import {s, ms, vs, rf} from '../utils/responsive';
 
 export default function CustomDrawer(props) {
   const nav = useNavigationHelper();
-  const {user, logout} = useAuth();
+  const {user, logout, updateUser} = useAuth();
   const role = user?.role;
 
   const go = cb => {
@@ -34,27 +28,35 @@ export default function CustomDrawer(props) {
       {...props}
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}>
-      
       {/* ===== BRAND ===== */}
       <View style={styles.brandWrap}>
         <View style={styles.brandLogo}>
-          <Text style={styles.brandLogoText}>⚽</Text>
+          <Image
+            source={require('../assets/logo2.png')}
+            style={styles.brandLogoImg}
+            resizeMode="cover"
+          />
         </View>
-        <Text style={styles.brandName}>Football App</Text>
+        <Text style={styles.brandName}>FTBL-XI</Text>
       </View>
 
       {/* ===== PROFILE ===== */}
       <View style={styles.profileCard}>
-        <Image
-          source={{
-            uri:
-              user?.profileImage ||
-              `https://ui-avatars.com/api/?name=${user?.email || 'User'}`,
-          }}
-          style={styles.avatar}
-        />
+        {user?.profileImage ? (
+          <Image
+            source={{uri: user.profileImage}}
+            style={styles.avatar}
+            onError={e => console.log('❌ Image failed:', e.nativeEvent.error)}
+          />
+        ) : (
+          <View style={[styles.avatar, styles.avatarFallback]}>
+            <Text style={styles.avatarInitial}>
+              {(user?.name || 'U')[0].toUpperCase()}
+            </Text>
+          </View>
+        )}
         <View style={{flex: 1}}>
-          <Text style={styles.name}>{user?.email || 'User'}</Text>
+          <Text style={styles.name}>{user?.name || user?.email || 'User'}</Text>
           <Text style={styles.sub}>{role?.toUpperCase()}</Text>
         </View>
       </View>
@@ -70,7 +72,9 @@ export default function CustomDrawer(props) {
       {role === 'team' && (
         <>
           <DrawerItem
-            icon={<Ionicons name="football-outline" size={20} color="#475569" />}
+            icon={
+              <Ionicons name="football-outline" size={20} color="#475569" />
+            }
             label="Matches"
             onPress={() => go(() => nav.toMatch('MyMatches'))}
           />
@@ -150,138 +154,10 @@ function DrawerItem({icon, label, onPress, active}) {
       onPress={onPress}
       style={[styles.item, active && styles.itemActive]}>
       <View style={styles.iconWrap}>{icon}</View>
-      <Text style={[styles.label, active && styles.labelActive]}>
-        {label}
-      </Text>
+      <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
     </TouchableOpacity>
   );
 }
-
-/* ===== STYLES ===== */
-// const styles = StyleSheet.create({
-//   container: {
-//     flexGrow: 1,
-//     backgroundColor: '#FFFFFF',
-//   },
-
-//   /* BRAND */
-//   brandWrap: {
-//     alignItems: 'center',
-//     paddingTop: 24,
-//     paddingBottom: 16,
-//   },
-
-//   brandLogo: {
-//     width: 48,
-//     height: 48,
-//     borderRadius: 12,
-//     backgroundColor: '#2563EB',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     marginBottom: 6,
-//   },
-
-//   brandLogoText: {
-//     fontSize: 22,
-//     color: '#FFFFFF',
-//     fontWeight: '900',
-//   },
-
-//   brandName: {
-//     fontSize: 14,
-//     fontWeight: '700',
-//     color: '#0F172A',
-//   },
-
-//   /* PROFILE */
-//   profileCard: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     paddingHorizontal: 16,
-//     paddingVertical: 14,
-//     borderBottomWidth: 1,
-//     borderColor: '#E5E7EB',
-//   },
-
-//   avatar: {
-//     width: 48,
-//     height: 48,
-//     borderRadius: 24,
-//     marginRight: 12,
-//   },
-
-//   name: {
-//     fontSize: 15,
-//     fontWeight: '700',
-//     color: '#0F172A',
-//   },
-
-//   sub: {
-//     fontSize: 12,
-//     color: '#64748B',
-//     marginTop: 2,
-//   },
-
-//   /* ITEMS */
-//   item: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     paddingVertical: 14,
-//     paddingHorizontal: 20,
-//     marginHorizontal: 8,
-//     borderRadius: 12,
-//   },
-
-//   itemActive: {
-//     backgroundColor: '#EEF2FF',
-//   },
-
-//   iconWrap: {
-//     width: 26,
-//     alignItems: 'center',
-//     marginRight: 14,
-//   },
-
-//   label: {
-//     fontSize: 15,
-//     fontWeight: '600',
-//     color: '#1E293B',
-//   },
-
-//   labelActive: {
-//     color: '#2563EB',
-//   },
-
-//   divider: {
-//     height: 1,
-//     backgroundColor: '#E5E7EB',
-//     marginVertical: 12,
-//     marginHorizontal: 16,
-//   },
-
-//   /* LOGOUT */
-//   logout: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     padding: 16,
-//     marginTop: 'auto',
-//   },
-
-//   logoutText: {
-//     marginLeft: 14,
-//     fontSize: 15,
-//     fontWeight: '700',
-//     color: '#DC2626',
-//   },
-
-//   version: {
-//     textAlign: 'center',
-//     fontSize: 12,
-//     color: '#94A3B8',
-//     marginBottom: 16,
-//   },
-// });
-
 
 const styles = StyleSheet.create({
   container: {
@@ -297,13 +173,17 @@ const styles = StyleSheet.create({
   },
 
   brandLogo: {
-    width: s(48),
-    height: s(48),
-    borderRadius: ms(12),
-    backgroundColor: '#2563EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: vs(6),
+    width: s(72),
+    height: s(72),
+    borderRadius: s(36), 
+    overflow: 'hidden', 
+    borderWidth: 2.5,
+    marginBottom: vs(8),
+    shadowColor: '#2563EB',
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
 
   brandLogoText: {
@@ -311,13 +191,17 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '900',
   },
-
-  brandName: {
-    fontSize: rf(14),
-    fontWeight: '700',
-    color: '#0F172A',
+  brandLogoImg: {
+    width: '100%',
+    height: '100%',
   },
 
+  brandName: {
+    fontSize: rf(15),
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: 0.3,
+  },
   /* PROFILE */
   profileCard: {
     flexDirection: 'row',
@@ -404,5 +288,15 @@ const styles = StyleSheet.create({
     fontSize: rf(12),
     color: '#94A3B8',
     marginBottom: vs(16),
+  },
+  avatarFallback: {
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: {
+    color: '#FFFFFF',
+    fontSize: rf(18),
+    fontWeight: '900',
   },
 });

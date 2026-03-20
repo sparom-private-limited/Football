@@ -61,9 +61,11 @@ export default function CreateMatchScreen() {
         venue, format, matchType, homeOrAway, notes,
       });
       if (!res?.data?.match?._id) throw new Error('Invalid match response');
-      Alert.alert('Match Request Sent', 'Waiting for opponent to accept', [
-        { text: 'OK', onPress: () => nav.to('MyMatches') },
-      ]);
+      Alert.alert(
+      '⚽ Match Request Sent!',
+      `${opponent.teamName} has been notified of your challenge. Waiting for them to accept.`,
+      [{ text: 'OK', onPress: () => nav.to('MyMatches') }]
+    );
     } catch (e) {
       Alert.alert('Error', e.response?.data?.message || e.message || 'Failed to create match');
     } finally { setLoading(false); }

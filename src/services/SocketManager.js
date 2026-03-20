@@ -1,6 +1,6 @@
 // services/SocketManager.js
-import io from "socket.io-client";
-import { SOCKET_BASE_URL } from "../api/env";
+import io from 'socket.io-client';
+import {SOCKET_BASE_URL} from '../api/env';
 
 const SOCKET_URL = SOCKET_BASE_URL;
 
@@ -16,17 +16,17 @@ class SocketManager {
 
   async connect(token) {
     if (!token) {
-      console.log("⛔ Socket connect skipped: token missing");
+      console.log('⛔ Socket connect skipped: token missing');
       return null;
     }
 
     if (this.socket?.connected) {
-      console.log("✅ Socket already connected");
+      console.log('✅ Socket already connected');
       return this.socket;
     }
 
     if (this.connecting) {
-      console.log("⏳ Socket connection in progress...");
+      console.log('⏳ Socket connection in progress...');
       return this.socket;
     }
 
@@ -35,9 +35,9 @@ class SocketManager {
     return new Promise((resolve, reject) => {
       // 🔑 CREATE SOCKET WITH EXPLICIT TOKEN
       this.socket = io(SOCKET_URL, {
-        auth: { token },
+        auth: {token},
         autoConnect: false,
-        transports: ["polling", "websocket"],
+        transports: [ 'websocket','polling'],
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
         reconnectionDelay: 1000,
@@ -45,47 +45,47 @@ class SocketManager {
         timeout: 10000,
       });
 
-      this.socket.on("connect", () => {
+      this.socket.on('connect', () => {
         this.connected = true;
         this.connecting = false;
         this.reconnectAttempts = 0;
-        console.log("✅ Socket connected:", this.socket.id);
+        console.log('✅ Socket connected:', this.socket.id);
         resolve(this.socket);
       });
 
-      this.socket.on("connect_error", (error) => {
-        console.error("🔴 Socket connect error:", error.message);
+      this.socket.on('connect_error', error => {
+        console.error('🔴 Socket connect error:', error.message);
         this.connecting = false;
         this.reconnectAttempts++;
-        
+
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
           this.disconnect();
           reject(error);
         }
       });
 
-      this.socket.on("disconnect", (reason) => {
+      this.socket.on('disconnect', reason => {
         this.connected = false;
         this.connecting = false;
-        console.log("❌ Socket disconnected:", reason);
-        
+        console.log('❌ Socket disconnected:', reason);
+
         // Auto-reconnect on server disconnect
-        if (reason === "io server disconnect") {
+        if (reason === 'io server disconnect') {
           this.socket.connect();
         }
       });
 
-      this.socket.on("reconnect", (attemptNumber) => {
+      this.socket.on('reconnect', attemptNumber => {
         console.log(`✅ Socket reconnected after ${attemptNumber} attempts`);
         this.reconnectAttempts = 0;
       });
 
-      this.socket.on("reconnect_failed", () => {
-        console.error("❌ Socket reconnection failed after max attempts");
+      this.socket.on('reconnect_failed', () => {
+        console.error('❌ Socket reconnection failed after max attempts');
       });
 
-      this.socket.on("error", (error) => {
-        console.error("❌ Socket error:", error);
+      this.socket.on('error', error => {
+        console.error('❌ Socket error:', error);
       });
 
       this.socket.connect();
@@ -102,7 +102,7 @@ class SocketManager {
     this.connecting = false;
     this.reconnectAttempts = 0;
     this.listeners.clear();
-    console.log("🔌 Socket fully disconnected");
+    console.log('🔌 Socket fully disconnected');
   }
 
   isConnected() {
@@ -134,23 +134,30 @@ class SocketManager {
   // ==================== MATCH METHODS ====================
 
   joinMatch(matchId) {
-    this.emit("match:join", { matchId });
+    this.emit('match:join', {matchId});
   }
 
   leaveMatch(matchId) {
-    this.emit("match:leave", { matchId });
+    this.emit('match:leave', {matchId});
   }
 
   startMatch(matchId) {
-    this.emit("match:start", { matchId });
+    this.emit('match:start', {matchId});
   }
 
   endMatch(matchId) {
-    this.emit("match:end", { matchId });
+    this.emit('match:end', {matchId});
   }
 
-  addGoal(matchId, teamId, playerId, minute, assistPlayerId = null, type = "GOAL") {
-    this.emit("match:goal", {
+  addGoal(
+    matchId,
+    teamId,
+    playerId,
+    minute,
+    assistPlayerId = null,
+    type = 'GOAL',
+  ) {
+    this.emit('match:goal', {
       matchId,
       teamId,
       playerId,
@@ -161,7 +168,7 @@ class SocketManager {
   }
 
   addCard(matchId, teamId, playerId, minute, type) {
-    this.emit("match:card", {
+    this.emit('match:card', {
       matchId,
       teamId,
       playerId,
@@ -171,7 +178,7 @@ class SocketManager {
   }
 
   addSubstitution(matchId, teamId, playerOutId, playerInId, minute) {
-    this.emit("match:substitution", {
+    this.emit('match:substitution', {
       matchId,
       teamId,
       playerOutId,
@@ -181,31 +188,56 @@ class SocketManager {
   }
 
   updateMatchStatus(matchId, status) {
-    this.emit("match:status", { matchId, status });
+    this.emit('match:status', {matchId, status});
+  }
+  // Add to MATCH METHODS section
+
+  addPenalty(matchId, teamId, playerId, minute, scored, reason = '') {
+    this.emit('match:penalty', {
+      matchId,
+      teamId,
+      playerId,
+      minute,
+      scored, // true = goal, false = miss
+      reason,
+    });
+  }
+
+  startPenaltyShootout(matchId) {
+    this.emit('match:penalty_shootout_start', {matchId});
+  }
+
+  addShootoutKick(matchId, teamId, playerId, scored, round) {
+    this.emit('match:shootout_kick', {
+      matchId,
+      teamId,
+      playerId,
+      scored,
+      round,
+    });
   }
   // Add this method in the MATCH METHODS section
-resetMatch(matchId) {
-  this.emit("match:reset", { matchId });
-}
+  resetMatch(matchId) {
+    this.emit('match:reset', {matchId});
+  }
 
   // ==================== TOURNAMENT METHODS ====================
 
   joinTournament(tournamentId) {
-    this.emit("tournament:join", { tournamentId });
+    this.emit('tournament:join', {tournamentId});
   }
 
   leaveTournament(tournamentId) {
-    this.emit("tournament:leave", { tournamentId });
+    this.emit('tournament:leave', {tournamentId});
   }
 
   startTournament(tournamentId) {
-    this.emit("tournament:start", { tournamentId });
+    this.emit('tournament:start', {tournamentId});
   }
 
   sendTournamentAnnouncement(tournamentId, message) {
-    this.emit("tournament:announcement", { tournamentId, message });
+    this.emit('tournament:announcement', {tournamentId, message});
   }
-
 }
 
 export default new SocketManager();

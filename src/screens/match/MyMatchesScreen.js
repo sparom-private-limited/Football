@@ -27,12 +27,6 @@ export default function MyMatchesScreen({type, route}) {
   const [error, setError] = useState(null);
   const navigatingRef = useRef(false);
 
-  useEffect(() => {
-      if (isFocused) {
-        loadMatches();
-      }
-    }, [isFocused]);
-
   const loadMatches = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -66,9 +60,12 @@ export default function MyMatchesScreen({type, route}) {
     }
   }, [matchType, user]);
 
-  useEffect(() => {
-    loadMatches();
-  }, [loadMatches]);
+   useEffect(() => {
+    if (isFocused) {
+      loadMatches();
+    }
+  }, [isFocused, loadMatches]);
+
 
   if (loading) {
     return (

@@ -38,6 +38,25 @@ export default function MatchConsoleScreen() {
   const [pausedAt, setPausedAt] = useState(null);
   const [totalPausedSeconds, setTotalPausedSeconds] = useState(0);
   const [timerKey, setTimerKey] = useState(0);
+  // Penalty states
+  const [penaltyModal, setPenaltyModal] = useState(false);
+  const [penaltyPlayer, setPenaltyPlayer] = useState(null);
+  const [penaltyScored, setPenaltyScored] = useState(null);
+  const [penaltyReason, setPenaltyReason] = useState('');
+
+  // Shootout states
+  const [shootoutModal, setShootoutModal] = useState(false);
+  const [shootoutActive, setShootoutActive] = useState(false);
+  const [shootoutData, setShootoutData] = useState({
+    homeScore: 0,
+    awayScore: 0,
+    kicks: [],
+  });
+  const [shootoutKickTeam, setShootoutKickTeam] = useState(null);
+  const [shootoutKickPlayer, setShootoutKickPlayer] = useState(null);
+  const [shootoutKickScored, setShootoutKickScored] = useState(null);
+  const [shootoutRound, setShootoutRound] = useState(1);
+  const [customKicks, setCustomKicks] = useState(5); // default 5
 
   const EMPTY_TEAM = {
     _id: '',
@@ -68,30 +87,28 @@ export default function MatchConsoleScreen() {
   const matchId = route.params?.matchId;
 
   const [isResetDisabled, setIsResetDisabled] = useState(false);
+  const has90MinAlertFired = useRef(false); // ✅ fires alert only once
+const FULL_TIME_SECONDS = 90 * 60; // 5400
+
 
   // ==================== SOCKET INTEGRATION ====================
-  // ✅ No matchData returned from hook anymore
   const {isConnected: socketConnected, error: socketError} = useMatchSocket(
     matchId,
     {
       onJoined: data => {
         console.log('✅ Joined match room:', data);
       },
-
       onStart: data => {
-        // ✅ Clear paused state on fresh start
         console.log('🟢 onStart fired:', JSON.stringify(data));
         setPausedAt(null);
         setTotalPausedSeconds(0);
         setTimerKey(prev => prev + 1);
-
         setMatch(prev => ({
           ...prev,
           status: data.status,
           startedAt: data.startedAt,
         }));
       },
-
       onEnd: data => {
         Alert.alert(
           'Match Ended',
@@ -105,56 +122,39 @@ export default function MatchConsoleScreen() {
           {cancelable: false},
         );
       },
-
-      // ✅ Update BOTH score and events
       onGoal: data => {
         setMatch(prev => {
           const exists = prev.events.some(e => e._id === data.event?._id);
           if (exists) return prev;
           return {
             ...prev,
-            score: data.score, // ← score updated
+            score: data.score,
             events: [...prev.events, data.event],
           };
         });
       },
-
       onCard: data => {
         setMatch(prev => {
           const exists = prev.events.some(e => e._id === data.event?._id);
           if (exists) return prev;
-          return {
-            ...prev,
-            events: [...prev.events, data.event],
-          };
+          return {...prev, events: [...prev.events, data.event]};
         });
       },
-
       onSubstitution: data => {
         setMatch(prev => {
           const exists = prev.events.some(e => e._id === data.event?._id);
           if (exists) return prev;
-          return {
-            ...prev,
-            events: [...prev.events, data.event],
-          };
+          return {...prev, events: [...prev.events, data.event]};
         });
       },
-
       onStatusUpdate: data => {
         setMatch(prev => {
-          // ✅ Track when match was paused
-          if (data.status === 'PAUSED') {
-            setPausedAt(Date.now());
-          }
-
-          // ✅ On resume — add paused duration to total
+          if (data.status === 'PAUSED') setPausedAt(Date.now());
           if (data.status === 'LIVE' && pausedAt) {
             const pausedDuration = Math.floor((Date.now() - pausedAt) / 1000);
             setTotalPausedSeconds(prev => prev + pausedDuration);
             setPausedAt(null);
           }
-
           return {
             ...prev,
             status: data.status,
@@ -162,48 +162,66 @@ export default function MatchConsoleScreen() {
           };
         });
       },
-
-      onReset: data => {
-        // ✅ Reset all timer tracking state
-        setSecondsElapsed(0);
-        setPausedAt(null);
-        setTotalPausedSeconds(0);
-        setTimerKey(prev => prev + 1);
-
-        setMatch(prev => ({
-          ...prev,
-          events: [],
-          score: data.score || {home: 0, away: 0},
-          status: data.status,
-          startedAt: null,
-          completedAt: null,
-          winner: null,
-        }));
-
-        Alert.alert('Match Reset', 'Match has been reset successfully');
-      },
-
+     onReset: data => {
+  has90MinAlertFired.current = false;
+  setSecondsElapsed(0);
+  setPausedAt(null);
+  setTotalPausedSeconds(0);
+  setTimerKey(prev => prev + 1);
+  // ✅ Reset shootout states
+  setShootoutActive(false);
+  setShootoutData({ homeScore: 0, awayScore: 0, kicks: [] });
+  setShootoutRound(1);
+  setShootoutModal(false);
+  setMatch(prev => ({
+    ...prev,
+    events: [],
+    score: data.score || { home: 0, away: 0 },
+    status: data.status,
+    startedAt: null,
+    completedAt: null,
+    winner: null,
+  }));
+  Alert.alert('Match Reset', 'Match has been reset successfully');
+},
       onError: error => {
         console.error('❌ Socket error:', error);
         Alert.alert('Socket Error', error.message);
       },
+
+      // ✅ NEW — Penalty callbacks
+      onPenalty: data => {
+        setMatch(prev => {
+          const exists = prev.events.some(e => e._id === data.event?._id);
+          if (exists) return prev;
+          return {
+            ...prev,
+            score: data.score,
+            events: [...prev.events, data.event],
+          };
+        });
+      },
+
+      onShootoutStarted: data => {
+        setShootoutActive(true);
+        setShootoutData(data.penaltyShootout);
+      },
+
+      onShootoutUpdated: data => {
+        setShootoutData(data.penaltyShootout);
+        // ✅ Auto increment round
+        const kicks = data.penaltyShootout.kicks || [];
+
+        const homeKicks = kicks.filter(
+          k => k.team?.toString() === match.homeTeam._id?.toString(),
+        ).length;
+        const awayKicks = kicks.filter(
+          k => k.team?.toString() === match.awayTeam._id?.toString(),
+        ).length;
+  setShootoutRound(Math.floor(kicks.length / 2) + 1);
+      },
     },
   );
-  // useEffect(() => {
-  //   if (!matchData) return;
-
-  //   setMatch(prev => ({
-  //     ...prev,
-  //     score: matchData.score || prev.score,
-  //     events: matchData.events || [],
-  //     status: matchData.status || prev.status,
-  //     startedAt: matchData.startedAt || prev.startedAt,
-  //     completedAt: matchData.completedAt || prev.completedAt,
-  //     winner: matchData.winner || prev.winner,
-  //   }));
-  // }, [matchData]);
-
-  // ================= STATS CALCULATION =================
 
   const stats = useMemo(() => {
     if (!match || !Array.isArray(match.events)) {
@@ -288,36 +306,54 @@ export default function MatchConsoleScreen() {
     }
   }, [matchId]);
 
-  // ================= TIMER SYNC WITH SERVER =================
-  useEffect(() => {
-    console.log('⏱️ Timer useEffect ran:', {
-      startedAt: match?.startedAt,
-      status: match?.status,
-      timerKey,
-    });
-    // ✅ Clear immediately when key changes — kills old interval
-    setSecondsElapsed(0);
+// ================= TIMER SYNC WITH SERVER =================
+useEffect(() => {
 
-    if (!match?.startedAt || match.status !== 'LIVE') {
-      console.log(
-        '⏱️ Timer stopped — reason:',
-        !match?.startedAt ? 'no startedAt' : 'not LIVE',
+  setSecondsElapsed(0);
+
+  if (!match?.startedAt || match.status !== 'LIVE') {
+    console.log(
+      '⏱️ Timer stopped — reason:',
+      !match?.startedAt ? 'no startedAt' : 'not LIVE',
+    );
+    return;
+  }
+
+  const updateTimer = () => {
+    const now = Date.now();
+    const started = new Date(match.startedAt).getTime();
+    const elapsed = Math.floor((now - started) / 1000) - totalPausedSeconds;
+    const finalElapsed = elapsed > 0 ? elapsed : 0;
+
+    setSecondsElapsed(finalElapsed);
+
+    // ✅ 90-min alert lives HERE — after elapsed is computed
+    if (
+      finalElapsed >= FULL_TIME_SECONDS &&
+      !has90MinAlertFired.current &&
+      canManageMatch &&
+      match.status === 'LIVE'
+    ) {
+      has90MinAlertFired.current = true;
+      Alert.alert(
+        '⏱️ 90 Minutes Reached',
+        'Full time. End the match or continue for extra time.',
+        [
+          {text: 'Extra Time', style: 'cancel'},
+          {
+            text: '🏁 End Match',
+            style: 'destructive',
+            onPress: () => SocketManager.endMatch(matchId),
+          },
+        ],
       );
-      return;
     }
+  };
 
-    const updateTimer = () => {
-      const now = Date.now();
-      const started = new Date(match.startedAt).getTime();
-      const elapsed = Math.floor((now - started) / 1000) - totalPausedSeconds;
-
-      setSecondsElapsed(elapsed > 0 ? elapsed : 0);
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
-  }, [match?.startedAt, match?.status, totalPausedSeconds, timerKey]);
+  updateTimer();
+  const interval = setInterval(updateTimer, 1000);
+  return () => clearInterval(interval);
+}, [match?.startedAt, match?.status, totalPausedSeconds, timerKey]);
   // ================= HARDWARE BACK BUTTON (ANDROID) =================
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -373,11 +409,20 @@ export default function MatchConsoleScreen() {
   }, []);
 
   // ================= HELPER FUNCTIONS =================
-  const formatTime = secs => {
-    const min = Math.floor(secs / 60);
-    const sec = secs % 60;
-    return `${min}:${sec.toString().padStart(2, '0')}`;
-  };
+ const formatTime = secs => {
+  const min = Math.floor(secs / 60);
+  const sec = secs % 60;
+  return `${min}:${sec.toString().padStart(2, '0')}`;
+};
+
+// ✅ displayTime SECOND (can now see formatTime)
+const displayTime = () => {
+  if (secondsElapsed > FULL_TIME_SECONDS) {
+    const extra = Math.floor((secondsElapsed - FULL_TIME_SECONDS) / 60);
+    return `90+${extra}'`;
+  }
+  return formatTime(secondsElapsed);
+};
 
   const loadPlayersForTeam = async team => {
     try {
@@ -525,29 +570,6 @@ export default function MatchConsoleScreen() {
     setPlayers([]);
   };
 
-  // const endMatch = async () => {
-  //   Alert.alert('End Match?', 'This action cannot be undone', [
-  //     {text: 'Cancel'},
-  //     {
-  //       text: 'End Match',
-  //       style: 'destructive',
-  //       onPress: async () => {
-  //         try {
-  //           await API.post('/api/match/end', {matchId});
-
-  //           // ⭐ FIXED: Use replace instead of reset
-  //           nav.replace('MatchSummary', {matchId});
-  //         } catch (err) {
-  //           Alert.alert(
-  //             'Error',
-  //             err.response?.data?.message || 'Failed to end match',
-  //           );
-  //         }
-  //       },
-  //     },
-  //   ]);
-  // };
-
   const endMatch = async () => {
     Alert.alert('End Match?', 'This action cannot be undone', [
       {text: 'Cancel'},
@@ -602,8 +624,6 @@ export default function MatchConsoleScreen() {
 
             // Debounce
             setIsResetDisabled(true);
-
-            console.log('🔄 Resetting match via socket');
             SocketManager.resetMatch(matchId);
 
             // Re-enable after 2 seconds
@@ -613,6 +633,71 @@ export default function MatchConsoleScreen() {
       ],
     );
   };
+
+  const submitPenalty = () => {
+    if (!selectedTeam || !penaltyPlayer || penaltyScored === null) {
+      Alert.alert('Incomplete', 'Please select team, player and result');
+      return;
+    }
+    const minute = Math.floor(secondsElapsed / 60);
+    SocketManager.addPenalty(
+      matchId,
+      selectedTeam._id,
+      penaltyPlayer._id,
+      minute,
+      penaltyScored,
+      penaltyReason,
+    );
+    setPenaltyModal(false);
+    setPenaltyPlayer(null);
+    setPenaltyScored(null);
+    setPenaltyReason('');
+    setSelectedTeam(null);
+  };
+
+ const startShootout = async () => {
+  Alert.alert(
+    'Start Penalty Shootout?',
+    `Best of ${customKicks} kicks per team`,
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Start',
+        onPress: async () => {
+          try {
+            await API.post(`/api/match/${matchId}/shootout/start`);
+            // ✅ setShootoutActive + setShootoutData handled by onShootoutStarted socket callback
+            setShootoutModal(true);
+          } catch (err) {
+            Alert.alert('Error', err.response?.data?.message || 'Failed to start shootout');
+          }
+        },
+      },
+    ],
+  );
+};
+
+ const submitShootoutKick = async () => {
+  if (!shootoutKickTeam || !shootoutKickPlayer || shootoutKickScored === null) {
+    Alert.alert('Incomplete', 'Please fill all fields');
+    return;
+  }
+  try {
+    await API.post(`/api/match/${matchId}/shootout/kick`, {
+      teamId: shootoutKickTeam._id,
+      playerId: shootoutKickPlayer._id,
+      scored: shootoutKickScored,
+      round: shootoutRound,
+    });
+    // ✅ shootoutData updated by onShootoutUpdated socket callback
+    setShootoutKickPlayer(null);
+    setShootoutKickScored(null);
+    setShootoutKickTeam(null);
+    setPlayers([]);
+  } catch (err) {
+    Alert.alert('Error', err.response?.data?.message || 'Failed to add kick');
+  }
+};
 
   // ================= PAUSE/RESUME HANDLER (Update with permission check) =================
   const handlePauseResume = useCallback(() => {
@@ -637,9 +722,6 @@ export default function MatchConsoleScreen() {
     // ✅ Use match.status directly to avoid stale state
     const currentStatus = match?.status;
     const newStatus = currentStatus === 'PAUSED' ? 'LIVE' : 'PAUSED';
-
-    console.log(`🎮 Status transition: ${currentStatus} → ${newStatus}`);
-
     SocketManager.updateMatchStatus(matchId, newStatus);
   }, [
     match?.status,
@@ -749,7 +831,7 @@ export default function MatchConsoleScreen() {
 
         {/* SCORE CARD */}
         <View style={styles.scoreCard}>
-          <Text style={styles.timer}>{formatTime(secondsElapsed)}</Text>
+          <Text style={styles.timer}>{displayTime()}</Text>
 
           <View style={styles.scoreRow}>
             <Text style={styles.team}>{match.homeTeam.teamName}</Text>
@@ -857,8 +939,29 @@ export default function MatchConsoleScreen() {
                 disabled={!canManageMatch || isPaused || !socketConnected}
                 onPress={() => setSubModal(true)}
               />
+              <PrimaryAction
+                label="Penalty"
+                icon="🥅"
+                color="#F97316"
+                disabled={!canManageMatch || isPaused || !socketConnected}
+                onPress={() => setPenaltyModal(true)}
+              />
             </View>
           </>
+        )}
+
+        {canManageMatch && match.status === 'LIVE' && (
+          <TouchableOpacity
+            style={styles.shootoutBtn}
+            onPress={
+              shootoutActive ? () => setShootoutModal(true) : startShootout
+            }>
+            <Text style={styles.shootoutBtnText}>
+              {shootoutActive
+                ? '🥅 View Shootout'
+                : '🥅 Start Penalty Shootout'}
+            </Text>
+          </TouchableOpacity>
         )}
 
         {/* VIEW TOGGLES */}
@@ -1254,9 +1357,241 @@ export default function MatchConsoleScreen() {
             </View>
           </View>
         </Modal>
+
+        {/*Penalty Modal*/}
+        <Modal visible={penaltyModal} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>🥅 Penalty Kick</Text>
+
+              <Text style={styles.modalSection}>Team *</Text>
+              {[match.homeTeam, match.awayTeam].map(team => (
+                <TouchableOpacity
+                  key={team._id}
+                  style={[
+                    styles.playerItem,
+                    selectedTeam?._id === team._id && styles.selectedItem,
+                  ]}
+                  onPress={() => {
+                    setSelectedTeam(team);
+                    loadPlayersForTeam(team);
+                  }}>
+                  <Text style={styles.playerText}>{team.teamName}</Text>
+                </TouchableOpacity>
+              ))}
+
+              {selectedTeam && (
+                <>
+                  <Text style={styles.modalSection}>Penalty Taker *</Text>
+                  <FlatList
+                    data={players}
+                    keyExtractor={item => item._id}
+                    style={styles.playerList}
+                    renderItem={({item}) => (
+                      <TouchableOpacity
+                        style={[
+                          styles.playerItem,
+                          penaltyPlayer?._id === item._id &&
+                            styles.selectedItem,
+                        ]}
+                        onPress={() => setPenaltyPlayer(item)}>
+                        <Text style={styles.playerText}>{item.name}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </>
+              )}
+
+              {penaltyPlayer && (
+                <>
+                  <Text style={styles.modalSection}>Result *</Text>
+                  <View style={styles.cardTypeRow}>
+                    <TouchableOpacity
+                      style={[
+                        styles.cardChip,
+                        penaltyScored === true && {backgroundColor: '#22C55E'},
+                      ]}
+                      onPress={() => setPenaltyScored(true)}>
+                      <Text style={styles.cardChipText}>✅ Scored</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.cardChip,
+                        penaltyScored === false && {backgroundColor: '#EF4444'},
+                      ]}
+                      onPress={() => setPenaltyScored(false)}>
+                      <Text style={styles.cardChipText}>❌ Missed</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={styles.modalSection}>Reason (optional)</Text>
+                  {['Foul', 'Handball', 'VAR', 'Other'].map(r => (
+                    <TouchableOpacity
+                      key={r}
+                      style={[
+                        styles.playerItem,
+                        penaltyReason === r && styles.selectedItem,
+                      ]}
+                      onPress={() => setPenaltyReason(r)}>
+                      <Text style={styles.playerText}>{r}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </>
+              )}
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setPenaltyModal(false);
+                    setSelectedTeam(null);
+                    setPenaltyPlayer(null);
+                    setPenaltyScored(null);
+                  }}>
+                  <Text style={styles.cancel}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.submitBtn,
+                    (penaltyScored === null || !penaltyPlayer) && {
+                      opacity: 0.4,
+                    },
+                  ]}
+                  disabled={penaltyScored === null || !penaltyPlayer}
+                  onPress={submitPenalty}>
+                  <Text style={styles.submitText}>Confirm</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/*Penalty Shootout */}
+        <Modal visible={shootoutModal} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modal, {maxHeight: '90%'}]}>
+              <Text style={styles.modalTitle}>🥅 Penalty Shootout</Text>
+
+              {/* Shootout Score */}
+              <View style={styles.scoreCard}>
+                <View style={styles.scoreRow}>
+                  <Text style={styles.team}>{match.homeTeam.teamName}</Text>
+                  <Text style={styles.score}>
+                    {shootoutData.homeScore} - {shootoutData.awayScore}
+                  </Text>
+                  <Text style={styles.team}>{match.awayTeam.teamName}</Text>
+                </View>
+              </View>
+
+              {/* Kicks history */}
+              <ScrollView style={{maxHeight: vs(150)}}>
+                {shootoutData.kicks?.map((kick, i) => {
+                  const isHome =
+                    kick.team?.toString() === match.homeTeam._id?.toString();
+                  return (
+                    <View
+                      key={i}
+                      style={[
+                        styles.event,
+                        isHome ? styles.homeEvent : styles.awayEvent,
+                      ]}>
+                      <Text style={styles.eventMinute}>R{kick.round}</Text>
+                      <Text style={styles.eventTitle}>
+                        {kick.scored ? '✅ Scored' : '❌ Missed'} —{' '}
+                        {isHome
+                          ? match.homeTeam.teamName
+                          : match.awayTeam.teamName}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+
+              {/* Add next kick */}
+              <Text style={styles.modalSection}>
+                Round {shootoutRound} — Select Team *
+              </Text>
+              {[match.homeTeam, match.awayTeam].map(team => (
+                <TouchableOpacity
+                  key={team._id}
+                  style={[
+                    styles.playerItem,
+                    shootoutKickTeam?._id === team._id && styles.selectedItem,
+                  ]}
+                  onPress={() => {
+                    setShootoutKickTeam(team);
+                    loadPlayersForTeam(team);
+                  }}>
+                  <Text style={styles.playerText}>{team.teamName}</Text>
+                </TouchableOpacity>
+              ))}
+
+              {shootoutKickTeam && (
+                <>
+                  <Text style={styles.modalSection}>Kicker *</Text>
+                  <FlatList
+                    data={players}
+                    keyExtractor={item => item._id}
+                    style={styles.playerList}
+                    renderItem={({item}) => (
+                      <TouchableOpacity
+                        style={[
+                          styles.playerItem,
+                          shootoutKickPlayer?._id === item._id &&
+                            styles.selectedItem,
+                        ]}
+                        onPress={() => setShootoutKickPlayer(item)}>
+                        <Text style={styles.playerText}>{item.name}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+
+                  <Text style={styles.modalSection}>Result *</Text>
+                  <View style={styles.cardTypeRow}>
+                    <TouchableOpacity
+                      style={[
+                        styles.cardChip,
+                        shootoutKickScored === true && {
+                          backgroundColor: '#22C55E',
+                        },
+                      ]}
+                      onPress={() => setShootoutKickScored(true)}>
+                      <Text style={styles.cardChipText}>✅ Scored</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.cardChip,
+                        shootoutKickScored === false && {
+                          backgroundColor: '#EF4444',
+                        },
+                      ]}
+                      onPress={() => setShootoutKickScored(false)}>
+                      <Text style={styles.cardChipText}>❌ Missed</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity onPress={() => setShootoutModal(false)}>
+                  <Text style={styles.cancel}>Close</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.submitBtn,
+                    (!shootoutKickPlayer || shootoutKickScored === null) && {
+                      opacity: 0.4,
+                    },
+                  ]}
+                  disabled={!shootoutKickPlayer || shootoutKickScored === null}
+                  onPress={submitShootoutKick}>
+                  <Text style={styles.submitText}>Add Kick</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
       {/* STICKY END MATCH BUTTON */}
-      {/* STICKY BOTTOM — owner sees end button, viewer sees banner */}
       <View
         style={[styles.stickyBottom, {paddingBottom: insets.bottom + vs(8)}]}>
         {canManageMatch ? (
@@ -1310,18 +1645,23 @@ function EventItem({item, isLatest, isHomeTeam}) {
           {item.type === 'YELLOW' && '🟨 Yellow Card'}
           {item.type === 'RED' && '🟥 Red Card'}
           {item.type === 'SUBSTITUTION' && '🔁 Substitution'}
+          {item.type === 'PENALTY_GOAL' && '🥅 Penalty Goal'}
+          {item.type === 'PENALTY_MISS' && '❌ Penalty Missed'}
         </Text>
+
+        {/* ✅ reason OUTSIDE eventTitle */}
+        {item.reason ? (
+          <Text style={styles.eventAssist}>Reason: {item.reason}</Text>
+        ) : null}
 
         {item.player && (
           <Text style={styles.eventPlayer}>{item.player.name}</Text>
         )}
-
         {item.assistPlayer && (
           <Text style={styles.eventAssist}>
             Assist: {item.assistPlayer.name}
           </Text>
         )}
-
         {item.substitutedPlayer && (
           <Text style={styles.eventAssist}>
             IN: {item.substitutedPlayer.name}
@@ -2183,6 +2523,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'rgba(255,255,255,0.75)',
     marginTop: vs(1),
+  },
+  shootoutBtn: {
+    backgroundColor: '#F97316',
+    borderRadius: ms(14),
+    padding: s(14),
+    alignItems: 'center',
+    marginHorizontal: s(16),
+    marginBottom: vs(12),
+  },
+  shootoutBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: rf(15),
   },
 });
 
