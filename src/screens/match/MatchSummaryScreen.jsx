@@ -54,6 +54,8 @@ export default function MatchSummaryScreen() {
         _id: summary.match.id,
         status: summary.match.status,
         venue: summary.match.venue,
+        format: summary.match.format,
+        matchType: summary.match.matchType,
         startedAt: summary.match.startedAt,
         completedAt: summary.match.completedAt,
         homeTeam: {
@@ -71,16 +73,13 @@ export default function MatchSummaryScreen() {
           away: summary.teams.away.score,
         },
         winner: summary.winner ? {teamName: summary.winner.teamName} : null,
-        // ✅ All event types for timeline
         events: [
           ...summary.summary.goals.map(normalizeEvent),
           ...(summary.summary.penalties || []).map(normalizeEvent),
           ...summary.summary.cards.map(normalizeEvent),
           ...summary.summary.substitutions.map(normalizeEvent),
         ],
-        // ✅ In-play penalties separate list
         inPlayPenalties: (summary.summary.penalties || []).map(normalizeEvent),
-        // ✅ Shootout data
         penaltyShootout: summary.penaltyShootout || null,
       });
 
@@ -114,10 +113,8 @@ export default function MatchSummaryScreen() {
     match.events.forEach(e => {
       let side;
       if (e.team) {
-        // ✅ Use ID if available
         side = String(e.team) === String(match.homeTeam._id) ? 'home' : 'away';
       } else {
-        // ✅ Fallback to teamName for cards
         side = e.teamName === match.homeTeam.teamName ? 'home' : 'away';
       }
       if (['GOAL', 'PENALTY_GOAL', 'OWN_GOAL'].includes(e.type))
@@ -138,26 +135,17 @@ export default function MatchSummaryScreen() {
   if (loading) return <ActivityIndicator style={{marginTop: 40}} />;
 
   const isDraw = match.score.home === match.score.away;
-
   const isTimeline = activeTab === 'Timeline';
   const timelineData = isTimeline
     ? [...match.events].sort((a, b) => a.minute - b.minute)
     : [];
 
-  // ✅ Everything above the scrollable content goes here
-  function ListHeader({
-    match,
-    isDraw,
-    TABS,
-    activeTab,
-    setActiveTab,
-    stats,
-    lineups,
-    lineupMap,
-    selectedLineupTeam,
-    setSelectedLineupTeam,
-    nav,
-  }) {
+  // Count goals for summary line
+  const totalGoals = match.events.filter(e =>
+    ['GOAL', 'PENALTY_GOAL', 'OWN_GOAL'].includes(e.type),
+  ).length;
+
+  function ListHeader() {
     return (
       <View>
         {/* HEADER */}
@@ -169,27 +157,96 @@ export default function MatchSummaryScreen() {
           <View style={styles.headerSpacer} />
         </View>
 
-        {/* HERO SCORE CARD */}
+        {/* ─── HERO CARD (vertical stacked layout) ─── */}
         <View style={styles.heroCard}>
-          <Team team={match.homeTeam} />
-          <View style={styles.scoreBox}>
-            <Text style={styles.scoreText}>
-              {match.score.home} : {match.score.away}
+          {/* Top tags row */}
+          <View style={styles.heroTagsRow}>
+            <View style={styles.heroTag}>
+              <Text style={styles.heroTagText}>
+                {match.matchType || 'League match'}
+              </Text>
+            </View>
+            <Text style={styles.heroStatusText}>
+              {match.status === 'completed' ? 'Full time' : match.status}
             </Text>
-            <Text style={styles.statusText}>FULL TIME</Text>
           </View>
-          <Team team={match.awayTeam} />
+
+          {/* Home team row */}
+          <View style={styles.heroTeamRow}>
+            <View style={styles.heroTeamInfo}>
+              {match.homeTeam.teamLogoUrl ? (
+                <Image
+                  source={{uri: match.homeTeam.teamLogoUrl}}
+                  style={styles.heroLogo}
+                />
+              ) : (
+                <View style={styles.heroLogoFallback}>
+                  <Text style={styles.heroLogoText}>
+                    {match.homeTeam.teamName[0]}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.heroTeamTextWrap}>
+                <Text style={styles.heroTeamName}>
+                  {match.homeTeam.teamName}
+                </Text>
+                <Text style={styles.heroTeamSide}>Home</Text>
+              </View>
+            </View>
+            <Text style={styles.heroScore}>{match.score.home}</Text>
+          </View>
+
+          {/* VS badge */}
+          <View style={styles.vsBadgeWrap}>
+            <View style={styles.vsBadge}>
+              <Text style={styles.vsText}>vs</Text>
+            </View>
+          </View>
+
+          {/* Away team row */}
+          <View style={styles.heroTeamRow}>
+            <View style={styles.heroTeamInfo}>
+              {match.awayTeam.teamLogoUrl ? (
+                <Image
+                  source={{uri: match.awayTeam.teamLogoUrl}}
+                  style={styles.heroLogo}
+                />
+              ) : (
+                <View style={styles.heroLogoFallback}>
+                  <Text style={styles.heroLogoText}>
+                    {match.awayTeam.teamName[0]}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.heroTeamTextWrap}>
+                <Text style={styles.heroTeamName}>
+                  {match.awayTeam.teamName}
+                </Text>
+                <Text style={styles.heroTeamSide}>Away</Text>
+              </View>
+            </View>
+            <Text style={styles.heroScore}>{match.score.away}</Text>
+          </View>
+
+          {/* Winner pill + summary */}
+          <View style={styles.heroFooter}>
+            <View style={styles.winnerPill}>
+              <Text style={styles.winnerPillText}>
+                {isDraw && match.penaltyShootout?.isActive
+                  ? `${match.penaltyShootout.winner} won on pens`
+                  : isDraw
+                  ? 'Match Drawn'
+                  : `Winner: ${match.winner?.teamName}`}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={styles.heroSummaryLine}>
+            {totalGoals} goal{totalGoals !== 1 ? 's' : ''} · Timeline highlights
+          </Text>
         </View>
 
-        <Text style={styles.winner}>
-          {isDraw && match.penaltyShootout?.isActive
-            ? `${match.score.home}-${match.score.away} AET · ${match.penaltyShootout.winner} won ${match.penaltyShootout.homeScore}-${match.penaltyShootout.awayScore} on penalties`
-            : isDraw
-            ? 'Match Drawn'
-            : `Winner: ${match.winner?.teamName}`}
-        </Text>
-
-        {/* TABS */}
+        {/* ─── TABS ─── */}
         <View style={styles.tabs}>
           {TABS.map(tab => (
             <TouchableOpacity
@@ -207,33 +264,51 @@ export default function MatchSummaryScreen() {
           ))}
         </View>
 
-        {/* STATS TAB */}
+        {/* ─── STATS TAB ─── */}
         {activeTab === 'Stats' && stats && (
-          <View style={styles.statsCard}>
-            <BigStat
-              label="Goals"
-              left={stats.home.goals}
-              right={stats.away.goals}
-            />
-            <BigStat
-              label="Yellow Cards"
-              left={stats.home.yellow}
-              right={stats.away.yellow}
-            />
-            <BigStat
-              label="Red Cards"
-              left={stats.home.red}
-              right={stats.away.red}
-            />
-            <BigStat
-              label="Fouls"
-              left={stats.home.fouls}
-              right={stats.away.fouls}
-            />
+          <View style={styles.statsContainer}>
+            {/* Team header card */}
+            <View style={styles.statsTeamCard}>
+              <View style={styles.statsTeamSide}>
+                {match.homeTeam.teamLogoUrl ? (
+                  <Image source={{uri: match.homeTeam.teamLogoUrl}} style={styles.statsTeamLogo} />
+                ) : (
+                  <View style={styles.statsTeamLogoFallback}>
+                    <Text style={styles.statsTeamLogoText}>{match.homeTeam.teamName[0]}</Text>
+                  </View>
+                )}
+                <Text style={styles.statsTeamName} numberOfLines={1}>{match.homeTeam.teamName}</Text>
+                <View style={styles.statsHomeBadge}>
+                  <Text style={styles.statsHomeBadgeText}>HOME</Text>
+                </View>
+              </View>
+              <View style={styles.statsTeamDivider}>
+                <Text style={styles.statsVsText}>vs</Text>
+              </View>
+              <View style={[styles.statsTeamSide, {alignItems: 'flex-end'}]}>
+                <View style={styles.statsAwayBadge}>
+                  <Text style={styles.statsAwayBadgeText}>AWAY</Text>
+                </View>
+                <Text style={styles.statsTeamName} numberOfLines={1}>{match.awayTeam.teamName}</Text>
+                {match.awayTeam.teamLogoUrl ? (
+                  <Image source={{uri: match.awayTeam.teamLogoUrl}} style={styles.statsTeamLogo} />
+                ) : (
+                  <View style={styles.statsTeamLogoFallback}>
+                    <Text style={styles.statsTeamLogoText}>{match.awayTeam.teamName[0]}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Stat rows */}
+            <BigStat label="Goals" icon="⚽" left={stats.home.goals} right={stats.away.goals} />
+            <BigStat label="Yellow Cards" icon="🟨" left={stats.home.yellow} right={stats.away.yellow} />
+            <BigStat label="Red Cards" icon="🟥" left={stats.home.red} right={stats.away.red} />
+            <BigStat label="Fouls" icon="💥" left={stats.home.fouls} right={stats.away.fouls} />
           </View>
         )}
 
-        {/* LINEUPS TAB */}
+        {/* ─── LINEUPS TAB ─── */}
         {activeTab === 'Lineups' && lineups && (
           <View style={styles.lineupsCard}>
             <View style={styles.teamSelector}>
@@ -285,169 +360,361 @@ export default function MatchSummaryScreen() {
           </View>
         )}
 
-        {/* INFO TAB */}
+        {/* ─── INFO TAB ─── */}
         {activeTab === 'Info' && (
-          <View style={styles.infoGrid}>
-            <InfoCard label="Venue" value={match.venue || 'TBD'} icon="📍" />
-            <InfoCard label="Format" value={match.format} icon="⚽" />
-            <InfoCard label="Type" value={match.matchType} icon="🏆" />
-            <InfoCard
-              label="Completed At"
-              value={new Date(match.completedAt).toLocaleString()}
-              icon="⏱️"
-            />
+          <View style={styles.infoContainer}>
+            {/* Full-width info rows */}
+            <View style={styles.infoCard}>
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconWrap}>
+                  <Text style={styles.infoIconEmoji}>📍</Text>
+                </View>
+                <View style={styles.infoTextWrap}>
+                  <Text style={styles.infoLabel}>Venue</Text>
+                  <Text style={styles.infoValue}>{match.venue || 'Not specified'}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoSep} />
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconWrap}>
+                  <Text style={styles.infoIconEmoji}>⚽</Text>
+                </View>
+                <View style={styles.infoTextWrap}>
+                  <Text style={styles.infoLabel}>Format</Text>
+                  <Text style={styles.infoValue}>{match.format || 'Standard'}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoSep} />
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconWrap}>
+                  <Text style={styles.infoIconEmoji}>🏆</Text>
+                </View>
+                <View style={styles.infoTextWrap}>
+                  <Text style={styles.infoLabel}>Match Type</Text>
+                  <Text style={styles.infoValue}>{match.matchType || 'Friendly'}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoSep} />
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconWrap}>
+                  <Text style={styles.infoIconEmoji}>📅</Text>
+                </View>
+                <View style={styles.infoTextWrap}>
+                  <Text style={styles.infoLabel}>Started At</Text>
+                  <Text style={styles.infoValue}>
+                    {match.startedAt
+                      ? new Date(match.startedAt).toLocaleString()
+                      : 'N/A'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.infoSep} />
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconWrap}>
+                  <Text style={styles.infoIconEmoji}>⏱️</Text>
+                </View>
+                <View style={styles.infoTextWrap}>
+                  <Text style={styles.infoLabel}>Completed At</Text>
+                  <Text style={styles.infoValue}>
+                    {match.completedAt
+                      ? new Date(match.completedAt).toLocaleString()
+                      : 'N/A'}
+                  </Text>
+                </View>
+              </View>
+
+              {match.status && (
+                <>
+                  <View style={styles.infoSep} />
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoIconWrap}>
+                      <Text style={styles.infoIconEmoji}>📋</Text>
+                    </View>
+                    <View style={styles.infoTextWrap}>
+                      <Text style={styles.infoLabel}>Status</Text>
+                      <View style={styles.infoStatusPill}>
+                        <Text style={styles.infoStatusText}>
+                          {match.status.charAt(0).toUpperCase() + match.status.slice(1)}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </>
+              )}
+            </View>
           </View>
         )}
 
-        {/* SHOOTOUT TAB */}
+        {/* ─── SHOOTOUT TAB ─── */}
         {activeTab === 'Shootout' && match.penaltyShootout && (
           <View style={styles.shootoutContainer}>
+            {/* Score card */}
             <View style={styles.shootoutScoreCard}>
-              <Text style={styles.shootoutTitle}>⚽ Penalty Shootout</Text>
+              <Text style={styles.shootoutLabel}>⚽  PENALTY</Text>
               <View style={styles.shootoutScoreRow}>
-                <Text style={styles.shootoutTeamName}>
+                <Text style={styles.shootoutTeamName} numberOfLines={1}>
                   {match.homeTeam.teamName}
                 </Text>
                 <Text style={styles.shootoutScore}>
-                  {match.penaltyShootout.homeScore} -{' '}
-                  {match.penaltyShootout.awayScore}
+                  {match.penaltyShootout.homeScore}  -  {match.penaltyShootout.awayScore}
                 </Text>
-                <Text style={styles.shootoutTeamName}>
+                <Text style={styles.shootoutTeamName} numberOfLines={1}>
                   {match.awayTeam.teamName}
                 </Text>
               </View>
               {match.penaltyShootout.winner && (
                 <View style={styles.shootoutWinnerBanner}>
                   <Text style={styles.shootoutWinnerText}>
-                    🏆 {match.penaltyShootout.winner} won on penalties
+                    🏆  {match.penaltyShootout.winner} won on penalties
                   </Text>
                 </View>
               )}
             </View>
 
-            <Text style={styles.kicksTitle}>Kicks History</Text>
+            {/* Kicks History */}
+            <Text style={styles.kicksTitle}>KICKS HISTORY</Text>
+
             {(() => {
               const rounds = {};
               (match.penaltyShootout.kicks || []).forEach(kick => {
                 const r = kick.round || 1;
-                if (!rounds[r]) rounds[r] = [];
-                rounds[r].push(kick);
+                if (!rounds[r]) rounds[r] = {home: null, away: null};
+                const isHome =
+                  kick.teamId === match.homeTeam._id?.toString() ||
+                  kick.teamName === match.homeTeam.teamName;
+                if (isHome) rounds[r].home = kick;
+                else rounds[r].away = kick;
               });
-              return Object.entries(rounds).map(([round, kicks]) => (
-                <View key={round} style={styles.roundBlock}>
-                  <Text style={styles.roundLabel}>Round {round}</Text>
-                  {kicks.map((kick, i) => {
-                    const isHome =
-                      kick.teamId === match.homeTeam._id?.toString() ||
-                      kick.teamName === match.homeTeam.teamName;
-                    return (
-                      <View
-                        key={i}
-                        style={[
-                          styles.kickRow,
-                          isHome ? styles.kickHome : styles.kickAway,
-                        ]}>
-                        <View style={styles.kickLeft}>
-                          <Text style={styles.kickResult}>
-                            {kick.scored ? '✅' : '❌'}
+
+              return Object.entries(rounds).map(([round, sides]) => (
+                <View key={round}>
+                  {/* Round label with divider line */}
+                  <View style={styles.roundLabelRow}>
+                    <View style={styles.roundLine} />
+                    <Text style={styles.roundLabel}>Round {round}</Text>
+                    <View style={styles.roundLine} />
+                  </View>
+
+                  {/* Side-by-side kick cards */}
+                  <View style={styles.kickVsRow}>
+                    {/* Home kick card */}
+                    <View style={[styles.kickCard, styles.kickCardHome]}>
+                      <View style={styles.kickCardTop}>
+                        <View style={styles.kickTeamPill}>
+                          <Text style={styles.kickTeamPillText}>
+                            {match.homeTeam.teamName}
                           </Text>
-                          <View>
-                            <Text style={styles.kickPlayer}>
-                              {kick.player || 'Unknown'}
-                            </Text>
-                            <Text style={styles.kickTeam}>{kick.teamName}</Text>
-                          </View>
                         </View>
-                        <Text style={styles.kickOutcome}>
-                          {kick.scored ? 'Scored' : 'Missed'}
-                        </Text>
+                        {sides.home ? (
+                          <Text style={styles.kickResultIcon}>
+                            {sides.home.scored ? '✅' : '❌'}
+                          </Text>
+                        ) : (
+                          <Text style={styles.kickResultDash}>—</Text>
+                        )}
                       </View>
-                    );
-                  })}
+                      <Text style={styles.kickPlayerName}>
+                        {sides.home?.player || 'No taker'}
+                      </Text>
+                      <Text style={styles.kickOutcomeText}>
+                        {sides.home
+                          ? sides.home.scored
+                            ? 'Scored'
+                            : 'Missed'
+                          : '—'}
+                      </Text>
+                    </View>
+
+                    {/* VS badge */}
+                    <View style={styles.kickVsBadge}>
+                      <Text style={styles.kickVsText}>vs</Text>
+                    </View>
+
+                    {/* Away kick card */}
+                    <View style={[styles.kickCard, styles.kickCardAway]}>
+                      <View style={styles.kickCardTop}>
+                        <View style={[styles.kickTeamPill, styles.kickTeamPillAway]}>
+                          <Text style={[styles.kickTeamPillText, styles.kickTeamPillTextAway]}>
+                            {match.awayTeam.teamName}
+                          </Text>
+                        </View>
+                        {sides.away ? (
+                          <Text style={styles.kickResultIcon}>
+                            {sides.away.scored ? '✅' : '❌'}
+                          </Text>
+                        ) : (
+                          <Text style={styles.kickResultDash}>—</Text>
+                        )}
+                      </View>
+                      <Text style={styles.kickPlayerName}>
+                        {sides.away?.player || 'No taker'}
+                      </Text>
+                      <Text style={styles.kickOutcomeText}>
+                        {sides.away
+                          ? sides.away.scored
+                            ? 'Scored'
+                            : 'Missed'
+                          : '—'}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               ));
             })()}
           </View>
         )}
+
+        {/* ─── TIMELINE SECTION HEADER ─── */}
+        {isTimeline && (
+          <>
+            <View style={styles.timelineSectionHeader}>
+              <View>
+                <Text style={styles.timelineSectionTitle}>Match events</Text>
+                <Text style={styles.timelineSectionSub}>Compact timeline</Text>
+              </View>
+            </View>
+
+            {/* Team color legend */}
+            <View style={styles.teamLegendRow}>
+              <View style={styles.teamLegendItem}>
+                <View style={[styles.teamLegendDot, {backgroundColor: '#2563EB'}]} />
+                <Text style={styles.teamLegendName}>{match.homeTeam.teamName}</Text>
+                <View style={styles.teamLegendBadge}>
+                  <Text style={styles.teamLegendBadgeText}>HOME</Text>
+                </View>
+              </View>
+              <View style={styles.teamLegendItem}>
+                <View style={[styles.teamLegendDot, {backgroundColor: '#F97316'}]} />
+                <Text style={styles.teamLegendName}>{match.awayTeam.teamName}</Text>
+                <View style={[styles.teamLegendBadge, {backgroundColor: '#FFF7ED'}]}>
+                  <Text style={[styles.teamLegendBadgeText, {color: '#F97316'}]}>AWAY</Text>
+                </View>
+              </View>
+            </View>
+          </>
+        )}
       </View>
     );
   }
+
   return (
     <FlatList
       data={timelineData}
       keyExtractor={(item, index) =>
         `${item.type}-${item.minute}-${item.player?.name || 'x'}-${index}`
       }
-      ListHeaderComponent={
-        // ✅ Pass all needed values as props — no hooks inside
-        <ListHeader
-          match={match}
-          isDraw={isDraw}
-          TABS={TABS}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          stats={stats}
-          lineups={lineups}
-          lineupMap={lineupMap}
-          selectedLineupTeam={selectedLineupTeam}
-          setSelectedLineupTeam={setSelectedLineupTeam}
-          nav={nav}
+      ListHeaderComponent={<ListHeader />}
+      renderItem={({item, index}) => (
+        <TimelineCard
+          event={item}
+          homeTeamId={match.homeTeam._id}
+          homeTeamName={match.homeTeam.teamName}
+          awayTeamName={match.awayTeam.teamName}
+          isLast={index === timelineData.length - 1}
         />
-      }
-      renderItem={({item}) => (
-        <TimelineCard event={item} homeTeamId={match.homeTeam._id} />
       )}
       ListEmptyComponent={
         isTimeline ? (
-          <Text style={{padding: 16, color: '#475569'}}>No events yet</Text>
+          <Text style={{padding: s(16), color: '#475569'}}>No events yet</Text>
         ) : null
       }
-      contentContainerStyle={{paddingBottom: 30}}
+      contentContainerStyle={{paddingBottom: vs(30)}}
       style={styles.container}
     />
   );
 }
 
-/* ---------- UI PARTS ---------- */
+/* ────────────── UI PARTS ────────────── */
 
-function Team({team}) {
+function BigStat({label, icon, left, right}) {
+  const max = Math.max(left, right, 1);
+  const leftPct = (left / max) * 100;
+  const rightPct = (right / max) * 100;
+  const leftWins = left > right;
+  const rightWins = right > left;
+  const isDraw = left === right;
+
   return (
-    <View style={styles.team}>
-      {team.teamLogoUrl ? (
-        <Image source={{uri: team.teamLogoUrl}} style={styles.logo} />
-      ) : (
-        <View style={styles.logoFallback}>
-          <Text style={styles.logoText}>{team.teamName[0]}</Text>
+    <View style={styles.statRowCard}>
+      {/* Left number */}
+      <View style={[
+        styles.statNumberBox,
+        (leftWins || isDraw) && styles.statNumberBoxActive,
+        leftWins && styles.statNumberBoxWinHome,
+      ]}>
+        <Text style={[
+          styles.statNumber,
+          (leftWins || isDraw) && styles.statNumberActive,
+        ]}>
+          {left}
+        </Text>
+      </View>
+
+      {/* Center: bars + label */}
+      <View style={styles.statCenter}>
+        {/* Bars row */}
+        <View style={styles.statBarsRow}>
+          {/* Left bar (grows right-to-left) */}
+          <View style={styles.statBarTrack}>
+            <View style={[
+              styles.statBarFillLeft,
+              {width: `${leftPct}%`},
+              leftWins && {backgroundColor: '#2563EB'},
+              isDraw && {backgroundColor: '#64748B'},
+            ]} />
+          </View>
+          {/* Right bar (grows left-to-right) */}
+          <View style={styles.statBarTrack}>
+            <View style={[
+              styles.statBarFillRight,
+              {width: `${rightPct}%`},
+              rightWins && {backgroundColor: '#F97316'},
+              isDraw && {backgroundColor: '#64748B'},
+            ]} />
+          </View>
         </View>
-      )}
-      <Text style={styles.teamName}>{team.teamName}</Text>
+        {/* Label with icon */}
+        <View style={styles.statLabelRow}>
+          <Text style={styles.statIcon}>{icon}</Text>
+          <Text style={styles.statLabel}>{label}</Text>
+        </View>
+      </View>
+
+      {/* Right number */}
+      <View style={[
+        styles.statNumberBox,
+        (rightWins || isDraw) && styles.statNumberBoxActive,
+        rightWins && styles.statNumberBoxWinAway,
+      ]}>
+        <Text style={[
+          styles.statNumber,
+          (rightWins || isDraw) && styles.statNumberActive,
+        ]}>
+          {right}
+        </Text>
+      </View>
     </View>
   );
 }
 
-function BigStat({label, left, right}) {
-  return (
-    <View style={styles.bigStatRow}>
-      <Text style={styles.bigNumber}>{left}</Text>
-      <Text style={styles.bigLabel}>{label}</Text>
-      <Text style={styles.bigNumber}>{right}</Text>
-    </View>
-  );
-}
+/* No separate InfoCard component needed — info is inline now */
 
-function InfoCard({label, value, icon}) {
-  return (
-    <View style={styles.infoBigCard}>
-      <Text style={styles.infoIcon}>{icon}</Text>
-      <Text style={styles.infoBigLabel}>{label}</Text>
-      <Text style={styles.infoBigValue}>{value}</Text>
-    </View>
-  );
-}
-
-function TimelineCard({event, homeTeamId}) {
+function TimelineCard({event, homeTeamId, homeTeamName, awayTeamName, isLast}) {
   const isHome = String(event.team) === String(homeTeamId);
   const config = getEventConfig(event.type);
+
+  // Team accent colors
+  const TEAM_COLOR = isHome ? '#2563EB' : '#F97316';
+  const TEAM_BG = isHome ? '#EFF6FF' : '#FFF7ED';
+  const TEAM_BORDER = isHome ? '#BFDBFE' : '#FED7AA';
 
   const eventLabel =
     {
@@ -460,45 +727,84 @@ function TimelineCard({event, homeTeamId}) {
       SUBSTITUTION: 'Substitution',
     }[event.type] || event.type;
 
+  // Build description line
+  let description = '';
+  if (event.assistPlayer) {
+    description = `Assist: ${event.assistPlayer.name}`;
+  } else if (event.type === 'SUBSTITUTION' && event.substitutedPlayer) {
+    description = `Out: ${event.substitutedPlayer.name}`;
+  } else if (event.reason) {
+    description = event.reason;
+  } else if (['GOAL', 'PENALTY_GOAL'].includes(event.type)) {
+    description = 'Unassisted finish';
+  }
+
+  // ── HOME events: minute | dot | card (left-aligned)
+  // ── AWAY events: card | dot | minute (right-aligned)
+
   return (
-    <View style={[styles.timelineCard, {borderLeftColor: config.color}]}>
-      {/* TOP ROW */}
-      <View style={styles.timelineHeader}>
-        <Text style={[styles.eventIcon, {color: config.color}]}>
-          {config.icon}
-        </Text>
-        <Text style={styles.minuteBig}>{event.minute}'</Text>
+    <View style={[styles.tlCard, !isHome && styles.tlCardAway]}>
+      {/* LEFT SIDE — home minute OR away content */}
+      {isHome ? (
+        <View style={styles.tlMinuteCol}>
+          <Text style={styles.tlMinute}>{event.minute}'</Text>
+        </View>
+      ) : (
+        <View style={[styles.tlContent, {backgroundColor: TEAM_BG, borderColor: TEAM_BORDER, borderWidth: 1}]}>
+          <View style={styles.tlContentTop}>
+            <View style={styles.tlEventLabelRow}>
+              <Text style={styles.tlIcon}>{config.icon}</Text>
+              <Text style={[styles.tlEventType, {color: config.color}]}>
+                {eventLabel}
+              </Text>
+            </View>
+            <View style={[styles.tlTeamPill, {backgroundColor: TEAM_COLOR}]}>
+              <Text style={styles.tlTeamPillText}>{event.teamName}</Text>
+            </View>
+          </View>
+          <Text style={styles.tlPlayerName}>
+            {event.player?.name || 'Unknown Player'}
+          </Text>
+          {description ? (
+            <Text style={styles.tlDesc}>{description}</Text>
+          ) : null}
+        </View>
+      )}
+
+      {/* CENTER — Timeline dot + line */}
+      <View style={styles.tlLineCol}>
+        <View style={[styles.tlDot, {backgroundColor: TEAM_COLOR}]} />
+        {!isLast && (
+          <View style={[styles.tlLine, {backgroundColor: TEAM_COLOR, opacity: 0.2}]} />
+        )}
       </View>
 
-      {/* ✅ EVENT TYPE LABEL */}
-      <Text style={[styles.eventTypeName, {color: config.color}]}>
-        {eventLabel}
-      </Text>
-
-      {/* MAIN CONTENT */}
-      <Text style={styles.playerName}>
-        {event.player?.name || 'Unknown Player'}
-      </Text>
-
-      {/* ASSIST */}
-      {event.assistPlayer && (
-        <Text style={styles.assistText}>Assist: {event.assistPlayer.name}</Text>
+      {/* RIGHT SIDE — home content OR away minute */}
+      {isHome ? (
+        <View style={[styles.tlContent, {backgroundColor: TEAM_BG, borderColor: TEAM_BORDER, borderWidth: 1}]}>
+          <View style={styles.tlContentTop}>
+            <View style={styles.tlEventLabelRow}>
+              <Text style={styles.tlIcon}>{config.icon}</Text>
+              <Text style={[styles.tlEventType, {color: config.color}]}>
+                {eventLabel}
+              </Text>
+            </View>
+            <View style={[styles.tlTeamPill, {backgroundColor: TEAM_COLOR}]}>
+              <Text style={styles.tlTeamPillText}>{event.teamName}</Text>
+            </View>
+          </View>
+          <Text style={styles.tlPlayerName}>
+            {event.player?.name || 'Unknown Player'}
+          </Text>
+          {description ? (
+            <Text style={styles.tlDesc}>{description}</Text>
+          ) : null}
+        </View>
+      ) : (
+        <View style={[styles.tlMinuteCol, {alignItems: 'flex-end'}]}>
+          <Text style={styles.tlMinute}>{event.minute}'</Text>
+        </View>
       )}
-
-      {/* REASON — for penalties */}
-      {event.reason && (
-        <Text style={styles.assistText}>Reason: {event.reason}</Text>
-      )}
-
-      {/* SUB */}
-      {event.type === 'SUBSTITUTION' && (
-        <Text style={styles.assistText}>
-          ↘ OUT: {event.substitutedPlayer?.name}
-        </Text>
-      )}
-
-      {/* TEAM SIDE */}
-      <Text style={styles.teamSide}>{event.teamName}</Text>
     </View>
   );
 }
@@ -508,7 +814,7 @@ function getEventConfig(type) {
     case 'GOAL':
     case 'PENALTY_GOAL':
       return {icon: '⚽', color: '#16A34A'};
-    case 'PENALTY_MISS': // ✅ add this
+    case 'PENALTY_MISS':
       return {icon: '❌', color: '#DC2626'};
     case 'OWN_GOAL':
       return {icon: '🥅', color: '#DC2626'};
@@ -523,292 +829,646 @@ function getEventConfig(type) {
   }
 }
 
-/* ---------- STYLES ---------- */
+/* ────────────── STYLES ────────────── */
 
 const styles = StyleSheet.create({
   /* ===== SCREEN ===== */
-
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
-    padding: s(16),
   },
 
   /* ===== HEADER ===== */
-
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: vs(15),
-    marginBottom: vs(12),
+    paddingVertical: vs(12),
+    paddingHorizontal: s(16),
   },
-
   backBtn: {
-    width: s(50),
-    height: vs(40),
+    width: s(44),
+    height: vs(44),
+    borderRadius: s(22),
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
     justifyContent: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
   },
-
   back: {
-    fontSize: ms(22),
+    fontSize: ms(20),
     fontWeight: '700',
     color: '#0F172A',
   },
-
   title: {
     flex: 1,
     textAlign: 'center',
-    fontSize: rf(16),
+    fontSize: rf(17),
     fontWeight: '800',
     color: '#0F172A',
   },
-
   headerSpacer: {
-    width: s(50),
+    width: s(44),
   },
 
-  /* ===== HERO SCORE CARD ===== */
-
+  /* ===== HERO CARD (stacked layout) ===== */
   heroCard: {
+    marginHorizontal: s(16),
+    marginTop: vs(8),
     backgroundColor: '#2563EB',
+    borderRadius: ms(24),
+    paddingTop: vs(16),
+    paddingBottom: vs(14),
+    paddingHorizontal: s(18),
+    overflow: 'hidden',
+  },
+
+  /* Tags row */
+  heroTagsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: vs(16),
+  },
+  heroTag: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
     borderRadius: ms(20),
-    paddingVertical: vs(24),
-    paddingHorizontal: s(20),
+    paddingHorizontal: s(14),
+    paddingVertical: vs(5),
+  },
+  heroTagText: {
+    color: '#FFFFFF',
+    fontSize: rf(11),
+    fontWeight: '700',
+  },
+  heroStatusText: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: rf(12),
+    fontWeight: '700',
+  },
+
+  /* Team rows */
+  heroTeamRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingVertical: vs(10),
   },
-
-  team: {
+  heroTeamInfo: {
+    flexDirection: 'row',
     alignItems: 'center',
-    width: s(90),
+    flex: 1,
   },
-
-  logo: {
-    width: s(60),
-    height: s(60),
-    borderRadius: s(30),
+  heroLogo: {
+    width: s(48),
+    height: s(48),
+    borderRadius: s(24),
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
-
-  logoFallback: {
-    width: s(60),
-    height: s(60),
-    borderRadius: s(32),
-    backgroundColor: '#E5E7EB',
+  heroLogoFallback: {
+    width: s(48),
+    height: s(48),
+    borderRadius: s(24),
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  logoText: {
+  heroLogoText: {
     fontWeight: '800',
-    color: '#111827',
-    fontSize: rf(14),
-  },
-
-  teamName: {
-    marginTop: vs(6),
-    fontSize: rf(14),
-    fontWeight: '700',
     color: '#FFFFFF',
-    textAlign: 'center',
+    fontSize: rf(18),
   },
-
-  scoreBox: {
-    alignItems: 'center',
+  heroTeamTextWrap: {
+    marginLeft: s(12),
+    flexShrink: 1,
   },
-
-  scoreText: {
-    fontSize: ms(40),
+  heroTeamName: {
+    fontSize: rf(16),
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  heroTeamSide: {
+    fontSize: rf(11),
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: vs(2),
+  },
+  heroScore: {
+    fontSize: ms(36),
     fontWeight: '900',
     color: '#FFFFFF',
+    marginLeft: s(12),
   },
 
-  statusText: {
-    marginTop: vs(4),
+  /* VS badge */
+  vsBadgeWrap: {
+    alignItems: 'center',
+    marginVertical: vs(-4),
+    zIndex: 2,
+  },
+  vsBadge: {
+    width: s(36),
+    height: s(36),
+    borderRadius: s(18),
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  vsText: {
     fontSize: rf(12),
-    color: '#DBEAFE',
-    fontWeight: '700',
+    fontWeight: '800',
+    color: '#2563EB',
   },
 
-  winner: {
-    textAlign: 'center',
-    marginVertical: vs(10),
-    fontWeight: '700',
-    color: '#1D4ED8',
-    fontSize: rf(14),
+  /* Footer */
+  heroFooter: {
+    marginTop: vs(14),
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  winnerPill: {
+    backgroundColor: '#16A34A',
+    borderRadius: ms(20),
+    paddingHorizontal: s(14),
+    paddingVertical: vs(6),
+  },
+  winnerPillText: {
+    color: '#FFFFFF',
+    fontSize: rf(11),
+    fontWeight: '800',
+  },
+  heroSummaryLine: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: rf(11),
+    fontWeight: '600',
+    marginTop: vs(8),
   },
 
   /* ===== TABS ===== */
-
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#E5E7EB',
-    borderRadius: ms(12),
-    marginVertical: vs(12),
+    backgroundColor: '#F1F5F9',
+    borderRadius: ms(14),
+    marginHorizontal: s(16),
+    marginVertical: vs(16),
+    padding: s(4),
   },
-
   tab: {
     flex: 1,
     paddingVertical: vs(10),
     alignItems: 'center',
+    borderRadius: ms(11),
   },
-
   activeTab: {
     backgroundColor: '#FFFFFF',
-    borderRadius: ms(12),
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
   },
-
   tabText: {
     fontWeight: '700',
-    color: '#475569',
+    color: '#94A3B8',
     fontSize: rf(13),
   },
-
   activeTabText: {
     color: '#2563EB',
   },
 
   /* ===== STATS ===== */
-
-  statsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: ms(20),
-    paddingVertical: vs(20),
+  statsContainer: {
     paddingHorizontal: s(16),
   },
 
-  bigStatRow: {
+  /* Team header card */
+  statsTeamCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: vs(14),
+    backgroundColor: '#FFFFFF',
+    borderRadius: ms(18),
+    padding: s(14),
+    marginBottom: vs(12),
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+  },
+  statsTeamSide: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(8),
+  },
+  statsTeamLogo: {
+    width: s(34),
+    height: s(34),
+    borderRadius: s(17),
+  },
+  statsTeamLogoFallback: {
+    width: s(34),
+    height: s(34),
+    borderRadius: s(17),
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statsTeamLogoText: {
+    fontSize: rf(13),
+    fontWeight: '800',
+    color: '#2563EB',
+  },
+  statsTeamName: {
+    fontSize: rf(12),
+    fontWeight: '800',
+    color: '#0F172A',
+    flexShrink: 1,
+  },
+  statsHomeBadge: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: ms(6),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+  },
+  statsHomeBadgeText: {
+    fontSize: rf(8),
+    fontWeight: '800',
+    color: '#2563EB',
+  },
+  statsAwayBadge: {
+    backgroundColor: '#FFF7ED',
+    borderRadius: ms(6),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+  },
+  statsAwayBadgeText: {
+    fontSize: rf(8),
+    fontWeight: '800',
+    color: '#F97316',
+  },
+  statsTeamDivider: {
+    width: s(32),
+    height: s(32),
+    borderRadius: s(16),
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: s(6),
+  },
+  statsVsText: {
+    fontSize: rf(10),
+    fontWeight: '800',
+    color: '#94A3B8',
   },
 
-  bigNumber: {
-    fontSize: ms(26),
+  /* Individual stat row cards */
+  statRowCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: ms(16),
+    paddingVertical: vs(14),
+    paddingHorizontal: s(10),
+    marginBottom: vs(8),
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+  },
+
+  /* Number boxes */
+  statNumberBox: {
+    width: s(44),
+    height: s(44),
+    borderRadius: ms(12),
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statNumberBoxActive: {
+    backgroundColor: '#F1F5F9',
+  },
+  statNumberBoxWinHome: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1.5,
+    borderColor: '#BFDBFE',
+  },
+  statNumberBoxWinAway: {
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+  },
+  statNumber: {
+    fontSize: ms(18),
     fontWeight: '900',
+    color: '#CBD5E1',
+  },
+  statNumberActive: {
     color: '#0F172A',
   },
 
-  bigLabel: {
-    fontSize: rf(16),
+  /* Center section */
+  statCenter: {
+    flex: 1,
+    paddingHorizontal: s(10),
+  },
+  statLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: vs(6),
+  },
+  statIcon: {
+    fontSize: ms(13),
+    marginRight: s(4),
+  },
+  statLabel: {
+    fontSize: rf(11),
     fontWeight: '700',
     color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  /* Bars */
+  statBarsRow: {
+    flexDirection: 'row',
+    gap: s(4),
+  },
+  statBarTrack: {
+    flex: 1,
+    height: vs(6),
+    backgroundColor: '#F1F5F9',
+    borderRadius: ms(3),
+    overflow: 'hidden',
+  },
+  statBarFillLeft: {
+    height: '100%',
+    backgroundColor: '#CBD5E1',
+    borderRadius: ms(3),
+    alignSelf: 'flex-end',
+  },
+  statBarFillRight: {
+    height: '100%',
+    backgroundColor: '#CBD5E1',
+    borderRadius: ms(3),
+    alignSelf: 'flex-start',
   },
 
   /* ===== TIMELINE ===== */
-
-  timelineCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: ms(16),
-    padding: s(12),
-    marginBottom: vs(10),
-    borderLeftWidth: 5,
-    elevation: 2,
+  timelineSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: s(16),
+    marginBottom: vs(8),
   },
-  eventTypeName: {
-    fontSize: rf(11),
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: vs(4),
+  timelineSectionTitle: {
+    fontSize: rf(18),
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  timelineSectionSub: {
+    fontSize: rf(12),
+    fontWeight: '600',
+    color: '#94A3B8',
+    marginTop: vs(2),
   },
 
-  timelineHeader: {
+  /* Team legend */
+  teamLegendRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: s(16),
+    marginBottom: vs(16),
+    gap: s(10),
+  },
+  teamLegendItem: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: vs(6),
+  },
+  teamLegendDot: {
+    width: s(10),
+    height: s(10),
+    borderRadius: s(5),
+    marginRight: s(6),
+  },
+  teamLegendName: {
+    fontSize: rf(12),
+    fontWeight: '700',
+    color: '#334155',
+    flexShrink: 1,
+    marginRight: s(4),
+  },
+  teamLegendBadge: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: ms(6),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+  },
+  teamLegendBadgeText: {
+    fontSize: rf(9),
+    fontWeight: '800',
+    color: '#2563EB',
   },
 
-  eventIcon: {
-    fontSize: ms(20),
-    marginRight: s(8),
+  /* Timeline card — row container */
+  tlCard: {
+    flexDirection: 'row',
+    marginHorizontal: s(16),
+    minHeight: vs(80),
+  },
+  tlCardAway: {
+    flexDirection: 'row',
   },
 
-  minuteBig: {
-    fontSize: rf(16),
-    fontWeight: '900',
+  /* Minute column */
+  tlMinuteCol: {
+    width: s(38),
+    paddingTop: vs(12),
+  },
+  tlMinute: {
+    fontSize: rf(14),
+    fontWeight: '800',
     color: '#0F172A',
   },
 
-  playerName: {
+  /* Dot + line column */
+  tlLineCol: {
+    width: s(28),
+    alignItems: 'center',
+  },
+  tlDot: {
+    width: s(14),
+    height: s(14),
+    borderRadius: s(7),
+    marginTop: vs(12),
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+  },
+  tlLine: {
+    width: 2.5,
+    flex: 1,
+    marginTop: vs(4),
+    borderRadius: 2,
+  },
+
+  /* Content card */
+  tlContent: {
+    flex: 1,
+    borderRadius: ms(14),
+    padding: s(12),
+    marginBottom: vs(10),
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  tlContentTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: vs(4),
+  },
+  tlEventLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  tlIcon: {
+    fontSize: ms(14),
+    marginRight: s(4),
+  },
+  tlEventType: {
+    fontSize: rf(12),
+    fontWeight: '800',
+    textTransform: 'capitalize',
+  },
+
+  /* Team pill (replaces plain text) */
+  tlTeamPill: {
+    borderRadius: ms(8),
+    paddingHorizontal: s(8),
+    paddingVertical: vs(2),
+  },
+  tlTeamPillText: {
+    fontSize: rf(9),
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+
+  tlPlayerName: {
     fontSize: rf(15),
     fontWeight: '800',
     color: '#0F172A',
+    marginTop: vs(2),
   },
-
-  assistText: {
-    marginTop: vs(4),
+  tlDesc: {
     fontSize: rf(12),
     fontWeight: '600',
-    color: '#475569',
-  },
-
-  teamSide: {
-    marginTop: vs(6),
-    fontSize: rf(11),
-    fontWeight: '700',
     color: '#64748B',
+    marginTop: vs(2),
   },
 
   /* ===== INFO ===== */
-
-  infoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  infoContainer: {
+    paddingHorizontal: s(16),
   },
-
-  infoBigCard: {
-    width: '48%',
+  infoCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: ms(20),
-    padding: s(18),
-    marginBottom: vs(14),
+    padding: s(16),
     elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
   },
-
-  infoIcon: {
-    fontSize: ms(26),
-    marginBottom: vs(10),
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: vs(12),
   },
-
-  infoBigLabel: {
-    fontSize: rf(14),
+  infoIconWrap: {
+    width: s(42),
+    height: s(42),
+    borderRadius: s(12),
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: s(14),
+  },
+  infoIconEmoji: {
+    fontSize: ms(20),
+  },
+  infoTextWrap: {
+    flex: 1,
+  },
+  infoLabel: {
+    fontSize: rf(11),
     fontWeight: '700',
-    color: '#64748B',
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-
-  infoBigValue: {
-    marginTop: vs(6),
-    fontSize: rf(16),
+  infoValue: {
+    fontSize: rf(14),
     fontWeight: '800',
     color: '#0F172A',
+    marginTop: vs(2),
+  },
+  infoSep: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+  },
+  infoStatusPill: {
+    backgroundColor: '#DCFCE7',
+    borderRadius: ms(8),
+    paddingHorizontal: s(10),
+    paddingVertical: vs(3),
+    alignSelf: 'flex-start',
+    marginTop: vs(4),
+  },
+  infoStatusText: {
+    fontSize: rf(12),
+    fontWeight: '700',
+    color: '#16A34A',
   },
 
+  /* ===== LINEUPS ===== */
   lineupsCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: ms(20),
     padding: s(16),
+    marginHorizontal: s(16),
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
   },
-
-  lineupTeamTitle: {
-    marginVertical: vs(10),
-    fontSize: rf(15),
-    fontWeight: '800',
-    color: '#0F172A',
-    textAlign: 'center',
-  },
-
-  /* ===== LINEUPS ===== */
-
   teamSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: s(12),
+    gap: s(10),
     marginBottom: vs(14),
   },
-
   teamSelectBtn: {
     flex: 1,
     paddingVertical: vs(12),
@@ -816,21 +1476,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     alignItems: 'center',
   },
-
   teamSelectActive: {
     backgroundColor: '#2563EB',
   },
-
   teamSelectText: {
-    fontSize: rf(14),
+    fontSize: rf(13),
     fontWeight: '800',
     color: '#334155',
   },
-
   teamSelectTextActive: {
     color: '#FFFFFF',
   },
-
   pitchWrapper: {
     borderRadius: ms(18),
     overflow: 'hidden',
@@ -838,14 +1494,12 @@ const styles = StyleSheet.create({
     padding: s(6),
     marginBottom: vs(14),
   },
-
   benchTitle: {
     fontSize: rf(13),
     fontWeight: '800',
     color: '#64748B',
     marginBottom: vs(8),
   },
-
   benchItem: {
     backgroundColor: '#F8FAFC',
     borderRadius: ms(12),
@@ -855,13 +1509,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-
   benchText: {
     fontSize: rf(14),
     fontWeight: '700',
     color: '#0F172A',
   },
-
   lineupHint: {
     textAlign: 'center',
     marginTop: vs(20),
@@ -869,110 +1521,168 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#64748B',
   },
-  // Shootout styles
+
+  /* ===== SHOOTOUT ===== */
   shootoutContainer: {
-    padding: s(16),
+    paddingHorizontal: s(16),
   },
   shootoutScoreCard: {
-    backgroundColor: '#1E3A5F',
-    borderRadius: s(12),
-    padding: s(16),
+    backgroundColor: '#1E293B',
+    borderRadius: ms(20),
+    padding: s(20),
     alignItems: 'center',
-    marginBottom: vs(16),
+    marginBottom: vs(20),
   },
-  shootoutTitle: {
+  shootoutLabel: {
     color: '#94A3B8',
     fontSize: rf(12),
-    marginBottom: vs(8),
-    letterSpacing: 1,
+    fontWeight: '800',
+    letterSpacing: 2,
+    marginBottom: vs(12),
   },
   shootoutScoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     width: '100%',
   },
   shootoutTeamName: {
     color: '#F1F5F9',
     fontSize: rf(13),
-    fontWeight: '600',
+    fontWeight: '700',
     flex: 1,
     textAlign: 'center',
   },
   shootoutScore: {
     color: '#FFFFFF',
-    fontSize: rf(28),
-    fontWeight: '800',
-    marginHorizontal: s(12),
+    fontSize: ms(32),
+    fontWeight: '900',
+    marginHorizontal: s(10),
   },
   shootoutWinnerBanner: {
-    marginTop: vs(10),
+    marginTop: vs(14),
     backgroundColor: '#F59E0B',
-    borderRadius: s(8),
-    paddingHorizontal: s(16),
-    paddingVertical: vs(6),
+    borderRadius: ms(12),
+    paddingHorizontal: s(20),
+    paddingVertical: vs(8),
   },
   shootoutWinnerText: {
     color: '#1C1917',
-    fontWeight: '700',
+    fontWeight: '800',
     fontSize: rf(13),
   },
+
+  /* Kicks history */
   kicksTitle: {
     fontSize: rf(13),
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#334155',
-    marginBottom: vs(8),
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  roundBlock: {
     marginBottom: vs(12),
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+  },
+
+  /* Round label with lines */
+  roundLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: vs(12),
+    marginTop: vs(4),
+  },
+  roundLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
   },
   roundLabel: {
     fontSize: rf(12),
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#64748B',
-    marginBottom: vs(4),
-    paddingLeft: s(4),
+    marginHorizontal: s(12),
   },
-  kickRow: {
+
+  /* Side-by-side kick row */
+  kickVsRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: vs(14),
+  },
+  kickCard: {
+    flex: 1,
+    borderRadius: ms(14),
+    padding: s(12),
+    borderWidth: 1.5,
+    minHeight: vs(90),
+  },
+  kickCardHome: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#BFDBFE',
+  },
+  kickCardAway: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FED7AA',
+  },
+  kickCardTop: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: s(10),
-    borderRadius: s(8),
-    marginBottom: vs(4),
-  },
-  kickHome: {
-    backgroundColor: '#EFF6FF',
-    borderLeftWidth: 3,
-    borderLeftColor: '#3B82F6',
-  },
-  kickAway: {
-    backgroundColor: '#FFF7ED',
-    borderLeftWidth: 3,
-    borderLeftColor: '#F97316',
-  },
-  kickLeft: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: s(10),
+    marginBottom: vs(6),
   },
-  kickResult: {
-    fontSize: rf(18),
+  kickTeamPill: {
+    backgroundColor: '#2563EB',
+    borderRadius: ms(6),
+    paddingHorizontal: s(8),
+    paddingVertical: vs(3),
   },
-  kickPlayer: {
-    fontSize: rf(13),
-    fontWeight: '600',
-    color: '#1E293B',
+  kickTeamPillAway: {
+    backgroundColor: '#F97316',
   },
-  kickTeam: {
+  kickTeamPillText: {
+    fontSize: rf(9),
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  kickTeamPillTextAway: {
+    color: '#FFFFFF',
+  },
+  kickResultIcon: {
+    fontSize: ms(18),
+  },
+  kickResultDash: {
+    fontSize: rf(16),
+    fontWeight: '700',
+    color: '#CBD5E1',
+  },
+  kickPlayerName: {
+    fontSize: rf(14),
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: vs(2),
+  },
+  kickOutcomeText: {
     fontSize: rf(11),
+    fontWeight: '600',
     color: '#64748B',
   },
-  kickOutcome: {
-    fontSize: rf(12),
-    fontWeight: '600',
-    color: '#475569',
+
+  /* VS badge between kick cards */
+  kickVsBadge: {
+    width: s(30),
+    height: s(30),
+    borderRadius: s(15),
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: s(6),
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+  },
+  kickVsText: {
+    fontSize: rf(10),
+    fontWeight: '800',
+    color: '#64748B',
   },
 });

@@ -15,6 +15,9 @@ import MainLayout from '../../components/MainLayout';
 import AppRefreshView from '../../components/AppRefreshView';
 import useNavigationHelper from '../../navigation/Navigationhelper';
 import {s, vs, ms, rf} from '../../utils/responsive';
+import OnboardingOverlay from '../../components/OnboardingOverlay';
+import {useOnboarding} from '../../hooks/useOnboarding';
+import {TEAM_STEPS} from '../../constants/onboardingSteps';
 
 // ─── DESIGN TOKENS ───────────────────────────
 const C = {
@@ -949,6 +952,7 @@ export default function TeamHome() {
   const [lastMatch, setLastMatch] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [joinedTournaments, setJoinedTournaments] = useState([]);
+  const {showGuide, finishGuide, resetGuide} = useOnboarding('team');
 
   useEffect(() => {
     if (isFocused) loadTeam();
@@ -1031,45 +1035,58 @@ export default function TeamHome() {
   }
 
   return (
-    <AppRefreshView
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-      style={screenStyles.root}>
-      <MainLayout title="Team Home">
-        <ScrollView
-          contentContainerStyle={screenStyles.scroll}
-          showsVerticalScrollIndicator={false}>
-          <HeroSection team={team} nav={nav} />
-          <StatStrip team={team} />
+    <>
+      <AppRefreshView
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        style={screenStyles.root}>
+        <MainLayout title="Team Home">
+          <ScrollView
+            contentContainerStyle={screenStyles.scroll}
+            showsVerticalScrollIndicator={false}>
+            <HeroSection team={team} nav={nav} />
+            <StatStrip team={team} />
 
-          {liveMatch && (
-            <LiveMatchCard
-              match={liveMatch}
-              onPress={() =>
-                nav.toMatch('MatchConsole', {matchId: liveMatch._id})
-              }
-            />
-          )}
+            {liveMatch && (
+              <LiveMatchCard
+                match={liveMatch}
+                onPress={() =>
+                  nav.toMatch('MatchConsole', {matchId: liveMatch._id})
+                }
+              />
+            )}
 
-          {lastMatch && (
-            <LastMatchCard
-              match={lastMatch}
-              onPress={() =>
-                nav.toMatch('MatchSummary', {matchId: lastMatch._id})
-              }
-            />
-          )}
+            {lastMatch && (
+              <LastMatchCard
+                match={lastMatch}
+                onPress={() =>
+                  nav.toMatch('MatchSummary', {matchId: lastMatch._id})
+                }
+              />
+            )}
 
-          {joinedTournaments.length > 0 && (
-            <TournamentsCard tournaments={joinedTournaments} nav={nav} />
-          )}
+            {joinedTournaments.length > 0 && (
+              <TournamentsCard tournaments={joinedTournaments} nav={nav} />
+            )}
 
-          <QuickActionsCard team={team} nav={nav} />
+            <TouchableOpacity
+              onPress={resetGuide}
+              style={{padding: 10, backgroundColor: 'red', borderRadius: R.md, marginBottom: vs(10)}}>
+              <Text style={{color: 'white', textAlign: 'center', fontWeight: '700'}}>Reset Guide (TEST)</Text>
+            </TouchableOpacity>
 
-          <View style={{height: vs(24)}} />
-        </ScrollView>
-      </MainLayout>
-    </AppRefreshView>
+            <QuickActionsCard team={team} nav={nav} />
+
+            <View style={{height: vs(24)}} />
+          </ScrollView>
+        </MainLayout>
+      </AppRefreshView>
+      <OnboardingOverlay
+        visible={showGuide}
+        steps={TEAM_STEPS}
+        onFinish={finishGuide}
+      />
+    </>
   );
 }
 

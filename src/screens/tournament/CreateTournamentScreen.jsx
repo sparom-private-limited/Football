@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ActivityIndicator,
+  ActivityIndicator, 
   ScrollView,
   Platform,
 } from "react-native";

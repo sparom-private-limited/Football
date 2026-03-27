@@ -16,6 +16,9 @@ import useNavigationHelper from '../navigation/Navigationhelper';
 import AppRefreshView from '../components/AppRefreshView';
 import {useIsFocused} from '@react-navigation/native';
 import {s, vs, ms, rf} from '../utils/responsive';
+import OnboardingOverlay from '../components/OnboardingOverlay';
+import {useOnboarding} from '../hooks/useOnboarding';
+import {PLAYER_STEPS} from '../constants/onboardingSteps';
 
 // ─────────────────────────────────────────────
 // DESIGN TOKENS  (original blue/white palette)
@@ -86,7 +89,7 @@ function HeroCard({player, user}) {
       <View style={heroStyles.body}>
         {/* Avatar */}
         <View style={heroStyles.avatarWrap}>
-          {player?.profileImageUrl ? ( // ✅ correct field
+          {player?.profileImageUrl ? (
             <Image
               source={{uri: player.profileImageUrl}}
               style={heroStyles.avatar}
@@ -125,13 +128,12 @@ function HeroCard({player, user}) {
             <Text style={heroStyles.statusTxt}>
               {player?.teamId ? 'Team Player' : 'Free Agent'}
             </Text>
-            {player?.footed && ( // ✅ was preferredFoot → now footed
+            {player?.footed && (
               <Text style={heroStyles.footTxt}> · {player.footed}-footed</Text>
             )}
           </View>
 
-          {/* Attr pills — your model has no pace/finishing/pressing
-              so show goals/assists/matches instead */}
+          {/* Attr pills */}
           <View style={heroStyles.pillsRow}>
             <View style={heroStyles.pill}>
               <Text style={heroStyles.pillLbl}>GOL</Text>
@@ -766,6 +768,7 @@ export default function PlayerHome() {
   const [player, setPlayer] = useState(null);
   const [user, setUser] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const {showGuide, finishGuide, resetGuide} = useOnboarding('player');
 
   useEffect(() => {
     if (isFocused) fetchPlayerDetails();
@@ -807,34 +810,46 @@ export default function PlayerHome() {
   }
 
   return (
-    <AppRefreshView
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-      style={screenStyles.root}>
-      <MainLayout title="Player Profile">
-        <ScrollView
-          contentContainerStyle={screenStyles.scroll}
-          showsVerticalScrollIndicator={false}>
-          <HeroCard player={player} user={user} />
-          <View style={screenStyles.body}>
-            {!isProfileCompleted && (
-              <IncompleteWarning
-                onPress={() => nav.toProfile('PlayerProfileEdit')}
+    <>
+      <AppRefreshView
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        style={screenStyles.root}>
+        <MainLayout title="Player Profile">
+          <ScrollView
+            contentContainerStyle={screenStyles.scroll}
+            showsVerticalScrollIndicator={false}>
+            <HeroCard player={player} user={user} />
+            <View style={screenStyles.body}>
+              {!isProfileCompleted && (
+                <IncompleteWarning
+                  onPress={() => nav.toProfile('PlayerProfileEdit')}
+                />
+              )}
+              <SeasonCard
+                player={player}
+                onViewStats={() =>
+                  nav.toProfile('PlayerStats', {playerId: player?._id})
+                }
               />
-            )}
-            <SeasonCard
-              player={player}
-              onViewStats={() =>
-                nav.toProfile('PlayerStats', {playerId: player?._id})
-              }
-            />
-            <KeyNumbersCard player={player} />
-            <QuickActionsCard player={player} nav={nav} />
-            <View style={{height: vs(24)}} />
-          </View>
-        </ScrollView>
-      </MainLayout>
-    </AppRefreshView>
+              <KeyNumbersCard player={player} />
+              <TouchableOpacity
+                onPress={resetGuide}
+                style={{padding: 10, backgroundColor: 'red', marginHorizontal: s(16), borderRadius: R.md, marginBottom: vs(10)}}>
+                <Text style={{color: 'white', textAlign: 'center', fontWeight: '700'}}>Reset Guide (TEST)</Text>
+              </TouchableOpacity>
+              <QuickActionsCard player={player} nav={nav} />
+              <View style={{height: vs(24)}} />
+            </View>
+          </ScrollView>
+        </MainLayout>
+      </AppRefreshView>
+      <OnboardingOverlay
+        visible={showGuide}
+        steps={PLAYER_STEPS}
+        onFinish={finishGuide}
+      />
+    </>
   );
 }
 

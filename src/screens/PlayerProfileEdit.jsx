@@ -8,6 +8,8 @@ import {
   ScrollView,
   Image,
   Alert,
+  Keyboard,
+  Platform,
 } from 'react-native';
 import API from '../api/api';
 import {launchImageLibrary} from 'react-native-image-picker';
@@ -35,6 +37,10 @@ export default function PlayerProfileEdit() {
   const [saving, setSaving] = useState(false);
   const isSubmittingRef = useRef(false);
   const nav = useNavigationHelper();
+  const scrollRef = useRef(null);
+
+  // ✅ Track Y positions of inputs inside scroll content
+  const inputPositions = useRef({});
 
   useEffect(() => {
     loadProfile();
@@ -83,7 +89,6 @@ export default function PlayerProfileEdit() {
       const file = result.assets?.[0];
       if (!file) return;
 
-      // ✅ SIZE CHECK
       const sizeInMB = file.fileSize / (1024 * 1024);
 
       if (sizeInMB > MAX_IMAGE_SIZE_MB) {
@@ -150,7 +155,6 @@ export default function PlayerProfileEdit() {
         await updateUser({profileImage: res.data.player.profileImageUrl});
       }
 
-      // ✅ ONLY AFTER CONFIRMED SUCCESS
       Alert.alert(
         'Success',
         isExistingProfile
@@ -165,14 +169,9 @@ export default function PlayerProfileEdit() {
       );
     } catch (err) {
       console.log('❌ API Error Details:');
-      console.log('URL:', endpoint);
       console.log('Status:', err.response?.status);
       console.log('Message:', err.response?.data?.message);
-      console.log('Full response:', err.response);
-      console.log('Request:', err.request);
-      console.log('Error:', err.message);
 
-      // ✅ NETWORK ERROR (no response)
       if (!err.response && err.request) {
         Alert.alert(
           'Network Error',
@@ -191,12 +190,39 @@ export default function PlayerProfileEdit() {
     }
   };
 
+  // ✅ Scroll to a specific input when focused
+  const scrollToInput = (fieldName) => {
+    const y = inputPositions.current[fieldName];
+    if (y != null && scrollRef.current) {
+      // Delay to let keyboard fully open
+      setTimeout(() => {
+        scrollRef.current.scrollTo({
+          y: Math.max(0, y - 120),
+          animated: true,
+        });
+      }, 350);
+    }
+  };
+
+  // ✅ Track input position inside scroll content
+  const onInputLayout = (fieldName, event) => {
+    // This gives Y relative to the parent card, we need Y relative to ScrollView
+    // So we use measureLayout — but simpler: just use the nativeEvent layout
+    const {y} = event.nativeEvent.layout;
+    // We store the approximate scroll Y (card offset + input offset within card)
+    inputPositions.current[fieldName] = y;
+  };
+
   const isFormReady =
     form.position && form.jerseyNumber && !saving && !isSubmittingRef.current;
 
   return (
     <View style={{flex: 1, backgroundColor: '#F1F5F9'}}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}>
         {/* IMAGE UPLOAD */}
         <Text style={styles.sectionTitle}>Basic Info</Text>
         <TouchableOpacity onPress={chooseImage} style={styles.imageContainer}>
@@ -210,8 +236,14 @@ export default function PlayerProfileEdit() {
         </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Physical Attributes</Text>
-        {/* FORM CARD */}
-        <View style={styles.card}>
+        {/* FORM CARD — we measure each input's Y within this card,
+            then add the card's own Y to get absolute scroll position */}
+        <View
+          style={styles.card}
+          onLayout={(e) => {
+            // Store the card's Y offset within the ScrollView
+            inputPositions.current._cardY = e.nativeEvent.layout.y;
+          }}>
           <Text style={styles.cardTitle}>Player Information</Text>
 
           <ChoiceGroup
@@ -228,37 +260,61 @@ export default function PlayerProfileEdit() {
             onChange={v => setForm({...form, footed: v})}
           />
 
-          <Input
-            label="Jersey Number"
-            placeholder="Enter number"
-            keyboardType="numeric"
-            value={form.jerseyNumber}
-            onChange={v => setForm({...form, jerseyNumber: v})}
-          />
+          <View onLayout={(e) => {
+            inputPositions.current.jerseyNumber =
+              (inputPositions.current._cardY || 0) + e.nativeEvent.layout.y;
+          }}>
+            <Input
+              label="Jersey Number"
+              placeholder="Enter number"
+              keyboardType="numeric"
+              value={form.jerseyNumber}
+              onChange={v => setForm({...form, jerseyNumber: v})}
+              onFocus={() => scrollToInput('jerseyNumber')}
+            />
+          </View>
 
-          <Input
-            label="Age"
-            keyboardType="numeric"
-            placeholder="Enter age"
-            value={form.age}
-            onChange={v => setForm({...form, age: v})}
-          />
+          <View onLayout={(e) => {
+            inputPositions.current.age =
+              (inputPositions.current._cardY || 0) + e.nativeEvent.layout.y;
+          }}>
+            <Input
+              label="Age"
+              keyboardType="numeric"
+              placeholder="Enter age"
+              value={form.age}
+              onChange={v => setForm({...form, age: v})}
+              onFocus={() => scrollToInput('age')}
+            />
+          </View>
 
-          <Input
-            label="Height (cm)"
-            keyboardType="numeric"
-            placeholder="Enter height"
-            value={form.height}
-            onChange={v => setForm({...form, height: v})}
-          />
+          <View onLayout={(e) => {
+            inputPositions.current.height =
+              (inputPositions.current._cardY || 0) + e.nativeEvent.layout.y;
+          }}>
+            <Input
+              label="Height (cm)"
+              keyboardType="numeric"
+              placeholder="Enter height"
+              value={form.height}
+              onChange={v => setForm({...form, height: v})}
+              onFocus={() => scrollToInput('height')}
+            />
+          </View>
 
-          <Input
-            label="Weight (kg)"
-            keyboardType="numeric"
-            placeholder="Enter weight"
-            value={form.weight}
-            onChange={v => setForm({...form, weight: v})}
-          />
+          <View onLayout={(e) => {
+            inputPositions.current.weight =
+              (inputPositions.current._cardY || 0) + e.nativeEvent.layout.y;
+          }}>
+            <Input
+              label="Weight (kg)"
+              keyboardType="numeric"
+              placeholder="Enter weight"
+              value={form.weight}
+              onChange={v => setForm({...form, weight: v})}
+              onFocus={() => scrollToInput('weight')}
+            />
+          </View>
         </View>
 
         {/* SAVE BUTTON */}
@@ -274,14 +330,15 @@ export default function PlayerProfileEdit() {
           </Text>
         </TouchableOpacity>
 
-        <View style={{height: 40}} />
+        {/* ✅ Large bottom padding so last inputs can scroll well above keyboard */}
+        <View style={{height: vs(300)}} />
       </ScrollView>
     </View>
   );
 }
 
 /* INPUT COMPONENT */
-function Input({label, value, onChange, ...rest}) {
+function Input({label, value, onChange, onFocus, ...rest}) {
   return (
     <View style={{marginBottom: 14}}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -289,6 +346,7 @@ function Input({label, value, onChange, ...rest}) {
         style={styles.input}
         value={value}
         onChangeText={onChange}
+        onFocus={onFocus}
         {...rest}
       />
     </View>
@@ -316,128 +374,6 @@ function ChoiceGroup({label, options, value, onChange}) {
 }
 
 /* STYLES */
-// const styles = StyleSheet.create({
-//   container: {
-//     padding: 20,
-//     backgroundColor: '#F1F5F9',
-//   },
-
-//   title: {
-//     fontSize: 24,
-//     fontWeight: '700',
-//     textAlign: 'center',
-//     marginBottom: 20,
-//     color: '#0F172A',
-//   },
-
-//   /* IMAGE */
-//   imageContainer: {
-//     height: 130,
-//     width: 130,
-//     borderRadius: 70,
-//     backgroundColor: '#E2E8F0',
-//     alignSelf: 'center',
-//     marginBottom: 22,
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     overflow: 'hidden',
-//     elevation: 4,
-//   },
-//   image: {
-//     height: '100%',
-//     width: '100%',
-//   },
-//   imagePlaceholder: {
-//     color: '#64748B',
-//     fontSize: 14,
-//   },
-
-//   /* CARD */
-//   card: {
-//     backgroundColor: '#fff',
-//     padding: 18,
-//     borderRadius: 14,
-//     elevation: 2,
-//     marginBottom: 20,
-//   },
-//   cardTitle: {
-//     fontSize: 18,
-//     fontWeight: '700',
-//     color: '#0F172A',
-//     marginBottom: 16,
-//   },
-
-//   /* INPUTS */
-//   inputLabel: {
-//     color: '#475569',
-//     fontSize: 14,
-//     marginBottom: 6,
-//   },
-//   input: {
-//     backgroundColor: '#fff',
-//     borderRadius: 10,
-//     padding: 12,
-//     borderWidth: 1,
-//     borderColor: '#CBD5E1',
-//     fontSize: 16,
-//     color: '#0F172A',
-//   },
-
-//   /* SAVE BUTTON */
-//   saveButton: {
-//     backgroundColor: '#1D4ED8',
-//     padding: 15,
-//     borderRadius: 12,
-//   },
-//   saveText: {
-//     textAlign: 'center',
-//     color: '#fff',
-//     fontSize: 17,
-//     fontWeight: '700',
-//   },
-//   imageOverlay: {
-//     position: 'absolute',
-//     bottom: 8,
-//     right: 8,
-//     backgroundColor: 'rgba(0,0,0,0.6)',
-//     paddingHorizontal: 10,
-//     paddingVertical: 4,
-//     borderRadius: 10,
-//   },
-//   imageOverlayText: {
-//     color: '#fff',
-//     fontSize: 15,
-//     fontWeight: '700',
-//   },
-
-//   choiceRow: {
-//     flexDirection: 'row',
-//     flexWrap: 'wrap',
-//     gap: 10,
-//   },
-//   choice: {
-//     paddingVertical: 10,
-//     paddingHorizontal: 16,
-//     borderRadius: 20,
-//     borderWidth: 1,
-//     borderColor: '#CBD5E1',
-//   },
-//   choiceActive: {
-//     backgroundColor: '#1D4ED8',
-//     borderColor: '#1D4ED8',
-//   },
-//   choiceText: {
-//     fontWeight: '700',
-//     color: '#334155',
-//   },
-//   sectionTitle: {
-//     fontWeight: '800',
-//     marginBottom: 10,
-//     marginTop: 12,
-//     color: '#0F172A',
-//   },
-// });
-
 const styles = StyleSheet.create({
   container: {
     padding: s(20),
@@ -452,7 +388,6 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
 
-  /* IMAGE */
   imageContainer: {
     height: s(130),
     width: s(130),
@@ -474,7 +409,6 @@ const styles = StyleSheet.create({
     fontSize: rf(14),
   },
 
-  /* CARD */
   card: {
     backgroundColor: '#fff',
     padding: s(18),
@@ -489,7 +423,6 @@ const styles = StyleSheet.create({
     marginBottom: vs(16),
   },
 
-  /* INPUTS */
   inputLabel: {
     color: '#475569',
     fontSize: rf(14),
@@ -505,7 +438,6 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
 
-  /* SAVE BUTTON */
   saveButton: {
     backgroundColor: '#1D4ED8',
     padding: s(15),
