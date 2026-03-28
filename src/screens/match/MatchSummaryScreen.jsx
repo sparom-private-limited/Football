@@ -14,6 +14,9 @@ import {useRoute} from '@react-navigation/native';
 import useNavigationHelper from '../../navigation/Navigationhelper';
 import Pitch from '../../components/lineup/Pitch';
 import {s, vs, ms, rf} from '../../utils/responsive';
+import ViewShot from 'react-native-view-shot';
+import useShareCard from '../../hooks/useShareCard';
+import ShareCardSummary from '../../components/share/ShareCardSummary';
 
 export default function MatchSummaryScreen() {
   const {params} = useRoute();
@@ -23,6 +26,8 @@ export default function MatchSummaryScreen() {
   const nav = useNavigationHelper();
   const [lineups, setLineups] = useState(null);
   const [selectedLineupTeam, setSelectedLineupTeam] = useState(null);
+  const {summaryRef, shareSummary} = useShareCard();
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -154,7 +159,11 @@ export default function MatchSummaryScreen() {
             <Text style={styles.back}>←</Text>
           </TouchableOpacity>
           <Text style={styles.title}>Match Summary</Text>
-          <View style={styles.headerSpacer} />
+          <TouchableOpacity
+            style={styles.shareBtn}
+            onPress={() => shareSummary()}>
+            <Text style={styles.shareIcon}>📤</Text>
+          </TouchableOpacity>
         </View>
 
         {/* ─── HERO CARD (vertical stacked layout) ─── */}
@@ -271,13 +280,20 @@ export default function MatchSummaryScreen() {
             <View style={styles.statsTeamCard}>
               <View style={styles.statsTeamSide}>
                 {match.homeTeam.teamLogoUrl ? (
-                  <Image source={{uri: match.homeTeam.teamLogoUrl}} style={styles.statsTeamLogo} />
+                  <Image
+                    source={{uri: match.homeTeam.teamLogoUrl}}
+                    style={styles.statsTeamLogo}
+                  />
                 ) : (
                   <View style={styles.statsTeamLogoFallback}>
-                    <Text style={styles.statsTeamLogoText}>{match.homeTeam.teamName[0]}</Text>
+                    <Text style={styles.statsTeamLogoText}>
+                      {match.homeTeam.teamName[0]}
+                    </Text>
                   </View>
                 )}
-                <Text style={styles.statsTeamName} numberOfLines={1}>{match.homeTeam.teamName}</Text>
+                <Text style={styles.statsTeamName} numberOfLines={1}>
+                  {match.homeTeam.teamName}
+                </Text>
                 <View style={styles.statsHomeBadge}>
                   <Text style={styles.statsHomeBadgeText}>HOME</Text>
                 </View>
@@ -289,22 +305,49 @@ export default function MatchSummaryScreen() {
                 <View style={styles.statsAwayBadge}>
                   <Text style={styles.statsAwayBadgeText}>AWAY</Text>
                 </View>
-                <Text style={styles.statsTeamName} numberOfLines={1}>{match.awayTeam.teamName}</Text>
+                <Text style={styles.statsTeamName} numberOfLines={1}>
+                  {match.awayTeam.teamName}
+                </Text>
                 {match.awayTeam.teamLogoUrl ? (
-                  <Image source={{uri: match.awayTeam.teamLogoUrl}} style={styles.statsTeamLogo} />
+                  <Image
+                    source={{uri: match.awayTeam.teamLogoUrl}}
+                    style={styles.statsTeamLogo}
+                  />
                 ) : (
                   <View style={styles.statsTeamLogoFallback}>
-                    <Text style={styles.statsTeamLogoText}>{match.awayTeam.teamName[0]}</Text>
+                    <Text style={styles.statsTeamLogoText}>
+                      {match.awayTeam.teamName[0]}
+                    </Text>
                   </View>
                 )}
               </View>
             </View>
 
             {/* Stat rows */}
-            <BigStat label="Goals" icon="⚽" left={stats.home.goals} right={stats.away.goals} />
-            <BigStat label="Yellow Cards" icon="🟨" left={stats.home.yellow} right={stats.away.yellow} />
-            <BigStat label="Red Cards" icon="🟥" left={stats.home.red} right={stats.away.red} />
-            <BigStat label="Fouls" icon="💥" left={stats.home.fouls} right={stats.away.fouls} />
+            <BigStat
+              label="Goals"
+              icon="⚽"
+              left={stats.home.goals}
+              right={stats.away.goals}
+            />
+            <BigStat
+              label="Yellow Cards"
+              icon="🟨"
+              left={stats.home.yellow}
+              right={stats.away.yellow}
+            />
+            <BigStat
+              label="Red Cards"
+              icon="🟥"
+              left={stats.home.red}
+              right={stats.away.red}
+            />
+            <BigStat
+              label="Fouls"
+              icon="💥"
+              left={stats.home.fouls}
+              right={stats.away.fouls}
+            />
           </View>
         )}
 
@@ -371,7 +414,9 @@ export default function MatchSummaryScreen() {
                 </View>
                 <View style={styles.infoTextWrap}>
                   <Text style={styles.infoLabel}>Venue</Text>
-                  <Text style={styles.infoValue}>{match.venue || 'Not specified'}</Text>
+                  <Text style={styles.infoValue}>
+                    {match.venue || 'Not specified'}
+                  </Text>
                 </View>
               </View>
 
@@ -383,7 +428,9 @@ export default function MatchSummaryScreen() {
                 </View>
                 <View style={styles.infoTextWrap}>
                   <Text style={styles.infoLabel}>Format</Text>
-                  <Text style={styles.infoValue}>{match.format || 'Standard'}</Text>
+                  <Text style={styles.infoValue}>
+                    {match.format || 'Standard'}
+                  </Text>
                 </View>
               </View>
 
@@ -395,7 +442,9 @@ export default function MatchSummaryScreen() {
                 </View>
                 <View style={styles.infoTextWrap}>
                   <Text style={styles.infoLabel}>Match Type</Text>
-                  <Text style={styles.infoValue}>{match.matchType || 'Friendly'}</Text>
+                  <Text style={styles.infoValue}>
+                    {match.matchType || 'Friendly'}
+                  </Text>
                 </View>
               </View>
 
@@ -442,7 +491,8 @@ export default function MatchSummaryScreen() {
                       <Text style={styles.infoLabel}>Status</Text>
                       <View style={styles.infoStatusPill}>
                         <Text style={styles.infoStatusText}>
-                          {match.status.charAt(0).toUpperCase() + match.status.slice(1)}
+                          {match.status.charAt(0).toUpperCase() +
+                            match.status.slice(1)}
                         </Text>
                       </View>
                     </View>
@@ -458,13 +508,14 @@ export default function MatchSummaryScreen() {
           <View style={styles.shootoutContainer}>
             {/* Score card */}
             <View style={styles.shootoutScoreCard}>
-              <Text style={styles.shootoutLabel}>⚽  PENALTY</Text>
+              <Text style={styles.shootoutLabel}>⚽ PENALTY</Text>
               <View style={styles.shootoutScoreRow}>
                 <Text style={styles.shootoutTeamName} numberOfLines={1}>
                   {match.homeTeam.teamName}
                 </Text>
                 <Text style={styles.shootoutScore}>
-                  {match.penaltyShootout.homeScore}  -  {match.penaltyShootout.awayScore}
+                  {match.penaltyShootout.homeScore} -{' '}
+                  {match.penaltyShootout.awayScore}
                 </Text>
                 <Text style={styles.shootoutTeamName} numberOfLines={1}>
                   {match.awayTeam.teamName}
@@ -473,7 +524,7 @@ export default function MatchSummaryScreen() {
               {match.penaltyShootout.winner && (
                 <View style={styles.shootoutWinnerBanner}>
                   <Text style={styles.shootoutWinnerText}>
-                    🏆  {match.penaltyShootout.winner} won on penalties
+                    🏆 {match.penaltyShootout.winner} won on penalties
                   </Text>
                 </View>
               )}
@@ -541,8 +592,16 @@ export default function MatchSummaryScreen() {
                     {/* Away kick card */}
                     <View style={[styles.kickCard, styles.kickCardAway]}>
                       <View style={styles.kickCardTop}>
-                        <View style={[styles.kickTeamPill, styles.kickTeamPillAway]}>
-                          <Text style={[styles.kickTeamPillText, styles.kickTeamPillTextAway]}>
+                        <View
+                          style={[
+                            styles.kickTeamPill,
+                            styles.kickTeamPillAway,
+                          ]}>
+                          <Text
+                            style={[
+                              styles.kickTeamPillText,
+                              styles.kickTeamPillTextAway,
+                            ]}>
                             {match.awayTeam.teamName}
                           </Text>
                         </View>
@@ -585,17 +644,32 @@ export default function MatchSummaryScreen() {
             {/* Team color legend */}
             <View style={styles.teamLegendRow}>
               <View style={styles.teamLegendItem}>
-                <View style={[styles.teamLegendDot, {backgroundColor: '#2563EB'}]} />
-                <Text style={styles.teamLegendName}>{match.homeTeam.teamName}</Text>
+                <View
+                  style={[styles.teamLegendDot, {backgroundColor: '#2563EB'}]}
+                />
+                <Text style={styles.teamLegendName}>
+                  {match.homeTeam.teamName}
+                </Text>
                 <View style={styles.teamLegendBadge}>
                   <Text style={styles.teamLegendBadgeText}>HOME</Text>
                 </View>
               </View>
               <View style={styles.teamLegendItem}>
-                <View style={[styles.teamLegendDot, {backgroundColor: '#F97316'}]} />
-                <Text style={styles.teamLegendName}>{match.awayTeam.teamName}</Text>
-                <View style={[styles.teamLegendBadge, {backgroundColor: '#FFF7ED'}]}>
-                  <Text style={[styles.teamLegendBadgeText, {color: '#F97316'}]}>AWAY</Text>
+                <View
+                  style={[styles.teamLegendDot, {backgroundColor: '#F97316'}]}
+                />
+                <Text style={styles.teamLegendName}>
+                  {match.awayTeam.teamName}
+                </Text>
+                <View
+                  style={[
+                    styles.teamLegendBadge,
+                    {backgroundColor: '#FFF7ED'},
+                  ]}>
+                  <Text
+                    style={[styles.teamLegendBadgeText, {color: '#F97316'}]}>
+                    AWAY
+                  </Text>
                 </View>
               </View>
             </View>
@@ -606,29 +680,66 @@ export default function MatchSummaryScreen() {
   }
 
   return (
-    <FlatList
-      data={timelineData}
-      keyExtractor={(item, index) =>
-        `${item.type}-${item.minute}-${item.player?.name || 'x'}-${index}`
-      }
-      ListHeaderComponent={<ListHeader />}
-      renderItem={({item, index}) => (
-        <TimelineCard
-          event={item}
-          homeTeamId={match.homeTeam._id}
-          homeTeamName={match.homeTeam.teamName}
-          awayTeamName={match.awayTeam.teamName}
-          isLast={index === timelineData.length - 1}
-        />
+    <View style={{flex: 1}}>
+      {/* Share menu overlay */}
+      {showShareMenu && (
+        <View style={styles.shareMenuOverlay}>
+          <TouchableOpacity
+            style={styles.shareMenuBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowShareMenu(false)}
+          />
+          <View style={styles.shareMenu}>
+            <TouchableOpacity
+              style={styles.shareMenuItem}
+              onPress={() => {
+                setShowShareMenu(false);
+                setTimeout(shareSummary, 300);
+              }}>
+              <Text style={styles.shareMenuIcon}>📋</Text>
+              <View>
+                <Text style={styles.shareMenuLabel}>Full Summary</Text>
+                <Text style={styles.shareMenuDesc}>
+                  Score + stats + scorers
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
-      ListEmptyComponent={
-        isTimeline ? (
-          <Text style={{padding: s(16), color: '#475569'}}>No events yet</Text>
-        ) : null
-      }
-      contentContainerStyle={{paddingBottom: vs(30)}}
-      style={styles.container}
-    />
+      <FlatList
+        data={timelineData}
+        keyExtractor={(item, index) =>
+          `${item.type}-${item.minute}-${item.player?.name || 'x'}-${index}`
+        }
+        ListHeaderComponent={<ListHeader />}
+        renderItem={({item, index}) => (
+          <TimelineCard
+            event={item}
+            homeTeamId={match.homeTeam._id}
+            homeTeamName={match.homeTeam.teamName}
+            awayTeamName={match.awayTeam.teamName}
+            isLast={index === timelineData.length - 1}
+          />
+        )}
+        ListEmptyComponent={
+          isTimeline ? (
+            <Text style={{padding: s(16), color: '#475569'}}>
+              No events yet
+            </Text>
+          ) : null
+        }
+        contentContainerStyle={{paddingBottom: vs(30)}}
+        style={styles.container}
+      />
+
+      {/* Hidden off-screen ViewShots for capture */}
+      <View style={styles.hiddenCapture}>
+        <ViewShot ref={summaryRef} options={{format: 'png', quality: 1}}>
+          <ShareCardSummary match={match} stats={stats} />
+        </ViewShot>
+      </View>
+    </View>
   );
 }
 
@@ -645,15 +756,17 @@ function BigStat({label, icon, left, right}) {
   return (
     <View style={styles.statRowCard}>
       {/* Left number */}
-      <View style={[
-        styles.statNumberBox,
-        (leftWins || isDraw) && styles.statNumberBoxActive,
-        leftWins && styles.statNumberBoxWinHome,
-      ]}>
-        <Text style={[
-          styles.statNumber,
-          (leftWins || isDraw) && styles.statNumberActive,
+      <View
+        style={[
+          styles.statNumberBox,
+          (leftWins || isDraw) && styles.statNumberBoxActive,
+          leftWins && styles.statNumberBoxWinHome,
         ]}>
+        <Text
+          style={[
+            styles.statNumber,
+            (leftWins || isDraw) && styles.statNumberActive,
+          ]}>
           {left}
         </Text>
       </View>
@@ -664,21 +777,25 @@ function BigStat({label, icon, left, right}) {
         <View style={styles.statBarsRow}>
           {/* Left bar (grows right-to-left) */}
           <View style={styles.statBarTrack}>
-            <View style={[
-              styles.statBarFillLeft,
-              {width: `${leftPct}%`},
-              leftWins && {backgroundColor: '#2563EB'},
-              isDraw && {backgroundColor: '#64748B'},
-            ]} />
+            <View
+              style={[
+                styles.statBarFillLeft,
+                {width: `${leftPct}%`},
+                leftWins && {backgroundColor: '#2563EB'},
+                isDraw && {backgroundColor: '#64748B'},
+              ]}
+            />
           </View>
           {/* Right bar (grows left-to-right) */}
           <View style={styles.statBarTrack}>
-            <View style={[
-              styles.statBarFillRight,
-              {width: `${rightPct}%`},
-              rightWins && {backgroundColor: '#F97316'},
-              isDraw && {backgroundColor: '#64748B'},
-            ]} />
+            <View
+              style={[
+                styles.statBarFillRight,
+                {width: `${rightPct}%`},
+                rightWins && {backgroundColor: '#F97316'},
+                isDraw && {backgroundColor: '#64748B'},
+              ]}
+            />
           </View>
         </View>
         {/* Label with icon */}
@@ -689,15 +806,17 @@ function BigStat({label, icon, left, right}) {
       </View>
 
       {/* Right number */}
-      <View style={[
-        styles.statNumberBox,
-        (rightWins || isDraw) && styles.statNumberBoxActive,
-        rightWins && styles.statNumberBoxWinAway,
-      ]}>
-        <Text style={[
-          styles.statNumber,
-          (rightWins || isDraw) && styles.statNumberActive,
+      <View
+        style={[
+          styles.statNumberBox,
+          (rightWins || isDraw) && styles.statNumberBoxActive,
+          rightWins && styles.statNumberBoxWinAway,
         ]}>
+        <Text
+          style={[
+            styles.statNumber,
+            (rightWins || isDraw) && styles.statNumberActive,
+          ]}>
           {right}
         </Text>
       </View>
@@ -750,7 +869,15 @@ function TimelineCard({event, homeTeamId, homeTeamName, awayTeamName, isLast}) {
           <Text style={styles.tlMinute}>{event.minute}'</Text>
         </View>
       ) : (
-        <View style={[styles.tlContent, {backgroundColor: TEAM_BG, borderColor: TEAM_BORDER, borderWidth: 1}]}>
+        <View
+          style={[
+            styles.tlContent,
+            {
+              backgroundColor: TEAM_BG,
+              borderColor: TEAM_BORDER,
+              borderWidth: 1,
+            },
+          ]}>
           <View style={styles.tlContentTop}>
             <View style={styles.tlEventLabelRow}>
               <Text style={styles.tlIcon}>{config.icon}</Text>
@@ -775,13 +902,23 @@ function TimelineCard({event, homeTeamId, homeTeamName, awayTeamName, isLast}) {
       <View style={styles.tlLineCol}>
         <View style={[styles.tlDot, {backgroundColor: TEAM_COLOR}]} />
         {!isLast && (
-          <View style={[styles.tlLine, {backgroundColor: TEAM_COLOR, opacity: 0.2}]} />
+          <View
+            style={[styles.tlLine, {backgroundColor: TEAM_COLOR, opacity: 0.2}]}
+          />
         )}
       </View>
 
       {/* RIGHT SIDE — home content OR away minute */}
       {isHome ? (
-        <View style={[styles.tlContent, {backgroundColor: TEAM_BG, borderColor: TEAM_BORDER, borderWidth: 1}]}>
+        <View
+          style={[
+            styles.tlContent,
+            {
+              backgroundColor: TEAM_BG,
+              borderColor: TEAM_BORDER,
+              borderWidth: 1,
+            },
+          ]}>
           <View style={styles.tlContentTop}>
             <View style={styles.tlEventLabelRow}>
               <Text style={styles.tlIcon}>{config.icon}</Text>
@@ -1684,5 +1821,87 @@ const styles = StyleSheet.create({
     fontSize: rf(10),
     fontWeight: '800',
     color: '#64748B',
+  },
+  /* ===== SHARE ===== */
+  shareBtn: {
+    width: s(44),
+    height: vs(44),
+    borderRadius: s(22),
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+  },
+  shareIcon: {
+    fontSize: ms(18),
+  },
+
+  /* Share menu overlay */
+  shareMenuOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+  },
+  shareMenuBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  shareMenu: {
+    position: 'absolute',
+    top: vs(70),
+    right: s(16),
+    width: s(240),
+    backgroundColor: '#FFFFFF',
+    borderRadius: ms(18),
+    padding: s(14),
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+  },
+  shareMenuTitle: {
+    fontSize: rf(13),
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: vs(10),
+  },
+  shareMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: vs(10),
+    gap: s(12),
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  shareMenuIcon: {
+    fontSize: ms(22),
+    width: s(32),
+    textAlign: 'center',
+  },
+  shareMenuLabel: {
+    fontSize: rf(13),
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  shareMenuDesc: {
+    fontSize: rf(10),
+    fontWeight: '600',
+    color: '#94A3B8',
+    marginTop: vs(1),
+  },
+
+  /* Hidden capture area */
+  hiddenCapture: {
+    position: 'absolute',
+    left: -9999,
+    top: 0,
   },
 });

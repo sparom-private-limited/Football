@@ -14,6 +14,10 @@ import PlayerRow from '../../components/lineup/PlayerRow';
 import {FORMATIONS} from '../../components/lineup/FormationMap';
 import API from '../../api/api';
 import MainLayout from '../../components/MainLayout';
+import {Platform} from 'react-native';
+import ViewShot from 'react-native-view-shot';
+import Share from 'react-native-share';
+import ShareCardLineup from '../../components/share/ShareCardLineup';
 
 export default function TeamLineupScreen() {
   const [formation, setFormation] = useState('4-2-3-1');
@@ -23,6 +27,55 @@ export default function TeamLineupScreen() {
   const [openFormation, setOpenFormation] = useState(false);
   const [hasSavedLineup, setHasSavedLineup] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [teamName, setTeamName] = useState('');
+  const [teamLogoUrl, setTeamLogoUrl] = useState(null);
+  const [renderShareCard, setRenderShareCard] = useState(false);
+
+  const lineupShareRef = React.useRef(null);
+
+const shareLineup = async () => {
+  try {
+    setRenderShareCard(true);
+
+    // Poll until ref is ready (max 2 seconds)
+    let attempts = 0;
+    while (!lineupShareRef.current?.capture && attempts < 20) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+
+    if (!lineupShareRef.current?.capture) {
+      setRenderShareCard(false);
+      Alert.alert('Error', 'Could not prepare share card. Try again.');
+      return;
+    }
+
+    const uri = await lineupShareRef.current.capture({
+      format: 'png',
+      quality: 1,
+      result: 'tmpfile',
+    });
+
+    const fileUri =
+      Platform.OS === 'android'
+        ? uri.startsWith('file://') ? uri : `file://${uri}`
+        : uri;
+
+    await Share.open({
+      title: '⚽ Team Lineup — FTBL-XI',
+      message: '⚽ Team Lineup — FTBL-XI',
+      url: fileUri,
+      type: 'image/png',
+      failOnCancel: false,
+    });
+
+    setRenderShareCard(false);
+  } catch (err) {
+    setRenderShareCard(false);
+    if (err?.message?.includes?.('cancel') || err?.message?.includes?.('dismiss')) return;
+    console.error('❌ Share lineup failed:', err);
+  }
+};
 
   const mapFrontendLineupToPayload = (formation, lineup, bench) => ({
     formation,
@@ -37,6 +90,9 @@ export default function TeamLineupScreen() {
     try {
       const teamRes = await API.get('/api/team/my-team');
       const teamPlayers = teamRes.data?.players || [];
+      console.log('Team data keys:', Object.keys(teamRes.data));
+      setTeamName(teamRes.data?.teamName || teamRes.data?.name || '');
+      setTeamLogoUrl(teamRes.data?.teamLogoUrl || teamRes.data?.logo || null);
 
       let lineupRes = null;
       try {
@@ -203,22 +259,32 @@ export default function TeamLineupScreen() {
             <Text style={styles.headerTitle}>{formation} Formation</Text>
           </View>
 
-          <TouchableOpacity
-            style={[
-              styles.saveBtn,
-              hasSavedLineup && !isEditing && styles.editBtn,
-            ]}
-            onPress={async () => {
-              if (hasSavedLineup && !isEditing) {
-                setIsEditing(true);
-                return;
-              }
-              await saveLineup();
-            }}>
-            <Text style={styles.saveBtnText}>
-              {hasSavedLineup && !isEditing ? 'Edit Lineup' : 'Save Lineup'}
-            </Text>
-          </TouchableOpacity>
+          <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+            {hasSavedLineup && !isEditing && startingXI.length > 0 && (
+              <TouchableOpacity
+                style={styles.shareLineupBtn}
+                onPress={shareLineup}>
+                <Text style={styles.shareLineupIcon}>📤</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={[
+                styles.saveBtn,
+                hasSavedLineup && !isEditing && styles.editBtn,
+              ]}
+              onPress={async () => {
+                if (hasSavedLineup && !isEditing) {
+                  setIsEditing(true);
+                  return;
+                }
+                await saveLineup();
+              }}>
+              <Text style={styles.saveBtnText}>
+                {hasSavedLineup && !isEditing ? 'Edit Lineup' : 'Save Lineup'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* PITCH */}
@@ -333,6 +399,20 @@ export default function TeamLineupScreen() {
 
         <View style={{height: 40}} />
       </ScrollView>
+      {/* Hidden share capture — only mounted when sharing */}
+      {renderShareCard && (
+        <View style={{position: 'absolute', left: -9999}}>
+          <ViewShot ref={lineupShareRef} options={{format: 'png', quality: 1}}>
+            <ShareCardLineup
+              formation={formation}
+              lineup={lineup}
+              bench={bench}
+              teamName={teamName}
+              teamLogoUrl={teamLogoUrl}
+            />
+          </ViewShot>
+        </View>
+      )}
     </MainLayout>
   );
 }
@@ -461,5 +541,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     paddingTop: 12,
     paddingBottom: 8,
+  },
+  shareLineupBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  shareLineupIcon: {
+    fontSize: 16,
   },
 });

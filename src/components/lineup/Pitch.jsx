@@ -18,6 +18,7 @@ const PITCH_HEIGHT = width * 1.25;
 const SLOT_SIZE = s(50);
 const AVATAR_SIZE = s(50);
 const HALF_SLOT = SLOT_SIZE / 2;
+const BADGE_SIZE = s(20);
 
 export default function Pitch({
   formation,
@@ -58,65 +59,51 @@ export default function Pitch({
                 {
                   top: pos.top,
                   left: pos.left,
-                  width: SLOT_SIZE,
-                  height: SLOT_SIZE,
-                  marginLeft: -HALF_SLOT,
-                  marginTop: -HALF_SLOT,
-                  borderRadius: HALF_SLOT,
-
-                  // ✅ No border when player assigned — clean look
-                  // Subtle border only for empty slots or selected
-                  borderWidth: player ? 0 : 1.5,
-                  borderColor: isSelected
-                    ? '#60A5FA'
-                    : player
-                    ? 'transparent'
-                    : 'rgba(255,255,255,0.5)',
-
-                  backgroundColor: player
-                    ? 'transparent' // ✅ no dark bg behind avatar
-                    : 'rgba(15,23,42,0.3)',
+                  marginLeft: -SLOT_SIZE / 2,
+                  marginTop: -SLOT_SIZE / 2 - vs(8),
                 },
               ]}
               onPress={() => !readOnly && onSlotPress?.(pos.key)}>
               {player ? (
-                player.profileImageUrl ? (
-                  <Image
-                    source={{uri: player.profileImageUrl}}
-                    style={[
-                      styles.avatar,
-                      {
-                        width: AVATAR_SIZE,
-                        height: AVATAR_SIZE,
-                        borderRadius: AVATAR_SIZE / 2,
-                      },
-                    ]}
-                  />
-                ) : (
-                  <View
-                    style={[
-                      styles.avatar,
-                      {
-                        width: AVATAR_SIZE,
-                        height: AVATAR_SIZE,
-                        borderRadius: AVATAR_SIZE / 2,
-                        backgroundColor: '#334155',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      },
-                    ]}>
-                    <Text
-                      style={{
-                        color: '#fff',
-                        fontSize: rf(14),
-                        fontWeight: '700',
-                      }}>
-                      {player.name?.[0] || '?'}
-                    </Text>
+                <View style={styles.playerSlot}>
+                  {/* Avatar with ring + badge together */}
+                  <View style={styles.avatarWrap}>
+                    <View
+                      style={[
+                        styles.avatarRing,
+                        isSelected && styles.avatarRingSelected,
+                      ]}>
+                      {player.profileImageUrl ? (
+                        <Image
+                          source={{uri: player.profileImageUrl}}
+                          style={styles.avatarImg}
+                        />
+                      ) : (
+                        <View style={styles.avatarFallback}>
+                          <Text style={styles.avatarInitial}>
+                            {player.name?.[0] || '?'}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Jersey badge — positioned relative to avatarWrap */}
+                    <View style={styles.jerseyBadge}>
+                      <Text style={styles.jerseyNum}>
+                        {player.jerseyNumber ?? '--'}
+                      </Text>
+                    </View>
                   </View>
-                )
+
+                  {/* Player name */}
+                  <Text style={styles.playerName} numberOfLines={1}>
+                    {player.name?.split(' ')[0] || '?'}
+                  </Text>
+                </View>
               ) : (
-                <View style={styles.emptyDot} />
+                <View style={styles.emptySlot}>
+                  <View style={styles.emptyDot} />
+                </View>
               )}
             </TouchableOpacity>
           );
@@ -194,23 +181,87 @@ const styles = StyleSheet.create({
   // ✅ Base slot — sizes overridden inline per slot
   slot: {
     position: 'absolute',
-    justifyContent: 'center',
+    width: SLOT_SIZE + s(14),
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 0, height: 3},
-    shadowRadius: 4,
+  },
+  playerSlot: {
+    alignItems: 'center',
+    position: 'relative',
+  },
+  avatarRing: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.6)',
+    overflow: 'hidden',
+    backgroundColor: 'rgba(15,23,42,0.3)',
+  },
+  avatarRingSelected: {
+    borderColor: '#60A5FA',
+    borderWidth: 2.5,
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarFallback: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#7C3AED',
+  },
+  avatarInitial: {
+    color: '#FFFFFF',
+    fontSize: rf(16),
+    fontWeight: '800',
+  },
+  avatarWrap: {
+    position: 'relative',
+  },
+  jerseyBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: -2,
+    width: BADGE_SIZE,
+    height: BADGE_SIZE,
+    borderRadius: BADGE_SIZE / 2,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    zIndex: 10,
   },
 
-  avatar: {
-    // width/height/borderRadius set inline
+  jerseyNum: {
+    fontSize: rf(8),
+    fontWeight: '900',
+    color: '#0F172A',
   },
-
+  playerName: {
+    fontSize: rf(9),
+    fontWeight: '800',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginTop: vs(2),
+    width: SLOT_SIZE + s(14),
+  },
+  emptySlot: {
+    width: SLOT_SIZE,
+    height: SLOT_SIZE,
+    borderRadius: SLOT_SIZE / 2,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.5)',
+    backgroundColor: 'rgba(15,23,42,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyDot: {
-    width: s(10),
-    height: s(10),
-    borderRadius: s(5),
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    width: s(8),
+    height: s(8),
+    borderRadius: s(4),
+    backgroundColor: 'rgba(255,255,255,0.5)',
   },
 });
